@@ -2,10 +2,13 @@
   "name": "blazor-basic",
   "version": "1.0.0",
   "scripts": {
-    "start" : "dotnet run --project Client",
-    "playwright_test" : "playwright test"
+    "start": "dotnet run --project Client",
+    "playwright_test": "playwright test"
   },
- "devDependencies": {
+  "devDependencies": {
     "@playwright/test": "^1.22.2"
+  },
+  "dependencies": {
+    "@azure/static-web-apps-cli": "^1.0.2"
   }
 }
