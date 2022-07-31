@@ -1,25 +1,18 @@
-﻿@page "/"
-
-<PageTitle>Index</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
+﻿@page "/LoginCompleted"
+@attribute [Authorize]
+<h3>Secure Page</h3>
 
 <div class="container text-right">
     <AuthorizeView>
         <Authorized>
             <div>
                 Hello, @context.User.Identity!.Name
-                <a href="/logout" >Log out</a>
+                <a href="#" >Log out</a>
             </div>
         </Authorized>
         <NotAuthorized>
-               <a href="/login">Log in/Sign up</a>
+            <a href="/Logout">Log in/Sign up</a>
         </NotAuthorized>
     </AuthorizeView>
 </div>
-
-<hr />
-<a href="/SecurePage">SecurePage</a>
 

@@ -1,0 +1,14 @@
+﻿@page "/Logout"
+@inject NavigationManager Navigation 
+
+<button onclick="@SignOut" >Log Out 2</button>
+
+@code {
+
+
+    private  void  SignOut(MouseEventArgs args)
+    {
+        Navigation.NavigateTo("/.auth/logout" , true );
+    }
+
+}
