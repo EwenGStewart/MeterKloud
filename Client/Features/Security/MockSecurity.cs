@@ -59,7 +59,7 @@ namespace MeterKloud.Features.Security
             var identity = new ClaimsIdentity(claims, "BasicAuthentication");
             //    var authenticated = true;
 
-            var result = new AuthenticationState(new ClaimsPrincipal(identity));
+            var result =await Task.FromResult( new AuthenticationState(new ClaimsPrincipal(identity)));
             return result;
         }
 
