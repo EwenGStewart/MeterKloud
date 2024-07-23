@@ -1,38 +1,64 @@
 ﻿@inherits LayoutComponentBase
-<MudThemeProvider />
+<MudThemeProvider IsDarkMode="@_isDarkMode" Theme="_mudTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="1" Dense>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
+        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode" />
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
-        <MudDrawerHeader Style="background-color:red">
-            <MudStack Row="false">
-            <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-             <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-                <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-                <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-                <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div><div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-            </MudStack>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Never">
 
-        </MudDrawerHeader>
-        <h1>todo</h1>
+        @if (_drawerOpen)
+        {
+
+            <MudDrawerHeader>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexStart" Spacing="0">
+                    <MudImage Src="/images/meterKloudDrawTitle.png" ObjectFit="ObjectFit.ScaleDown" Width="150"></MudImage>
+                </MudStack>
+            </MudDrawerHeader>
+        }
+        <MudNavMenu Bordered Rounded>
+            <MudNavLink Icon="@Icons.Material.Filled.CloudUpload" Href="/upload">Upload</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.CloudDownload" Href="/download">Download</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Warehouse" Href="/sites">Sites</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.AttachMoney" Href="/Tariffs">Tariffs</MudNavLink>
+
+        </MudNavMenu>
+
     </MudDrawer>
     <MudMainContent>
         @Body
     </MudMainContent>
 </MudLayout>
 @code {
+
+    MudTheme _mudTheme = new MudTheme();
     bool _drawerOpen = true;
+    bool _isDarkMode = false; 
+
+    protected override void OnInitialized()
+    {
+        _mudTheme = new MudTheme();
+        _mudTheme.LayoutProperties.DrawerWidthLeft = "200px";
+        _mudTheme.PaletteDark.DrawerBackground = "#000000";
+        _mudTheme.PaletteLight.DrawerBackground = "#000000";
+        _mudTheme.PaletteLight.DrawerText = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.8);
+        _mudTheme.PaletteLight.DrawerIcon = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.8);
+
+    }
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
+
+
+
+
 }
