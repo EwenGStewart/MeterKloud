@@ -19,7 +19,7 @@
     "MeterKloud": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:4280/",
+      "launchUrl": "https://localhost:7192",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
