@@ -1,6 +1,139 @@
 ﻿@page "/upload"
-<h3>UploadPage</h3>
+@using System.Collections.ObjectModel
+@inject ISnackbar Snackbar
+
+<MudContainer Fixed Class="px-6 py-4">
+
+    <MudStack Spacing="0" Class="pb-4">
+        <MudStack Row>
+            <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large"></MudIcon>
+            <MudText Typo="Typo.h1" Color="Color.Dark">Upload Meter Data</MudText>
+        </MudStack>
+
+        <MudText Typo="Typo.h2" Class="mud-text-secondary">Upload meter data in a variety of formats.</MudText>
+    </MudStack>
+
+
+   
+        <div style="display:@( ( _state == internalState.GetFiles ? "block" : "none") )">
+    
+        <MudContainer MaxWidth="MaxWidth.Medium">
+            <UploadPageGetFiles OnFilesSelected="OnFilesSelected" />
+        </MudContainer>
+     
+        </div>
+    
+        @if (_state == internalState.UploadFiles)
+        {
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            <MudDataGrid ReadOnly="true" Items="@_items"  Height="50vh" Virtualize  Bordered  Dense Striped HorizontalScrollbar >
+                <Columns>
+                    <PropertyColumn  Property="zz=>zz.FileName" Title="File"/>
+                    <PropertyColumn Property="zz=>zz.FileSizeFormatted" Title="Size" />
+                    <PropertyColumn Property="zz=>zz.FileType" Title="Type" />
+                    <PropertyColumn Property="zz=>zz.ProcessingStatus" Title="Status" />
+
+                </Columns>
+            </MudDataGrid>
+        </MudContainer>
+        }
+
+
+</MudContainer>
 
 @code {
 
+    enum internalState
+    {
+        GetFiles,
+        UploadFiles
+    }
+    internalState _state = internalState.GetFiles;
+
+
+    ObservableCollection<MeterDataFile> _items = new ObservableCollection<MeterDataFile>();
+
+    async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        _items = new ObservableCollection<MeterDataFile>(files.Select(f => new MeterDataFile(f)));
+        _state = internalState.UploadFiles;
+        await InvokeAsync(StateHasChanged);
+        foreach( var file in _items)
+        {
+            await ProcessItem(file);
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(100);
+        }
+
+
+    }
+
+
+    async Task ProcessItem (MeterDataFile file)
+    {
+        file.ProcessingStatus = "Processing";
+        Console.WriteLine($"{file.FileName} ");
+        await InvokeAsync(StateHasChanged);
+        const long MAXALLOWEDSIZE = 1000 * 1000 * 1024;
+        using var stream = file.BrowserFile.OpenReadStream(MAXALLOWEDSIZE);
+        byte[] buffer = new byte[8000];
+        int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+        int bytesNonAscii = 0;
+        if ( bytesRead == 0)
+        {
+            file.ProcessingStatus = "Empty file";
+            return;
+        }
+        for (int i = 0; i < bytesRead; i++)
+        {
+ 
+            if (buffer[i] > 127 || buffer[i] == 0 )
+            {
+                bytesNonAscii++;
+            }
+        }
+        Console.WriteLine($"{file.FileName} {bytesRead} {bytesNonAscii} ");
+        if( bytesNonAscii > 0 && bytesNonAscii > bytesRead / 100 )
+        {
+            file.ProcessingStatus = "Binary file";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        file.ProcessingStatus = "text file";
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+
+    class MeterDataFile( IBrowserFile file)
+    {
+
+
+        public IBrowserFile BrowserFile { get; set; } = file;
+        public string FileName => BrowserFile.Name;
+        public long FileSize => BrowserFile.Size;
+        public string FileSizeFormatted => GetFileSize(FileSize);
+        public string FileType => BrowserFile.ContentType;
+        public string ProcessingStatus { get; set; } = "Pending";
+
+    }
+
+
+
+    static string GetFileSize(long length)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        double len = (double)length;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+
+        // Adjust the format string to your preferences. For example "{0:0.#}{1}" would
+        // show a single decimal place, and no space.
+        string result = String.Format("{0:0.##} {1}", len, sizes[order]);
+        return result;
+    }
 }
