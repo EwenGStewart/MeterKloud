@@ -1,38 +1,89 @@
 ﻿@inherits LayoutComponentBase
-<MudThemeProvider />
+<MudThemeProvider IsDarkMode="@_isDarkMode" Theme="_mudTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<style>
+     .TopAppBar {
 
+        
+    }
+</style>
 
 <MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+    <MudAppBar Elevation="1" Dense Class="px-4 TopAppBar" Gutters="false">
+        
+        <MudIconButton  Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudImage Src="/images/meterKloudDrawTitleClear.png" ObjectFit="ObjectFit.ScaleDown" Height="36"></MudImage>
         <MudSpacer />
+        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode" />
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
-        <MudDrawerHeader Style="background-color:red">
-            <MudStack Row="false">
-            <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-             <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-                <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-                <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-                <div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div><div><MudText Typo="Typo.h5" Class="mt-1">Application</MudText></div>
-            </MudStack>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Docked">
 
-        </MudDrawerHeader>
-        <h1>todo</h1>
+        @if (_drawerOpen)
+        {
+
+      
+        }
+        else
+        {
+            <style>
+                .LeftMenuNavItem .mud-nav-link 
+                {
+                    padding-left:8px;
+                }
+            </style>
+        }
+        <MudNavMenu Bordered="@_drawerOpen" Rounded="@_drawerOpen" Class="mx-2" >
+            <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.CloudUpload" Href="/upload">Upload</MudNavLink>
+            <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.CloudDownload" Href="/download">Download</MudNavLink>
+            <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.Warehouse" Href="/sites">Sites</MudNavLink>
+            <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.AttachMoney" Href="/Tariffs">Tariffs</MudNavLink>
+        </MudNavMenu>
+
     </MudDrawer>
-    <MudMainContent>
+    <MudMainContent  >
         @Body
     </MudMainContent>
 </MudLayout>
 @code {
+
+    MudTheme _mudTheme = new MudTheme();
     bool _drawerOpen = true;
+    bool _isDarkMode = false; 
+
+    protected override void OnInitialized()
+    {
+        _mudTheme = new MudTheme();
+        _mudTheme.LayoutProperties.DrawerWidthLeft = "200px";
+        _mudTheme.PaletteDark.DrawerBackground = "#000000";
+        _mudTheme.PaletteLight.DrawerBackground = "#27272F";
+        _mudTheme.PaletteLight.DrawerText = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.8);
+        _mudTheme.PaletteLight.DrawerIcon = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.8);
+        _mudTheme.PaletteLight.ActionDefault = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.8);
+        _mudTheme.PaletteLight.Primary = new MudBlazor.Utilities.MudColor("#1CCADD");
+        _mudTheme.PaletteLight.HoverOpacity = .1;
+        _mudTheme.PaletteLight.AppbarBackground = "#27272F";
+        _mudTheme.PaletteLight.AppbarText = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.99);
+        _mudTheme.PaletteDark.ActionDefault = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.8);
+        _mudTheme.PaletteDark.HoverOpacity = .1;
+        _mudTheme.PaletteLight.Background = "f1f5f9";
+        _mudTheme.Typography.H1.FontSize = "2.3em";
+        _mudTheme.Typography.H1.FontWeight = 800;
+        _mudTheme.Typography.H2.FontSize = "1.5em";
+        _mudTheme.Typography.H2.FontWeight = 400;
+
+
+        
+    }
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
+
+
+
+
 }
