@@ -10,19 +10,19 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvMultiLine1 : IParser
+    public class CsvMultiLine1 : Parser
     {
-        public string Name => "MultiLineCSV1";
+        public override string Name => "MultiLineCSV1";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 5);
-            if (lines.Count < 5) return null;
+            if (lines.Count < 5) return false;
 
             // CHECK HEADER ROW
             if (
@@ -37,10 +37,10 @@ namespace MeterDataLib.Parsers
                 && lines[3].GetStringUpper(0) == "DATE/TIME"
                 && lines[4].GetDate(0, "yyyyMMdd") != null
                 )
-                return new CsvMultiLine1();
-            return null;
+                return true;
+            return false;
         }
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

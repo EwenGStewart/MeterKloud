@@ -10,19 +10,19 @@ using System.Threading.Tasks;
 
 namespace MeterDataLib.Parsers
 {
-    public class Nem12 : IParser
+    public class Nem12 : Parser
     {
 
         private static readonly string[] allowedMimeTypes = new string[] { "text/plain", "text/csv", "" };
 
         private CsvLine CsvLine { get; set; } = new CsvLine(Array.Empty<string>(), 0, true);
 
-        public string Name => "NEM12";
+        public override string Name => "NEM12";
 
         const int MAX_ERRORS = 10;
         const int MAX_WARNINGS = 100;
         
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             stream.Seek(0, SeekOrigin.Begin);
             var result = new ParserResult();
@@ -445,52 +445,52 @@ namespace MeterDataLib.Parsers
 
         }
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
             mimeType ??= "";
             mimeType = mimeType.ToLower();
             if (!allowedMimeTypes.Contains(mimeType))
             {
-                return null;
+                return false;
             }
             stream.Seek(0, SeekOrigin.Begin);
             using var csvReader = new SimpleCsvReader(stream, filename);
             var line = csvReader.Read();
             if (line.Eof)
             {
-                return null;
+                return false;
             }
             if (line.GetIntCol(0) == 100)
             {
                 if (line.GetStringUpper(1) == "NEM12")
                 {
-                    return new Nem12();
+                    return true;
                 }
                 else
                 {
-                    return null;
+                    return false; 
                 }
             }
             if (line.GetIntCol(0) == 200)
             {
                 if (line.ColCount < 9)
                 {
-                    return null;
+                    return false;
                 }
                 if (line.GetStringUpper(1) == string.Empty || line.GetIntCol(8) == null || line.GetStringUpper(4) == string.Empty)
                 {
-                    return null;
+                    return false;
                 }
                 line = csvReader.Read();
                 if (line.Eof || line.GetIntCol(0) != 300 || line.GetDate(1, "yyyyMMdd") == null || line.ColCount < 48 + 1)
                 {
-                    return null;
+                    return false;
                 }
-                return new Nem12();
+                return true;
             }
             else
             {
-                return null;
+                return false;
             }
         }
     }

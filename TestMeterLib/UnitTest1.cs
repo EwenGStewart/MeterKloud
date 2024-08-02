@@ -191,8 +191,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var nem12 = MeterDataLib.Parsers.Nem12.GetParser(stream, resource, mimeType);
-                bool resultIsNem12 = nem12 != null;
+                var nem12 = new MeterDataLib.Parsers.Nem12();
+                var resultIsNem12 =nem12.CanParse(stream, resource, mimeType);
                 Assert.Equal(isNem12, resultIsNem12);
             }
         }
@@ -219,8 +219,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvMultiLine1.GetParser(stream, resource, mimeType);
-                bool result = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvMultiLine1(); 
+                bool result = parser.CanParse(stream, resource, mimeType); 
                 Assert.Equal(expectedResult, result);
             }
         }
@@ -233,8 +233,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLineSimpleEBKvaPF.GetParser(stream, resource, mimeType);
-                bool result = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLineSimpleEBKvaPF();
+                bool result = parser.CanParse(stream, resource, mimeType);
                 Assert.Equal(expectedResult, result);
             }
         }
@@ -249,8 +249,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLineSimpleEBQK.GetParser(stream, resource, mimeType);
-                bool result = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLineSimpleEBQK();
+                bool result = parser.CanParse(stream, resource, mimeType);
                 Assert.Equal(expectedResult, result);
             }
         }
@@ -264,8 +264,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLineMultiColPeriod2.GetParser(stream, resource, mimeType);
-                bool result = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLineMultiColPeriod2();
+                bool result = parser.CanParse(stream, resource, mimeType);
                 Assert.Equal(expectedResult, result);
             }
         }
@@ -280,8 +280,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLinePeakOffPeakDateNumber.GetParser(stream, resource, mimeType);
-                bool result = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLinePeakOffPeakDateNumber();
+                bool result = parser.CanParse(stream, resource, mimeType);
                 Assert.Equal(expectedResult, result);
             }
         }

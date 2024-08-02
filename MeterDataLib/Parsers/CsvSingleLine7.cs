@@ -13,19 +13,19 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLine7 : IParser
+    public class CsvSingleLine7 : Parser
     {
-        public string Name => "SingleLineFromLine7";
+        public override string Name => "SingleLineFromLine7";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 5);
-            if (lines.Count < 5) return null;
+            if (lines.Count < 5) return false;
 
             // CHECK HEADER ROW
             if (
@@ -47,10 +47,10 @@ namespace MeterDataLib.Parsers
                 && lines[4].GetTime(7, "HH:mm") != null
                 && lines[4].GetTime(8, "HH:mm") != null
                 )
-                return new CsvSingleLine7();
-            return null;
+                return true; 
+            return false;
         }
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

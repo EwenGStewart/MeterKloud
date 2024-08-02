@@ -11,11 +11,8 @@ using System.Net.Http.Headers;
 
 namespace MeterDataLib.Parsers
 {
-    public class ExcelParser : IParser
+    public class ExcelParser : Parser
     {
-        public string Name => "Excel";
-
-
         static readonly string[] ExcelMimeTypes = new string[]
         {
             "application/vnd.ms-excel",
@@ -23,20 +20,25 @@ namespace MeterDataLib.Parsers
             "application/msexcel",
             "application/vnd.ms-excel"
         };
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+
+        public override string Name => "Excel";
+
+
+
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
              if (ExcelMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
              {
-                return new ExcelParser();
+                return true; 
              }
              if ( filename.EndsWith(".xls") || filename.EndsWith(".xlsx"))
              {
-                return new ExcelParser();
+                return true; 
              }
-            return null;
+            return false; 
         }
 
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

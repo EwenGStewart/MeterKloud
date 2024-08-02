@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -10,19 +11,19 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLineMultiColPeriod2 : IParser
+    public class CsvSingleLineMultiColPeriod2 : Parser
     {
-        public string Name => "SingleLineByPeriod2";
+        public override string Name => "SingleLineByPeriod2";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse  (Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
-            if (lines.Count < 2) return null;
+            if (lines.Count < 2) return false;
 
             // CHECK HEADER ROW
             if (
@@ -35,12 +36,14 @@ namespace MeterDataLib.Parsers
                 && lines[0].GetStringUpper(4) == "UNIT_OF_MEASURE"
                 && lines[0].GetStringUpper(5) == "TARIFF_DESCRIPTION"
                 && lines[1].GetDate(3, "dd/MM/yyyy") != null
-                &&  ( lines[1].GetStringUpper(5) == "CONSUMPTION"  || lines[1].GetStringUpper(5) == "GENERATION" )
-                )
-                return new CsvSingleLineMultiColPeriod2();
-            return null;
+                && (lines[1].GetStringUpper(5) == "CONSUMPTION" || lines[1].GetStringUpper(5) == "GENERATION")
+                ) 
+            {
+                return true; 
+            }   
+            return false; 
         }
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

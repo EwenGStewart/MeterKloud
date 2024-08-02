@@ -21,8 +21,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var nem12 = MeterDataLib.Parsers.Nem12.GetParser(stream, resource, mimeType);
-                bool resultIsNem12 = nem12 != null;
+                var nem12 = new MeterDataLib.Parsers.Nem12();
+                var resultIsNem12 = nem12.CanParse(stream, resource, mimeType);
+   
                 Assert.True(resultIsNem12);
                 if ( nem12 == null )
                 {
@@ -46,8 +47,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvMultiLine1.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvMultiLine1();
+                    
+                bool resultIsValid = parser.CanParse(stream, resource, mimeType);
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -72,8 +74,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLineMultiColPeriod.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLineMultiColPeriod();
+                bool resultIsValid = parser.CanParse( stream, resource, mimeType);
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -95,8 +97,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLineMultiColPeriod2.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLineMultiColPeriod2();
+                var resultIsValid = parser.CanParse(stream, resource, mimeType);
+                
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -122,8 +125,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLineSimpleEBKvaPF.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLineSimpleEBKvaPF();
+                
+                bool resultIsValid = parser.CanParse (stream, resource, mimeType);
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -153,8 +157,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLinePeakOffPeakDateNumber.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLinePeakOffPeakDateNumber();
+                
+                bool resultIsValid = parser.CanParse (stream, resource, mimeType);
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -184,8 +189,8 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvSingleLine7.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvSingleLine7();
+                bool resultIsValid = parser.CanParse(stream,resource, mimeType);
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -214,8 +219,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvPowerPal.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvPowerPal();
+
+                bool resultIsValid = parser.CanParse(stream, resource, mimeType);
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -246,8 +252,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.CsvByChannel.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.CsvByChannel();
+                    
+                bool resultIsValid = parser.CanParse(stream, resource, mimeType); 
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -281,8 +288,9 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.ExcelParser.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+                var parser = new MeterDataLib.Parsers.ExcelParser();
+                bool resultIsValid = parser.CanParse(stream, resource, mimeType);
+
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {
@@ -313,8 +321,10 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var parser = MeterDataLib.Parsers.ZipParser.GetParser(stream, resource, mimeType);
-                bool resultIsValid = parser != null;
+
+
+                var parser = new MeterDataLib.Parsers.ZipParser();
+                bool resultIsValid = parser.CanParse(stream, resource, mimeType);
                 Assert.True(resultIsValid);
                 if (parser == null)
                 {

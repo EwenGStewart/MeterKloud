@@ -10,19 +10,19 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLineMultiColPeriod : IParser
+    public class CsvSingleLineMultiColPeriod : Parser
     {
-        public string Name => "SingleLineByPeriod";
+        public override string Name => "SingleLineByPeriod";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
-            if (lines.Count < 2) return null;
+            if (lines.Count < 2) return false;
 
             // CHECK HEADER ROW
             if (
@@ -34,12 +34,12 @@ namespace MeterDataLib.Parsers
                 && lines[0].GetStringUpper(3) == "DATE"
                 && lines[0].GetStringUpper(4) == "ESTIMATED?"
                 && lines[1].GetDate(3, "d/MM/yyyy") != null
-                &&  ( lines[1].GetStringUpper(2) == "CONSUMPTION"  || lines[1].GetStringUpper(2) == "GENERATION" )
+                && (lines[1].GetStringUpper(2) == "CONSUMPTION" || lines[1].GetStringUpper(2) == "GENERATION")
                 )
-                return new CsvSingleLineMultiColPeriod();
-            return null;
+                return true;
+            return false;
         }
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

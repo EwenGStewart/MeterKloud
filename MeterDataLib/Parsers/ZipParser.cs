@@ -11,9 +11,9 @@ using System.Net.Http.Headers;
 
 namespace MeterDataLib.Parsers
 {
-    public class ZipParser : IParser
+    public class ZipParser : Parser
     {
-        public string Name => "Zip";
+        public override string Name => "Zip";
 
 
         static readonly string[] ZipMimeTypes = new string[]
@@ -21,20 +21,21 @@ namespace MeterDataLib.Parsers
             "application/x-zip-compressed",
 
         };
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
             if (ZipMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
             {
-                return new ZipParser();
+                return true;
             }
             if (filename.EndsWith(".zip"))
             {
-                return new ZipParser();
+                return true;
             }
-            return null;
+            return false;
+
         }
 
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

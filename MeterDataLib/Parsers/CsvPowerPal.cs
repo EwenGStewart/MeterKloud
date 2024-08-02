@@ -13,19 +13,19 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvPowerPal : IParser
+    public class CsvPowerPal : Parser
     {
-        public string Name => "CsvPowerPal";
+        public override string Name => "CsvPowerPal";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse (Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 1);
-            if (lines.Count < 1) return null;
+            if (lines.Count < 1) return false ;
 
             // CHECK HEADER ROW
             if (
@@ -36,10 +36,10 @@ namespace MeterDataLib.Parsers
                 && lines[0].GetStringUpper(3) == "COST_DOLLARS"
                 && lines[0].GetStringUpper(4) == "IS_PEAK"
                 )
-                return new CsvPowerPal();
-            return null;
+                return true;
+            return false; 
         }
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;
@@ -54,10 +54,6 @@ namespace MeterDataLib.Parsers
                     CsvLine line;
                     // skip the first line 
                     reader.Read();
-
-
-
-
 
                     while ((line = reader.Read()).Eof == false)
                     {

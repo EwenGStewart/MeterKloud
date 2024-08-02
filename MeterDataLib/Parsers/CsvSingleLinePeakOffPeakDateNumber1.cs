@@ -13,19 +13,19 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLinePeakOffPeakDateNumber : IParser
+    public class CsvSingleLinePeakOffPeakDateNumber : Parser
     {
-        public string Name => "SingleLineWith_PK_OP_DateNumber";
+        public override string Name => "SingleLineWith_PK_OP_DateNumber";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
-            if (lines.Count < 2) return null;
+            if (lines.Count < 2) return false;
 
             // CHECK HEADER ROW
             if (
@@ -45,10 +45,10 @@ namespace MeterDataLib.Parsers
                 && lines[1].GetDate(1, new string[] { "d/M/yyyy", "d/MM/yyyy" }) != null
                 && lines[1].GetTime(2, "h:mm:ss tt") != null
                 )
-                return new CsvSingleLinePeakOffPeakDateNumber();
-            return null;
+                return true;
+            return false; 
         }
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

@@ -13,19 +13,19 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLineSimpleEBKvaPF : IParser
+    public class CsvSingleLineSimpleEBKvaPF : Parser
     {
-        public string Name => "SingleLineWith_E_B_KVA_PF";
+        public override string Name => "SingleLineWith_E_B_KVA_PF";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse(Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
-            if (lines.Count < 2) return null;
+            if (lines.Count < 2) return false;
 
             // CHECK HEADER ROW
             if (
@@ -42,10 +42,10 @@ namespace MeterDataLib.Parsers
                 && lines[0].GetStringUpper(8) == "PF"
                 && lines[1].GetDate(3, "dd/MM/yyyy HH:mm") != null
                 )
-                return new CsvSingleLineSimpleEBKvaPF();
-            return null;
+                return true;
+            return false;
         }
-        public ParserResult Parse(Stream stream, string filename)
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;

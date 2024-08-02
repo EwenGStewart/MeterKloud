@@ -14,33 +14,36 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvByChannel : IParser
+    public class CsvByChannel : Parser
     {
-        public string Name => "CsvByChannel";
+        public override string Name => "CsvByChannel";
 
-        public static IParser? GetParser(Stream stream, string filename, string? mimeType)
+        public override bool CanParse  (Stream stream, string filename, string? mimeType)
         {
 
             if (!CsvParserLib.ValidateMime(mimeType))
             {
-                return null;
+                return false;
             }
             var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
-            if (lines.Count < 1) return null;
+            if (lines.Count < 1) return false;
 
             // CHECK HEADER ROW
             if (
                 lines[0].ColCount > 2
                 && lines[0].GetStringUpper(0) == "NMI"
                 && lines[0].GetStringUpper(1) == "READ DATE/TIME"
-                && lines[1].GetStringUpper(0).Length >= 10 
+                && lines[1].GetStringUpper(0).Length >= 10
                 && lines[1].GetStringUpper(0).Length <= 11
-                && lines[1].GetDate(1 , ["dd.MM.yyyy HH:mm:ss" , "dd/MM/yyyy HH:mm:ss"]) is not null 
+                && lines[1].GetDate(1, ["dd.MM.yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss"]) is not null
                 )
-                return new CsvByChannel();
-            return null;
+                return true; 
+            return false;
         }
-        public ParserResult Parse(Stream stream, string filename)
+
+
+
+        public override ParserResult Parse(Stream stream, string filename)
         {
             var result = new ParserResult();
             result.FileName = filename;
@@ -51,6 +54,8 @@ namespace MeterDataLib.Parsers
                 CsvLine header;
                 int channels;
                 string[] channelNames; 
+                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel Parsing file {filename}");
+
                 using (var reader = new SimpleCsvReader(stream, filename))
                 {
                      CsvLine line;
@@ -71,10 +76,19 @@ namespace MeterDataLib.Parsers
                         channelNames[i] = header.GetStringUpper(i + 2);
                     }
 
-                    while ((line = reader.Read()).Eof == false)
+                    Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel start lines  file {filename}");
+                    line = reader.Read();
+
+                    while (!line.Eof)
                     {
+                        bool showLog = line.LineNumber % 50000 == 0;
                         try
                         {
+                            if (showLog)
+                            {
+                                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel line get fields  {line.LineNumber} ");
+
+                            }
                             var readDateTime = line.GetDate(1, ["dd.MM.yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss"]);
                             var nmi = line.GetStringUpper(0);
                             if ( string.IsNullOrEmpty(nmi))
@@ -91,10 +105,22 @@ namespace MeterDataLib.Parsers
                                 result.LogMessages.Add(new FileLogMessage($"Invalid date or time {line.GetString(0)}", Microsoft.Extensions.Logging.LogLevel.Error, filename, reader.LineNumber, 6));
                                 continue;
                             }
+                            if (showLog)
+                            {
+                                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel line start record {line.LineNumber} ");
 
+                            }
 
                             var record = new DataLine(readDateTime.Value, nmi , reads , line.LineNumber);
                             records.Add(record);
+                            line = reader.Read();
+
+                            if (showLog)
+                            {
+                                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel line end record {line.LineNumber} ");
+
+                            }
+
                         }
                         catch (Exception ex)
                         {
@@ -106,8 +132,9 @@ namespace MeterDataLib.Parsers
                         }
                     }
                 }
-
+                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel start grouping ");
                 int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
+                int counter = 0; 
                 foreach (var siteDayGroup in records
                                             .GroupBy(x => new { x.Nmi, ReadDate = x.ReadDate.Date } )
                                             .Where(x => x.Count() > 1)
@@ -115,6 +142,11 @@ namespace MeterDataLib.Parsers
                                             .ThenBy(x => x.Key.ReadDate)
                                             )
                 {
+                    counter++;
+                    if (counter % 100 == 0)
+                    {
+                        Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel grouping {counter} ");
+                    }
                     var siteDay = new SiteDay()
                     {
                         Site = siteDayGroup.Key.Nmi,
@@ -173,7 +205,7 @@ namespace MeterDataLib.Parsers
             {
                 result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, 0, 0));
             }
-
+            Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel completed ");
             return result;
         }
 
