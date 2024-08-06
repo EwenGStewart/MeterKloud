@@ -1,184 +1,277 @@
-﻿using System.Reflection;
+﻿using ExcelDataReader;
+using System.Data.SqlTypes;
+using System.IO.Compression;
+using System.Reflection;
 
 namespace MeterDataLib.Parsers
 {
     public static class ParserFactory
     {
 
-        static List<Parser> parsers = new List<Parser>() { new ExcelParser(), new ZipParser(), new Nem12(), new CsvMultiLine1(), new CsvPowerPal()
-            , new CsvSingleLine7()
-            , new CsvByChannel()
-            , new CsvSingleLineMultiColPeriod()
-            , new CsvSingleLineMultiColPeriod2()
-            , new CsvSingleLinePeakOffPeakDateNumber()
+        //static List<Parser> parsers = new List<Parser>() {   new CsvMultiLine1(), new CsvPowerPal()
+        //    , new CsvSingleLine7()
+        //    , new CsvByChannel()
+        //    , new CsvSingleLineMultiColPeriod()
+        //    , new CsvSingleLineMultiColPeriod2()
+        //    , new CsvSingleLinePeakOffPeakDateNumber()
+        //    , new CsvSingleLineSimpleEBQK()
+        //    , new CsvSingleLineSimpleEBKvaPF()
+        //};
+
+        static List<IParser> Parsers = new List<IParser>() { new Nem12(),new CsvByChannel()
+        , new CsvSingleLine7() ,new CsvPowerPal() ,new CsvPowerPal() , new CsvMultiLine1()
+            , new CsvSingleLineMultiColPeriod() , new CsvSingleLineMultiColPeriod2()
+            , new CsvSingleLinePeakOffPeakDateNumber(), new CsvSingleLineSimpleEBKvaPF()
             , new CsvSingleLineSimpleEBQK()
-            , new CsvSingleLineSimpleEBKvaPF()
         };
 
-        public static List<Parser> GetParserTypes()
-       {
-            return parsers;
-
-        //    var parserType = typeof(IParser); 
-
-           
-
-        //    //var types = Assembly.GetExecutingAssembly().GetTypes()
-        //    //    .Where(t => parserType.IsAssignableFrom(t) && t.GetMethod("GetParser", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) != null)
-        //    //    .Where( t=> t.IsInterface == false)
-        //    //    .ToList();
 
 
-        //    return types;
-        }
 
-
-        public static Parser? GetParser(Stream stream, string filename, string? mimeType)
+        static string[] ExcelMimeTypes = new string[]
         {
-            Stream seekableStream = stream;
-            if ( stream.CanSeek == false)
-            {
-                seekableStream = StreamConverter.ConvertToMemoryStream(stream);
-            }
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/msexcel",
+            "application/vnd.ms-excel"
+        };
 
-
-            foreach( var parser in GetParserTypes())
-            {
-                if ( seekableStream.Position != 0 )
-                {
-                    seekableStream.Seek(0, System.IO.SeekOrigin.Begin);
-                }
-                if ( parser.CanParse(seekableStream,filename,mimeType))
-                {
-
-                    return parser;
-                }
-            }
-            return null;
-        }
-        public static async Task<Parser?> GetParserAsync(Stream stream, string filename, string? mimeType)
+        static string[] ExcelExtensions = new string[]
         {
-            Stream seekableStream = stream;
-            if (stream.CanSeek == false)
-            {
-                seekableStream = await  StreamConverter.ConvertToMemoryStreamAsync(stream);
-            }
+            ".xls" , ".xlsx"
+        };
 
 
-            foreach (var parser in GetParserTypes())
-            {
-                if (seekableStream.Position != 0)
-                {
-                    seekableStream.Seek(0, System.IO.SeekOrigin.Begin);
-                }
-                if (parser.CanParse(seekableStream, filename, mimeType))
-                {
-
-                    return parser;
-                }
-            }
-            return null;
-        }
-
-
-        public static ParserResult Parse(Stream stream, string filename, string? mimeType)
+        public static async Task<ParserResult> ParseAsync( Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null)
         {
-            ParserResult result = new ParserResult() { FileName = filename };
+            ParserResult result = new ParserResult() { FileName = filename, InProgress = true, PercentageCompleted = 0 };
             try
             {
-                var parser = GetParser(stream, filename, mimeType);
-                if (parser == null)
-                {
-                    result.LogMessages.Add(new FileLogMessage("[I4GCND]: No parser found", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                    return result;
-                }
-                try
-                {
-                    result.LogMessages.Add(new FileLogMessage($"[Y1PRWV]: Parsing with {parser.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
-
-
-                    Stream seekableStream = stream;
-                    if (stream.CanSeek == false)
-                    {
-                        seekableStream = StreamConverter.ConvertToMemoryStream(stream);
-                    }
-
-                    if (seekableStream.Position != 0)
-                    {
-                        seekableStream.Seek(0, System.IO.SeekOrigin.Begin);
-                    }
-
-                    result = parser.Parse(seekableStream, filename);
-                    result.ParserName = parser.Name;
-                    result.FileName = filename;
-                    
-                    return result;
-                } 
-                catch (Exception ex)
-                { 
-                    result.ParserName = parser.Name;
-                    result.LogMessages.Add(new FileLogMessage($"[QVR9SE]: {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Critical, filename, 0, 0));
-                    return result;
-                }
+                mimeType ??= string.Empty;
+                await ParseGeneralAsync(result, stream, filename, mimeType, CallBack);
             }
             catch (Exception ex)
             {
                 result.LogMessages.Add(new FileLogMessage($"[VDKA7C]: {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                return result;
             }
+            result.InProgress = false;
+            result.PercentageCompleted = 100;
+            return result;
 
         }
 
-
-
-        public static  async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType)
+        static async Task ParseGeneralAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
         {
-            ParserResult result = new ParserResult() { FileName = filename };
-            try
+            mimeType ??= string.Empty;
+            if (IsExcel(filename, mimeType))
             {
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  {filename} start ");
-                using var seekableStream = await StreamConverter.ConvertToMemoryStreamAsync(stream);
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  {filename} stream loaded  ");
-                var parser = await GetParserAsync(seekableStream, filename, mimeType);
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  {filename} got parser  ");
-                if (parser == null)
+                await ParseExcelAsync(result, stream, filename, mimeType, callBack);
+            }
+            else if (IsZipFile(filename, mimeType))
+            {
+                await ParseZipAsync(result, stream, filename, mimeType, callBack);
+            }
+            else
+            {
+                await ParseCsvAsync(result, stream, filename, mimeType, callBack);
+            }
+        }
+
+
+        static bool CodePagesRegistered = false;
+        static async Task ParseExcelAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
+        {
+            
+            if ( ! CodePagesRegistered ) {                 
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                CodePagesRegistered = true;
+            }
+            
+            using (var edr = ExcelReaderFactory.CreateReader(stream))
+            {
+
+
+                int sheet = 0;
+                StringWriter stringWriter = new StringWriter();
+                do
                 {
-                    result.LogMessages.Add(new FileLogMessage("[I4GCND]: No parser found", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                    return result;
-                }
-                try
-                {
-                    result.LogMessages.Add(new FileLogMessage($"[Y1PRWV]: Parsing with {parser.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
-                    if (seekableStream.Position != 0)
+                    sheet++;
+
+                    int line = 0;
+                    while (edr.Read())
                     {
-                        Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  {filename} re-seek   ");
-                        seekableStream.Seek(0, System.IO.SeekOrigin.Begin);
+
+
+                        line++;
+                        int prevCol = 0;
+                        for (int i = 0; i < edr.FieldCount; i++)
+                        {
+                            var value = edr.GetValue(i);
+                            if (value != null)
+                            {
+                                string strValue = value?.ToString() ?? string.Empty;
+                                if (!string.IsNullOrEmpty(strValue))
+                                {
+                                    strValue.Replace(",", "|");
+                                    if (i > 0)
+                                    {
+                                        while (prevCol < i)
+                                        {
+                                            stringWriter.Write(",");
+                                            prevCol++;
+                                        }
+                                    }
+                                    stringWriter.Write(strValue);
+                                }
+                            }
+                        }
+                        stringWriter.WriteLine();
                     }
-                    Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  {filename} start parse    ");
-                    result = parser.Parse(seekableStream, filename);
-                    result.ParserName = parser.Name;
-                    result.FileName = filename;
-                    Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  {filename} completed parse    ");
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    result.ParserName = parser.Name;
-                    result.LogMessages.Add(new FileLogMessage($"[QVR9SE]: {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Critical, filename, 0, 0));
-                    return result;
-                }
+                    var data = stringWriter.ToString();
+                    if (!string.IsNullOrEmpty(data))
+                    {
+                        result.LogMessages.Add(new FileLogMessage($"Processing Sheet {sheet}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
+                        using (Stream strStream = StringToStream.GenerateStreamFromString(data))
+                        {
+                                try
+                                {
+                                    await ParseCsvAsync( result, strStream, filename, mimeType, callBack);
+                                }
+                                catch (Exception ex)
+                                {
+                                    result.LogMessages.Add(new FileLogMessage($"Error processing sheet {sheet} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                                }
+                        }
+                    }
+                } while (edr.NextResult());
             }
-            catch (Exception ex)
+            
+        }
+
+        private static async Task ParseZipAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
+        {
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
             {
-                result.LogMessages.Add(new FileLogMessage($"[VDKA7C]: {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                return result;
+                foreach (var entry in zip.Entries)
+                {
+                    using var entryStream = entry.Open();
+ 
+
+                    result.LogMessages.Add(new FileLogMessage($"Processing file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
+                    string entryMimeType = MimeTypeHelper.GetMimeType(entry.Name);
+
+                        try
+                        {
+                            await ParseGeneralAsync(result, entryStream , entry.FullName , entryMimeType, callBack);
+                        }
+                        catch (Exception ex)
+                        {
+                            result.LogMessages.Add(new FileLogMessage($"Error processing file {entry.Name} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                        }
+                }
+
             }
+        }
+
+
+
+
+        private static async Task ParseCsvAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null)
+        {
+
+
+         
+
+            using var csv = new SimpleCsvReader(stream, filename);
+            // read the first 10 lines 
+            var first10Lines = await  csv.ReadBufferedAsync(10);
+            if ( first10Lines.Count < 2)
+            {
+                result.LogMessages.Add(new FileLogMessage($"[KTRBY1]: Less than 2 lines in file - file is empty or not csv", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                result.ParserName = "none";
+                return;
+
+            }
+            var parser = Parsers.FirstOrDefault(x => x.CanParse(first10Lines));
+            if (parser == null)
+            {
+                result.LogMessages.Add(new FileLogMessage($"[I4GCND]: No parser found for that file format", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                result.ParserName = "none";
+                return;
+            }
+
+            result.ParserName = parser.Name;
+            result.LogMessages.Add(new FileLogMessage($"[0I16MU]: Parser  {parser.Name} found.", Microsoft.Extensions.Logging.LogLevel.Debug, filename, 0, 0));
+            await parser.Parse(csv, result, CallBack);
+
 
         }
 
+
+
+
+
+
+
+
+        private static bool IsExcel(string filename, string mimeType)
+        {
+
+            if (!string.IsNullOrWhiteSpace(mimeType))
+            {
+                if (ExcelMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
+                {
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                if (ExcelExtensions.Contains(Path.GetExtension(filename).ToLower()))
+                { return true; }
+                return false;
+            }
+        }
+
+        static readonly string[] ZipMimeTypes = new string[]
+        {
+            "application/x-zip-compressed"
+        };
+
+        static readonly string[] ZipExtensions = new string[]
+        {
+            ".zip"
+        };
+
+        private static bool IsZipFile(string filename, string mimeType)
+        {
+
+            if (!string.IsNullOrWhiteSpace(mimeType))
+            {
+                if (ZipMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
+                {
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                if (ZipExtensions.Contains(Path.GetExtension(filename).ToLower()))
+                { return true; }
+                return false;
+            }
+        }
 
     }
 
+    internal interface IParser
+    {
+        bool CanParse(List<CsvLine> lines);
+        string Name { get; }
+        Task Parse(SimpleCsvReader csvReader, ParserResult result,  Func<ParserResult, Task>? callBack = null);
+ 
+
+    }
 
 
 }

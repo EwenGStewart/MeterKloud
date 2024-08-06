@@ -13,18 +13,13 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLinePeakOffPeakDateNumber : Parser
+    public class CsvSingleLinePeakOffPeakDateNumber : IParser
     {
-        public override string Name => "SingleLineWith_PK_OP_DateNumber";
+        public   string Name => "SingleLineWith_PK_OP_DateNumber";
 
-        public override bool CanParse(Stream stream, string filename, string? mimeType)
+        public bool CanParse(List<CsvLine> lines)
         {
-
-            if (!CsvParserLib.ValidateMime(mimeType))
-            {
-                return false;
-            }
-            var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
+ 
             if (lines.Count < 2) return false;
 
             // CHECK HEADER ROW
@@ -46,35 +41,43 @@ namespace MeterDataLib.Parsers
                 && lines[1].GetTime(2, "h:mm:ss tt") != null
                 )
                 return true;
-            return false; 
+            return false;
         }
-        public override ParserResult Parse(Stream stream, string filename)
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
         {
-            var result = new ParserResult();
-            result.FileName = filename;
-            result.ParserName = Name;
+            string filename = reader.Filename;
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
 
             var records = new List<DataLine>();
             try
             {
-
-                using (var reader = new SimpleCsvReader(stream, filename))
                 {
                     CsvLine line;
                     // skip the first line 
-                    reader.Read();
+                    await reader.ReadAsync();
 
 
 
-                    while ((line = reader.Read()).Eof == false)
+                    while ((line = await reader.ReadAsync()).Eof == false)
                     {
                         try
                         {
-                            string nmi = line.GetStringUpperMandatory(0,10,11);
+                            if (timer.ElapsedMilliseconds > 100)
+                            {
+                                result.PercentageCompleted = reader.PercentageCompleted()/2;
+                                timer.Restart();
+                                if (callBack != null)
+                                {
+                                    await callBack(result);
+                                }
+                            }
+
+                            string nmi = line.GetStringUpperMandatory(0, 10, 11);
                             DateTime readDate = line.GetDateMandatory(1, new string[] { "d/M/yyyy", "d/MM/yyyy" });
                             var readTime = line.GetTimeMandatory(2, "h:mm:ss tt");
-                            decimal kwh = line.GetDecimalMandatory(3) ;
-                            decimal kvarh = line.GetDecimalMandatory(4) ;
+                            decimal kwh = line.GetDecimalMandatory(3);
+                            decimal kvarh = line.GetDecimalMandatory(4);
                             decimal kw = line.GetDecimalMandatory(5);
                             decimal kva = line.GetDecimalMandatory(6);
                             decimal pf = line.GetDecimalCol(7) ?? 0;
@@ -85,10 +88,10 @@ namespace MeterDataLib.Parsers
                             records.Add(record);
 
                         }
-                        catch ( ParserException ex)
+                        catch (ParserException ex)
                         {
                             result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Error, filename, reader.LineNumber, ex.Col));
-                            if ( result.Errors > 100 )
+                            if (result.Errors > 100)
                             {
                                 throw new Exception("Too many errors");
                             }
@@ -96,7 +99,7 @@ namespace MeterDataLib.Parsers
                         catch (Exception ex)
                         {
                             result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, reader.LineNumber, 0));
-                            if ( result.Errors > 100 )
+                            if (result.Errors > 100)
                             {
                                 throw new Exception("Too many errors");
                             }
@@ -105,15 +108,27 @@ namespace MeterDataLib.Parsers
                 }
 
                 int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
-
-
-                foreach (var siteDayGroup in records
-                                            .GroupBy(x => new { Nmi = x.Nmi, ReadDate = x.EndDateTimeInclusive.Date })
+                var list = records.GroupBy(x => new { Nmi = x.Nmi, ReadDate = x.EndDateTimeInclusive.Date })
                                             .Where(x => x.Count() > 1)
                                             .OrderBy(x => x.Key.Nmi)
-                                            .ThenBy(x => x.Key.ReadDate)
-                                            )
+                                            .ThenBy(x => x.Key.ReadDate).ToList();
+                int counterTotal = list.Count;
+                int counter = 0;
+
+                foreach (var siteDayGroup in list )
                 {
+                    counter++;
+                    if (timer.ElapsedMilliseconds > 100)
+                    {
+                        int percentage = counter * 100 / counterTotal;
+                        result.PercentageCompleted = 50 + percentage / 2;
+                        timer.Restart();
+                        if (callBack != null)
+                        {
+                            await callBack(result);
+                        }
+                    }
+
                     var siteDay = new SiteDay()
                     {
                         Site = siteDayGroup.Key.Nmi,
@@ -285,7 +300,7 @@ namespace MeterDataLib.Parsers
                 result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, 0, 0));
             }
 
-            return result;
+            return  ;
         }
 
 

@@ -11,68 +11,77 @@ using System.Net.Http.Headers;
 
 namespace MeterDataLib.Parsers
 {
-    public class ZipParser : Parser
-    {
-        public override string Name => "Zip";
+    //public class ZipParser : Parser
+    //{
+    //    public override string Name => "Zip";
 
 
-        static readonly string[] ZipMimeTypes = new string[]
-        {
-            "application/x-zip-compressed",
+    //    static readonly string[] ZipMimeTypes = new string[]
+    //    {
+    //        "application/x-zip-compressed",
 
-        };
-        public override bool CanParse(Stream stream, string filename, string? mimeType)
-        {
-            if (ZipMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
-            {
-                return true;
-            }
-            if (filename.EndsWith(".zip"))
-            {
-                return true;
-            }
-            return false;
+    //    };
 
-        }
+    //    public override bool CanParseType(string mimeType)
+    //    {
+    //        if (ZipMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
+    //        {
+    //            return true;
+    //        }
+    //        return false;
+    //    }
+    //    public override bool CanParseInternal(Stream stream, string filename, string? mimeType)
+    //    {
+    //        if (ZipMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
+    //        {
+    //            return true;
+    //        }
+    //        if (filename.EndsWith(".zip"))
+    //        {
+    //            return true;
+    //        }
+    //        return false;
 
-        public override ParserResult Parse(Stream stream, string filename)
-        {
-            var result = new ParserResult();
-            result.FileName = filename;
-            result.ParserName = Name;
+    //    }
 
-            stream.Position = 0;
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
-            {
-                foreach (var entry in zip.Entries)
-                {
-                    using var entryStream = entry.Open();
-                    using var memStream = StreamConverter.ConvertToMemoryStream(entryStream);
+    //    public override ParserResult Parse(Stream stream, string filename)
+    //    {
+    //        var result = new ParserResult();
+    //        result.FileName = filename;
+    //        result.ParserName = Name;
 
-                    result.LogMessages.Add(new FileLogMessage($"Processing file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
-                    string mimeType = MimeTypeHelper.GetMimeType(entry.Name);
-                    var parser = ParserFactory.GetParser(memStream, entry.Name, mimeType);
-                    if (parser != null)
-                    {
-                        try
-                        {
-                            var entryResult = parser.Parse(memStream, entry.FullName);
-                            result.LogMessages.AddRange(entryResult.LogMessages);
-                            result.SitesDays.AddRange(entryResult.SitesDays);
-                        }
-                        catch (Exception ex)
-                        {
-                            result.LogMessages.Add(new FileLogMessage($"Error processing file {entry.Name} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                        }
-                    }
-                    else
-                    {
-                        result.LogMessages.Add(new FileLogMessage($"Could not detect the format for file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                    }
-                }
-            }
-            return result;
-        }
-    }
+    //        stream.Position = 0;
+    //        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+    //        using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+    //        {
+    //            foreach (var entry in zip.Entries)
+    //            {
+    //                using var entryStream = entry.Open();
+    //                using var memStream = StreamConverter.ConvertToMemoryStream(entryStream);
+
+    //                result.LogMessages.Add(new FileLogMessage($"Processing file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
+    //                string mimeType = MimeTypeHelper.GetMimeType(entry.Name);
+    //                var parser = ParserFactory.GetParser(memStream, entry.Name, mimeType);
+    //                if (parser != null)
+    //                {
+    //                    try
+    //                    {
+    //                        var entryResult = parser.Parse(memStream, entry.FullName);
+    //                        result.LogMessages.AddRange(entryResult.LogMessages);
+    //                        result.SitesDays.AddRange(entryResult.SitesDays);
+    //                    }
+    //                    catch (Exception ex)
+    //                    {
+    //                        result.LogMessages.Add(new FileLogMessage($"Error processing file {entry.Name} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+    //                    }
+    //                }
+    //                else
+    //                {
+    //                    result.LogMessages.Add(new FileLogMessage($"Could not detect the format for file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+    //                }
+    //            }
+    //        }
+    //        return result;
+    //    }
+    //}
 }

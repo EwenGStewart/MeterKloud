@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Formats.Asn1;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
@@ -14,145 +16,144 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvByChannel : Parser
+    public class CsvByChannel : IParser
     {
-        public override string Name => "CsvByChannel";
+        public string Name => "CsvByChannel";
 
-        public override bool CanParse  (Stream stream, string filename, string? mimeType)
+        public bool CanParse(List<CsvLine> lines)
         {
-
-            if (!CsvParserLib.ValidateMime(mimeType))
-            {
-                return false;
-            }
-            var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
-            if (lines.Count < 1) return false;
-
-            // CHECK HEADER ROW
+            if (lines.Count < 2) return false;
             if (
-                lines[0].ColCount > 2
-                && lines[0].GetStringUpper(0) == "NMI"
-                && lines[0].GetStringUpper(1) == "READ DATE/TIME"
-                && lines[1].GetStringUpper(0).Length >= 10
-                && lines[1].GetStringUpper(0).Length <= 11
-                && lines[1].GetDate(1, ["dd.MM.yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss"]) is not null
-                )
-                return true; 
+               lines[0].ColCount > 2
+               && lines[0].GetStringUpper(0) == "NMI"
+               && lines[0].GetStringUpper(1) == "READ DATE/TIME"
+               && lines[1].GetStringUpper(0).Length >= 10
+               && lines[1].GetStringUpper(0).Length <= 11
+               && lines[1].GetDate(1, ["dd.MM.yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss"]) is not null
+               )
+                return true;
             return false;
         }
 
 
 
-        public override ParserResult Parse(Stream stream, string filename)
+
+
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
         {
-            var result = new ParserResult();
-            result.FileName = filename;
-            result.ParserName = Name;
+            string filename = reader.Filename;
             var records = new List<DataLine>();
             try
             {
                 CsvLine header;
                 int channels;
-                string[] channelNames; 
+                string[] channelNames;
+               
+
                 Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel Parsing file {filename}");
+                
 
-                using (var reader = new SimpleCsvReader(stream, filename))
+                CsvLine line;
+
+                // skip the first line 
+                header = await reader.ReadAsync();
+
+                channels = header.ColCount - 2;
+                if (channels < 1)
                 {
-                     CsvLine line;
+                    result.LogMessages.Add(new FileLogMessage($"Invalid header found {header}", Microsoft.Extensions.Logging.LogLevel.Error, filename, reader.LineNumber, 5));
+                    return ;
+                }
 
-                    // skip the first line 
-                    header = reader.Read();
+                channelNames = new string[channels];
+                for (int i = 0; i < channels; i++)
+                {
+                    channelNames[i] = header.GetStringUpper(i + 2);
+                }
 
-                    channels =  header.ColCount - 2;
-                    if ( channels < 1)
+                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel start lines  file {filename}");
+                line = await reader.ReadAsync();
+                var timer = new System.Diagnostics.Stopwatch();
+                timer.Start();
+                while (!line.Eof)
+                {
+                  
+                    try
                     {
-                        result.LogMessages.Add(new FileLogMessage($"Invalid header found {header}", Microsoft.Extensions.Logging.LogLevel.Error, filename, reader.LineNumber, 5));
-                        return result;
-                    }
-
-                    channelNames = new string[channels];
-                    for( int i = 0; i < channels; i++)
-                    {
-                        channelNames[i] = header.GetStringUpper(i + 2);
-                    }
-
-                    Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel start lines  file {filename}");
-                    line = reader.Read();
-
-                    while (!line.Eof)
-                    {
-                        bool showLog = line.LineNumber % 50000 == 0;
-                        try
+                        if (timer.ElapsedMilliseconds > 100)
                         {
-                            if (showLog)
+                            result.PercentageCompleted = reader.PercentageCompleted()/2;
+                            timer.Restart();
+                            if (callBack != null)
                             {
-                                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel line get fields  {line.LineNumber} ");
-
+                                await callBack(result);
                             }
-                            var readDateTime = line.GetDate(1, ["dd.MM.yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss"]);
-                            var nmi = line.GetStringUpper(0);
-                            if ( string.IsNullOrEmpty(nmi))
-                            {
-                                continue;
-                            }
-                            decimal[] reads = new decimal[channels];
-                            for( int i = 0; i < channels; i++)
-                            {
-                                reads[i] = line.GetDecimalCol(i + 2) ?? 0;
-                            }
-                            if (readDateTime == null)
-                            {
-                                result.LogMessages.Add(new FileLogMessage($"Invalid date or time {line.GetString(0)}", Microsoft.Extensions.Logging.LogLevel.Error, filename, reader.LineNumber, 6));
-                                continue;
-                            }
-                            if (showLog)
-                            {
-                                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel line start record {line.LineNumber} ");
-
-                            }
-
-                            var record = new DataLine(readDateTime.Value, nmi , reads , line.LineNumber);
-                            records.Add(record);
-                            line = reader.Read();
-
-                            if (showLog)
-                            {
-                                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel line end record {line.LineNumber} ");
-
-                            }
-
                         }
-                        catch (Exception ex)
+
+                    
+                        var readDateTime = line.GetDate(1, ["dd.MM.yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss"]);
+                        var nmi = line.GetStringUpper(0);
+                        if (string.IsNullOrEmpty(nmi))
                         {
-                            result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, reader.LineNumber, 0));
-                            if (result.Errors > 100)
-                            {
-                                throw new Exception("Too many errors");
-                            }
+                            continue;
+                        }
+                        decimal[] reads = new decimal[channels];
+                        for (int i = 0; i < channels; i++)
+                        {
+                            reads[i] = line.GetDecimalCol(i + 2) ?? 0;
+                        }
+                        if (readDateTime == null)
+                        {
+                            result.LogMessages.Add(new FileLogMessage($"Invalid date or time {line.GetString(0)}", Microsoft.Extensions.Logging.LogLevel.Error, filename, reader.LineNumber, 6));
+                            continue;
+                        }
+           
+                        var record = new DataLine(readDateTime.Value, nmi, reads, line.LineNumber);
+                        records.Add(record);
+                        line = await reader.ReadAsync();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, reader.LineNumber, 0));
+                        if (result.Errors > 100)
+                        {
+                            throw new Exception("Too many errors");
                         }
                     }
                 }
-                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel start grouping ");
+ 
                 int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
-                int counter = 0; 
-                foreach (var siteDayGroup in records
-                                            .GroupBy(x => new { x.Nmi, ReadDate = x.ReadDate.Date } )
-                                            .Where(x => x.Count() > 1)
-                                            .OrderBy(x => x.Key.Nmi)
-                                            .ThenBy(x => x.Key.ReadDate)
-                                            )
+                int counter = 0;
+                var list = records
+                    .GroupBy(x => new { x.Nmi, ReadDate = x.ReadDate.Date })
+                    .Where(x => x.Count() > 1)
+                    .OrderBy(x => x.Key.Nmi)
+                    .ThenBy(x => x.Key.ReadDate)
+                    .ToList();
+                var counterTotal = list.Count;
+                foreach (var siteDayGroup in list)
                 {
                     counter++;
-                    if (counter % 100 == 0)
+
+                    if (timer.ElapsedMilliseconds > 100)
                     {
-                        Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel grouping {counter} ");
+                        int percentage = counter * 100 / counterTotal ;
+                        result.PercentageCompleted = 50 + percentage / 2;
+                        timer.Restart();
+                        if (callBack != null)
+                        {
+                            await callBack(result);
+                        }
                     }
+
+
                     var siteDay = new SiteDay()
                     {
                         Site = siteDayGroup.Key.Nmi,
                         Date = siteDayGroup.Key.ReadDate,
                         Channels = new Dictionary<string, ChannelDay>(),
-                        UCT_Offset = 10 , 
+                        UCT_Offset = 10,
                         TimeZoneName = "AEST"
                     };
                     result.SitesDays.Add(siteDay);
@@ -205,25 +206,15 @@ namespace MeterDataLib.Parsers
             {
                 result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, 0, 0));
             }
-            Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel completed ");
-            return result;
         }
-
 
         record DataLine(
             DateTime ReadDate,
-            string Nmi , 
+            string Nmi,
             decimal[] Reads,
             int LineNumber
-            )
-        {
- 
-
-        }
-
-
-
-
+                        )
+        { }
 
 
     }

@@ -4,10 +4,11 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
+using Xunit.Abstractions;
 
 namespace TestMeterLib
 {
-    public class ParserDetectionTests
+    public class ParserDetectionTests(ITestOutputHelper Output)
     {
 
         [Theory]
@@ -42,14 +43,14 @@ namespace TestMeterLib
 
 
 
-        public void Any(string resource, string mimeType, bool expectedResult)
+        public async Task Any(string resource, string mimeType, bool expectedResult)
         {
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var parser = ParserFactory.GetParser(stream, resource, mimeType);
-                bool actualResult = parser != null;
+                var result  = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                bool actualResult = result.Success;
                 Assert.Equal(expectedResult, actualResult);
             }
         }
@@ -88,20 +89,16 @@ namespace TestMeterLib
 
 
 
-        public void ParseAll(string resource, string mimeType)
+        public async Task ParseAll(string resource, string mimeType)
         {
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var result  = ParserFactory.Parse(stream, resource, mimeType);
-           
-                    result.Should().NotBeNull();
-                    result.Errors.Should().Be(0);
-                    result.SitesDays.Count.Should().BeGreaterThan(0);
-                    result.FileName.Should().Be(resource);
-                    result.ParserName.Should().NotBeNullOrEmpty();
-             
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                bool actualResult = result.Success;
+                Assert.True(actualResult);
+
             }
         }
 
@@ -135,24 +132,24 @@ namespace TestMeterLib
         [InlineData("powerpal_data_0000f596 (4).csv", "text/csv")]
         [InlineData("SampleCsvByChanel.csv", "text/csv")]
 
-        public void AnyWithParse(string resource, string mimeType)
+        public async Task AnyWithParse(string resource, string mimeType)
         {
+            Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var parser = ParserFactory.GetParser(stream, resource, mimeType);
-                bool actualResult = parser != null;
-                actualResult.Should().BeTrue();
-                if (parser != null)
+
+                Console.WriteLine("Parsing " + resource);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}" );
+                foreach (var log in result.LogMessages)
                 {
-                    var result = parser.Parse(stream, resource);
-                    result.Should().NotBeNull();
-                    result.Errors.Should().Be(0);
-                    result.SitesDays.Count.Should().BeGreaterThan(0);
-                    result.FileName.Should().Be(resource);
-                    result.ParserName.Should().NotBeNullOrEmpty();
+                    Console.WriteLine( $"{log.LogLevel} {log.LogMessage}   Line:{log.LineNumber} Col:{log.ColumnNumber}  Filename:{log.FileName}");
                 }
+
+                bool actualResult = result.Success;
+                Assert.True( actualResult);
             }
         }
 
@@ -177,23 +174,23 @@ namespace TestMeterLib
         [InlineData("SampleCsvFormat2.csv", "text/csv", false)]
         [InlineData("SampleExcelByChanel.XLSX", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", false)]
         [InlineData("SampleMultiLineCsv7.csv", "text/csv", false)]
-        [InlineData("SampleNem12Excel.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", false)]
-        [InlineData("SampleNem12Excel2.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", false)]
-        [InlineData("SampleNem12Excel3.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", false)]
-        [InlineData("SampleNem12Zip.zip", "application/x-zip-compressed", false)]
+        [InlineData("SampleNem12Excel.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleNem12Excel2.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleNem12Excel3.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleNem12Zip.zip", "application/x-zip-compressed", true)]
 
  
 
 
-        public void Nem12(string resource, string mimeType, bool isNem12)
+        public async  Task  Nem12(string resource, string mimeType, bool isNem12)
         {
+            Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
-                // Use the stream here
-                //test 
-                var nem12 = new MeterDataLib.Parsers.Nem12();
-                var resultIsNem12 =nem12.CanParse(stream, resource, mimeType);
-                Assert.Equal(isNem12, resultIsNem12);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+                bool actualResult = result.Success && result.ParserName == "NEM12";
+                Assert.Equal(isNem12, actualResult);
             }
         }
 
@@ -213,29 +210,33 @@ namespace TestMeterLib
         [InlineData("SampleNem12Excel.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", false)]
 
 
-        public void CsvMulti1(string resource, string mimeType, bool expectedResult)
+        public async Task CsvMulti1(string resource, string mimeType, bool expectedResult)
         {
+            Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var parser = new MeterDataLib.Parsers.CsvMultiLine1(); 
-                bool result = parser.CanParse(stream, resource, mimeType); 
-                Assert.Equal(expectedResult, result);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+                bool actualResult = result.Success && result.ParserName == "MultiLineCSV1";
+                Assert.Equal(expectedResult, actualResult);
             }
         }
 
         [Theory]
         [InlineData("SampleCsv.csv", "text/csv", true)]
-        public void Detect_CsvSingleLineSimpleEBKvaPF(string resource, string mimeType, bool expectedResult)
+        public async Task Detect_CsvSingleLineSimpleEBKvaPF(string resource, string mimeType, bool expectedResult)
         {
+            Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var parser = new MeterDataLib.Parsers.CsvSingleLineSimpleEBKvaPF();
-                bool result = parser.CanParse(stream, resource, mimeType);
-                Assert.Equal(expectedResult, result);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+                bool actualResult = result.Success && result.ParserName == "SingleLineWith_E_B_KVA_PF";
+                Assert.Equal(expectedResult, actualResult); ;
             }
         }
 
@@ -243,30 +244,34 @@ namespace TestMeterLib
         [Theory]
         [InlineData("SampleCsv4.csv", "text/csv", true)]
         [InlineData("SampleCsv5.csv", "text/csv", true)]
-        public void Detect_CsvSingleLineSimpleEBQK(string resource, string mimeType, bool expectedResult)
+        public async Task Detect_CsvSingleLineSimpleEBQK(string resource, string mimeType, bool expectedResult)
         {
+            Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var parser = new MeterDataLib.Parsers.CsvSingleLineSimpleEBQK();
-                bool result = parser.CanParse(stream, resource, mimeType);
-                Assert.Equal(expectedResult, result);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+                bool actualResult = result.Success && result.ParserName == "SingleLineWith_E_B_K_Q";
+                Assert.Equal(expectedResult, actualResult); ;
             }
         }
 
         [Theory]
         [InlineData("SampleCsv8.csv", "text/csv", true)]
-        
-        public void Detect_CsvSingleLineMultiColPeriod2(string resource, string mimeType, bool expectedResult)
+
+        public async Task Detect_CsvSingleLineMultiColPeriod2(string resource, string mimeType, bool expectedResult)
         {
+            Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var parser = new MeterDataLib.Parsers.CsvSingleLineMultiColPeriod2();
-                bool result = parser.CanParse(stream, resource, mimeType);
-                Assert.Equal(expectedResult, result);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+                bool actualResult = result.Success && result.ParserName == "SingleLineByPeriod2";
+                Assert.Equal(expectedResult, actualResult); ;
             }
         }
 
@@ -274,15 +279,17 @@ namespace TestMeterLib
         [Theory]
         [InlineData("SampleCsvFormat2.csv", "text/csv", true)]
 
-        public void Detect_CsvSingleLinePeakOffPeakDateNumber(string resource, string mimeType, bool expectedResult)
+        public async Task Detect_CsvSingleLinePeakOffPeakDateNumber(string resource, string mimeType, bool expectedResult)
         {
+            Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
             {
                 // Use the stream here
                 //test 
-                var parser = new MeterDataLib.Parsers.CsvSingleLinePeakOffPeakDateNumber();
-                bool result = parser.CanParse(stream, resource, mimeType);
-                Assert.Equal(expectedResult, result);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+                bool actualResult = result.Success && result.ParserName == "SingleLineWith_PK_OP_DateNumber";
+                Assert.Equal(expectedResult, actualResult); ;
             }
         }
 

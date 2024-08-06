@@ -7,6 +7,12 @@ namespace MeterDataLib.Parsers
     {
         public int ColCount => Columns.Length;
 
+        public override string ToString()
+        {
+            return  string.Join(',', Columns);
+        }
+
+
         public int? GetIntCol(int col)
         {
             if (Columns.Length > col)

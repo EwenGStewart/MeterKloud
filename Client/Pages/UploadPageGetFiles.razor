@@ -4,7 +4,7 @@
     <MudFileUpload T="IReadOnlyList<IBrowserFile>"
                    @ref="@_fileUpload"
                    OnFilesChanged="OnInputFileChanged"
-                   AppendMultipleFiles
+                   AppendMultipleFiles=@false
                    Hidden="@false"
                    InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
                    InputStyle="opacity:0"
@@ -34,12 +34,19 @@
             </MudPaper>
         </ActivatorContent>
     </MudFileUpload>
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <MudAlert Severity="Severity.Error">
+            @_error
+        </MudAlert>
+    }
+
     <MudToolBar Gutters="@false"
                 Class="relative d-flex gap-4">
         <MudButton Color="Color.Primary"
                    OnClick="@Debug"
                    Variant="Variant.Filled">
-           Debug
+            Debug
         </MudButton>
         <MudSpacer />
 
@@ -76,12 +83,21 @@
     private readonly List<string> _fileNames = new();
     private MudFileUpload<IReadOnlyList<IBrowserFile>>? _fileUpload;
     private IReadOnlyList<IBrowserFile> _files = new List<IBrowserFile>();
-
+    private string _error = string.Empty;
     const long maxFileSize = 1000 * 1000 * 1024; // 1GB
 
     private async Task ClearAsync()
     {
-        await (_fileUpload?.ClearAsync() ?? Task.CompletedTask);
+        _error = string.Empty;
+        try
+        {
+            await (_fileUpload?.ClearAsync() ?? Task.CompletedTask);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+
         _fileNames.Clear();
         ClearDragClass();
     }
@@ -89,49 +105,45 @@
     private Task OpenFilePickerAsync()
         => _fileUpload?.OpenFilePickerAsync() ?? Task.CompletedTask;
 
-    private async Task OnInputFileChanged(InputFileChangeEventArgs e)
+    private void OnInputFileChanged(InputFileChangeEventArgs e)
     {
-        Console.WriteLine("OnInputFileChanged");
-        ClearDragClass();
-        var files = e.GetMultipleFiles();
-        foreach (var file in files)
+        try
         {
-            _fileNames.Add(file.Name);
-            Console.WriteLine(file.Name);
-            try
+            _error = string.Empty;
+            Console.WriteLine("OnInputFileChanged");
+            ClearDragClass();
+            var files = e.GetMultipleFiles();
+            foreach (var file in files)
             {
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  {file.Name}");
-                var result = await MeterDataLib.Parsers.ParserFactory.ParseAsync(file.OpenReadStream(maxFileSize), file.Name, file.ContentType);
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff}  File {file.Name} parsed by {result.ParserName}  with  {result.Errors} errors and {result.SitesDays.Count} days");
-                foreach ( var msg in  result.LogMessages.Take(10))
-                {
-                    Console.WriteLine($"Error {msg.LogMessage}");
-                }
+                _fileNames.Add(file.Name);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error parsing file {file.Name} {ex.Message}");
-            }
-
+            Console.WriteLine($"files count {_files.Count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading files {ex.Message}");
+            _error = ex.Message;
         }
 
-        Console.WriteLine($"files count {_files.Count}");
     }
 
     private async Task FilesChanged(IReadOnlyList<IBrowserFile> files)
     {
-        Console.WriteLine("FILES CHANGED");
-        _files = files;
-
-        foreach( var file in files)
+        try
         {
-           
 
+            Console.WriteLine("FILES CHANGED");
+            _files = files;
+            await OnFilesSelected.InvokeAsync(_files);
         }
-
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading files {ex.Message}");
+            _error = ex.Message;
+        }
     }
 
-    private async Task  Upload()
+    private async Task Upload()
     {
 
         if (_files.Any())
@@ -172,7 +184,7 @@
     private async Task Debug()
     {
         Console.WriteLine("Debug");
-        foreach( var file in _files)
+        foreach (var file in _files)
         {
             Console.WriteLine(file.Name);
             try

@@ -13,18 +13,12 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLineSimpleEBQK : Parser
+    public class CsvSingleLineSimpleEBQK : IParser
     {
-        public override string Name => "SingleLineWith_E_B_K_Q";
+        public   string Name => "SingleLineWith_E_B_K_Q";
 
-        public override bool CanParse(Stream stream, string filename, string? mimeType)
+        public bool CanParse(List<CsvLine> lines)
         {
-
-            if (!CsvParserLib.ValidateMime(mimeType))
-            {
-                return false;
-            }
-            var lines = CsvParserLib.GetFirstXLines(stream, filename, 2);
             if (lines.Count < 2) return false;
 
             // CHECK HEADER ROW
@@ -41,29 +35,39 @@ namespace MeterDataLib.Parsers
                 return true;
             return false;
         }
-        public override ParserResult Parse(Stream stream, string filename)
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
         {
-            var result = new ParserResult();
-            result.FileName = filename;
-            result.ParserName = Name;
+            string filename = reader.Filename;
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
 
             var records = new List<DataLine>();
             try
             {
 
-                using (var reader = new SimpleCsvReader(stream, filename))
+                 
                 {
                     CsvLine line;
                     // skip the first line 
-                    reader.Read();
+                    await reader.ReadAsync();
 
-                    while ((line = reader.Read()).Eof == false)
+                    while ((line = await reader.ReadAsync()).Eof == false)
                     {
                         try
                         {
+                            if (timer.ElapsedMilliseconds > 100)
+                            {
+                                result.PercentageCompleted = reader.PercentageCompleted();
+                                timer.Restart();
+                                if (callBack != null)
+                                {
+                                    await callBack(result);
+                                }
+                            }
+
                             var record = new DataLine
                                 (
-                                LocalTime: line.GetDateMandatory(0,  new string[] { "yyyy-MM-dd HH:mm:ss", "d/MM/yyyy H:mm" }),
+                                LocalTime: line.GetDateMandatory(0, new string[] { "yyyy-MM-dd HH:mm:ss", "d/MM/yyyy H:mm" }),
                                 E: line.GetDecimalCol(1) ?? 0,
                                 B: line.GetDecimalCol(2) ?? 0,
                                 Q: line.GetDecimalCol(4) ?? 0,
@@ -80,12 +84,27 @@ namespace MeterDataLib.Parsers
                 }
 
                 int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
-                foreach (var siteDayGroup in records
-                                            .GroupBy(x => new { ReadDate = x.LocalTime.Date })
-                                            .Where(x => x.Count() > 1)
-                                            .OrderBy(x => x.Key.ReadDate)
-                                            )
+
+                var list = records.GroupBy(x => new { ReadDate = x.LocalTime.Date })
+                                  .Where(x => x.Count() > 1)
+                                  .OrderBy(x => x.Key.ReadDate).ToList();
+
+                int counterTotal = list.Count;
+                int counter = 0;
+
+                foreach (var siteDayGroup in list )              
                 {
+                    counter++;
+                    if (timer.ElapsedMilliseconds > 100)
+                    {
+                        int percentage = counter * 100 / counterTotal;
+                        result.PercentageCompleted = 50 + percentage / 2;
+                        timer.Restart();
+                        if (callBack != null)
+                        {
+                            await callBack(result);
+                        }
+                    }
                     var siteDay = new SiteDay()
                     {
                         Site = "UNKNOWN",
@@ -218,11 +237,11 @@ namespace MeterDataLib.Parsers
                 result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, 0, 0));
             }
 
-            return result;
+            return  ;
         }
 
 
-        record DataLine(DateTime LocalTime, decimal E, decimal B, decimal Q, decimal K, int LineNumber){ }
+        record DataLine(DateTime LocalTime, decimal E, decimal B, decimal Q, decimal K, int LineNumber) { }
 
 
 

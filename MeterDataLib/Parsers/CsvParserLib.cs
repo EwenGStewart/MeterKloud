@@ -6,7 +6,7 @@ namespace MeterDataLib.Parsers
     static internal class CsvParserLib  
     {
   
-        internal static readonly string[] allowedMimeTypes = new string[] { "text/plain", "text/csv", "" };
+        internal static readonly string[] allowedMimeTypes = new string[] { "text/plain", "text/csv"  };
         internal static bool ValidateMime(string? mimeType)
         {
             mimeType ??= "";
@@ -18,23 +18,26 @@ namespace MeterDataLib.Parsers
             return true;
         }
 
-        internal static List<CsvLine> GetFirstXLines(Stream stream ,string filename,  int maxLines = 10 )
-        { 
+          
 
-            // GRAB THE FIRST 10 LINES OF THE FILE
-            List<CsvLine> lines = new List<CsvLine>();
+
+        //internal static List<CsvLine> GetFirstXLines(Stream stream ,string filename,  int maxLines = 10 )
+        //{ 
+
+        //    // GRAB THE FIRST 10 LINES OF THE FILE
+        //    List<CsvLine> lines = new List<CsvLine>();
             
 
-            if( stream.CanSeek && stream.Position > 0 ) stream.Seek(0, SeekOrigin.Begin);
-            using var csvReader = new SimpleCsvReader(stream, filename);
-            for (int i = 0; i < maxLines; i++)
-            {
-                CsvLine line = csvReader.Read();
-                if (line.Eof) break;
-                lines.Add(line);
-            }
-            return lines;
-        }
+        //    if( stream.CanSeek && stream.Position > 0 ) stream.Seek(0, SeekOrigin.Begin);
+        //    using var csvReader = new SimpleCsvReader(stream, filename);
+        //    for (int i = 0; i < maxLines; i++)
+        //    {
+        //        CsvLine line = csvReader.Read();
+        //        if (line.Eof) break;
+        //        lines.Add(line);
+        //    }
+        //    return lines;
+        //}
 
         static string[] NonIgnoredChannels = new string[] { "E", "Q", "B", "K" };
         internal static void UpdateFromAemoChannel( ChannelDay channelDay)
@@ -329,4 +332,9 @@ namespace MeterDataLib.Parsers
         }
 
     }
+
+
+ 
+
+
 }

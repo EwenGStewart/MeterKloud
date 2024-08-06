@@ -10,20 +10,13 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvMultiLine1 : Parser
+    public class CsvMultiLine1 : IParser
     {
-        public override string Name => "MultiLineCSV1";
+        public   string Name => "MultiLineCSV1";
 
-        public override bool CanParse(Stream stream, string filename, string? mimeType)
+        public bool CanParse(List<CsvLine> lines)
         {
-
-            if (!CsvParserLib.ValidateMime(mimeType))
-            {
-                return false;
-            }
-            var lines = CsvParserLib.GetFirstXLines(stream, filename, 5);
             if (lines.Count < 5) return false;
-
             // CHECK HEADER ROW
             if (
                     lines[0].ColCount == 4
@@ -40,13 +33,13 @@ namespace MeterDataLib.Parsers
                 return true;
             return false;
         }
-        public override ParserResult Parse(Stream stream, string filename)
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
         {
-            var result = new ParserResult();
-            result.FileName = filename;
-            result.ParserName = Name;
+            string filename = reader.Filename;
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start(); 
 
-            using (var reader = new SimpleCsvReader(stream, filename))
+        
             {
                 CsvLine line;
                 string nmi = string.Empty;
@@ -60,15 +53,25 @@ namespace MeterDataLib.Parsers
                 string localTime = string.Empty;
                 try
                 {
-                    while ((line = reader.Read()).Eof == false)
+                    while ((line = await reader.ReadAsync()).Eof == false)
                     {
+                        if (timer.ElapsedMilliseconds > 100)
+                        {
+                            result.PercentageCompleted = reader.PercentageCompleted() ;
+                            timer.Restart();
+                            if (callBack != null)
+                            {
+                                await callBack(result);
+                            }
+                        }
+
                         if (line.GetStringUpper(0) == "NMI")
                         {
                             nmi = line.GetStringUpper(1);
                             network = line.GetStringUpper(3);
                             continue;
                         }
-                        else if(line.GetStringUpper(0) == "STREAM ID")
+                        else if (line.GetStringUpper(0) == "STREAM ID")
                         {
                             meter = line.GetStringUpper(1).Replace("METER", "").Trim();
                             channel = line.GetStringUpper(3);
@@ -79,12 +82,12 @@ namespace MeterDataLib.Parsers
                             }
                             continue;
                         }
-                        else if(line.GetStringUpper(0) == "LOCAL TIME")
+                        else if (line.GetStringUpper(0) == "LOCAL TIME")
                         {
                             localTime = line.GetStringUpper(1);
                             continue;
                         }
-                        else if(line.GetStringUpper(0) == "DATE/TIME")
+                        else if (line.GetStringUpper(0) == "DATE/TIME")
                         {
                             if (line.ColCount > 288)
                             {
@@ -105,15 +108,15 @@ namespace MeterDataLib.Parsers
                             else
                             {
                                 result.LogMessages.Add(new FileLogMessage("Invalid inter or column count- cannot process file", Microsoft.Extensions.Logging.LogLevel.Error, filename, line.LineNumber, line.ColCount - 1));
-                                return result;
+                                return ;
                             }
                             expectedPeriods = 60 * 24 / interval;
                             continue;
                         }
-                        else if(line.GetDate(0, "yyyyMMdd") != null)
+                        else if (line.GetDate(0, "yyyyMMdd") != null)
                         {
                             DateTime readDate = line.GetDate(0, "yyyyMMdd")!.Value;
-                           
+
                             var siteDay = result.SitesDays.FirstOrDefault(x => x.Site == nmi && x.Date == readDate);
                             if (siteDay == null)
                             {
@@ -122,8 +125,8 @@ namespace MeterDataLib.Parsers
                                     Site = nmi,
                                     Date = readDate,
                                     Channels = new Dictionary<string, ChannelDay>(),
-                                    TimeZoneName = localTime, 
-                                    UCT_Offset = (localTime=="AEST" ? 10 : null ), 
+                                    TimeZoneName = localTime,
+                                    UCT_Offset = (localTime == "AEST" ? 10 : null),
                                 };
                                 result.SitesDays.Add(siteDay);
                             }
@@ -141,7 +144,7 @@ namespace MeterDataLib.Parsers
                             };
 
 
-                            if ( siteDay.Channels.ContainsKey(channel) == false)
+                            if (siteDay.Channels.ContainsKey(channel) == false)
                             {
                                 siteDay.Channels.Add(channel, channelDay);
                             }
@@ -154,9 +157,9 @@ namespace MeterDataLib.Parsers
 
                             string quality = line.GetStringUpper(expectedPeriods + 1);
 
-                            var uomResult = CsvParserLib.UpdateUom( channelDay, uom);
+                            var uomResult = CsvParserLib.UpdateUom(channelDay, uom);
                             CsvParserLib.UpdateFromAemoChannel(channelDay);
-                            
+
 
 
 
@@ -176,7 +179,7 @@ namespace MeterDataLib.Parsers
 
                             channelDay.Total = channelDay.Readings.Sum();
 
-                            
+
 
 
 
@@ -184,7 +187,7 @@ namespace MeterDataLib.Parsers
 
                             continue;
                         }
-                        else if (line.GetString(0).Equals("Total for Period" , StringComparison.OrdinalIgnoreCase))
+                        else if (line.GetString(0).Equals("Total for Period", StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
@@ -195,8 +198,8 @@ namespace MeterDataLib.Parsers
                     result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, reader.LineNumber, 0));
                 }
             }
-       //     result.Success = result.SitesDays.Any() && result.Errors == 0;
-            return result;
+            //     result.Success = result.SitesDays.Any() && result.Errors == 0;
+            return  ;
         }
     }
 }

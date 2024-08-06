@@ -13,18 +13,14 @@ namespace MeterDataLib.Parsers
 {
 
 
-    public class CsvSingleLine7 : Parser
+    public class CsvSingleLine7 : IParser
     {
-        public override string Name => "SingleLineFromLine7";
+        public   string Name => "SingleLineFromLine7";
 
-        public override bool CanParse(Stream stream, string filename, string? mimeType)
+        public bool CanParse(List<CsvLine> lines)
         {
 
-            if (!CsvParserLib.ValidateMime(mimeType))
-            {
-                return false;
-            }
-            var lines = CsvParserLib.GetFirstXLines(stream, filename, 5);
+ 
             if (lines.Count < 5) return false;
 
             // CHECK HEADER ROW
@@ -47,38 +43,43 @@ namespace MeterDataLib.Parsers
                 && lines[4].GetTime(7, "HH:mm") != null
                 && lines[4].GetTime(8, "HH:mm") != null
                 )
-                return true; 
+                return true;
             return false;
         }
-        public override ParserResult Parse(Stream stream, string filename)
-        {
-            var result = new ParserResult();
-            result.FileName = filename;
-            result.ParserName = Name;
 
+
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
+        {
+
+
+            string filename = reader.Filename;
             var records = new List<DataLine>();
+            var timer = new System.Diagnostics.Stopwatch();
             try
             {
-
-                using (var reader = new SimpleCsvReader(stream, filename))
                 {
                     CsvLine line;
                     // skip the first line 
-                    reader.Read();
-                    reader.Read();
-                    reader.Read();
-                    reader.Read();
-
-
-
-
-                    while ((line = reader.Read()).Eof == false)
+                    await reader.ReadAsync(4);
+                 
+                    timer.Start();
+                    while ((line = await  reader.ReadAsync()).Eof == false)
                     {
                         try
                         {
+                            if (timer.ElapsedMilliseconds > 100)
+                            {
+                                result.PercentageCompleted = reader.PercentageCompleted() / 2;
+                                timer.Restart();
+                                if (callBack != null)
+                                {
+                                    await callBack(result);
+                                }
+                            }
+
                             string nmi = line.GetStringUpper(0);
                             string meter = line.GetStringUpper(1);
-                            string marketStream  = line.GetStringUpper(2);
+                            string marketStream = line.GetStringUpper(2);
                             string suffix = line.GetStringUpper(3);
                             string registerDescription = line.GetStringUpper(4);
                             string uom = line.GetStringUpper(5);
@@ -88,7 +89,7 @@ namespace MeterDataLib.Parsers
                             decimal Units = line.GetDecimalCol(9) ?? 0;
                             string readType = line.GetStringUpper(10);
 
-                            if ( readDate == null )
+                            if (readDate == null)
                             {
                                 result.LogMessages.Add(new FileLogMessage($"Invalid date or time {line.GetString(6)}", Microsoft.Extensions.Logging.LogLevel.Error, filename, reader.LineNumber, 6));
                                 continue;
@@ -107,13 +108,13 @@ namespace MeterDataLib.Parsers
                             }
 
 
-                            var record = new DataLine( nmi, meter ,marketStream, suffix , registerDescription ,uom ,readDate.Value ,startReadTime.Value , endReadTime.Value , Units, readType , line.LineNumber);
+                            var record = new DataLine(nmi, meter, marketStream, suffix, registerDescription, uom, readDate.Value, startReadTime.Value, endReadTime.Value, Units, readType, line.LineNumber);
                             records.Add(record);
                         }
                         catch (Exception ex)
                         {
                             result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, reader.LineNumber, 0));
-                            if ( result.Errors > 100 )
+                            if (result.Errors > 100)
                             {
                                 throw new Exception("Too many errors");
                             }
@@ -122,13 +123,30 @@ namespace MeterDataLib.Parsers
                 }
 
                 int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
-                foreach (var siteDayGroup in records
+                var list = records
                                             .GroupBy(x => new { Nmi = x.Nmi, ReadDate = x.ReadDate.Date })
                                             .Where(x => x.Count() > 1)
                                             .OrderBy(x => x.Key.Nmi)
                                             .ThenBy(x => x.Key.ReadDate)
-                                            )
+                                            .ToList()
+                                            ;
+                int counterTotal = list.Count;
+                int counter = 0;
+
+                foreach (var siteDayGroup in list  )
                 {
+                    counter++;
+                    if (timer.ElapsedMilliseconds > 100)
+                    {
+                        int percentage = counter * 100 / counterTotal;
+                        result.PercentageCompleted = 50 + percentage / 2;
+                        timer.Restart();
+                        if (callBack != null)
+                        {
+                            await callBack(result);
+                        }
+                    }
+
                     var siteDay = new SiteDay()
                     {
                         Site = siteDayGroup.Key.Nmi,
@@ -136,7 +154,7 @@ namespace MeterDataLib.Parsers
                         Channels = new Dictionary<string, ChannelDay>(),
                     };
                     result.SitesDays.Add(siteDay);
-                    foreach ( var channelGroup in siteDayGroup.GroupBy(x => x.Suffix).Where(x=>x.Count() > 1 ))
+                    foreach (var channelGroup in siteDayGroup.GroupBy(x => x.Suffix).Where(x => x.Count() > 1))
                     {
                         var firstRead = siteDayGroup.OrderBy(x => x.StartDateTime).First();
                         var readInterval = firstRead.Interval;
@@ -186,7 +204,7 @@ namespace MeterDataLib.Parsers
                 result.LogMessages.Add(new FileLogMessage(ex.Message, Microsoft.Extensions.Logging.LogLevel.Critical, filename, 0, 0));
             }
 
-            return result;
+          
         }
 
 
@@ -194,7 +212,7 @@ namespace MeterDataLib.Parsers
             string Meter,
             string Stream,
             string Suffix,
-            string RegisterDescription ,
+            string RegisterDescription,
             string Uom,
             DateTime ReadDate,
             TimeOnly ReadStartTime,
@@ -209,9 +227,9 @@ namespace MeterDataLib.Parsers
             public bool EndOfDay => ReadEndTime == new TimeOnly(0, 0);
 
             public DateTime EndDateTimeExclusive => EndOfDay ? ReadDate.AddDays(1) : ReadDate.Add(ReadEndTime.ToTimeSpan());
-            
+
             public DateTime EndDateTimeInclusive => EndDateTimeExclusive.Subtract(new TimeSpan(0, 1, 0));
-            public int Interval  => EndDateTimeExclusive.Subtract(StartDateTime).Minutes;
+            public int Interval => EndDateTimeExclusive.Subtract(StartDateTime).Minutes;
             public TimeOfUseClass Tou => RegisterDescription == "PEAK" ? TimeOfUseClass.Peak : TimeOfUseClass.Offpeak;
 
         }

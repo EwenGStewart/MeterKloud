@@ -16,7 +16,11 @@ namespace TestMeterLib
 
         public override void WriteLine(string? value)
         {
-            _output.WriteLine(value);
+            try
+            {
+                _output.WriteLine(value);
+            }
+            catch { }
         }
     }
 

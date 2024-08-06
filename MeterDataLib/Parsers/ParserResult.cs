@@ -19,6 +19,22 @@ namespace MeterDataLib.Parsers
  
         public string ParserName { get; set; } = string.Empty;
 
+        public int Sites => SitesDays.Select (s => s.Site).Distinct().Count();
+
+        public int TotalSiteDays => SitesDays.Count;
+        public int TotalDataPoints => SitesDays.SelectMany(x=>x.Channels.Values).Sum(s => s.ExpectedReadings);
+
+
+        public bool InProgress { get; set; } = false;
+        
+        public int PercentageCompleted { get; set; }
+
+
+
+
+
+
+
     }
 
 }
