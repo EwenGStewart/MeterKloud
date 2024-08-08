@@ -27,7 +27,9 @@ namespace MeterDataLib.Parsers
 
         public bool InProgress { get; set; } = false;
         
-        public int PercentageCompleted { get; set; }
+    
+
+        public string Progress { get; set; } = string.Empty;
 
 
 

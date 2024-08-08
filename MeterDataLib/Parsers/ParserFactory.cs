@@ -42,9 +42,9 @@ namespace MeterDataLib.Parsers
         };
 
 
-        public static async Task<ParserResult> ParseAsync( Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null)
+        public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null)
         {
-            ParserResult result = new ParserResult() { FileName = filename, InProgress = true, PercentageCompleted = 0 };
+            ParserResult result = new ParserResult() { FileName = filename, InProgress = true, Progress = "Starting" };
             try
             {
                 mimeType ??= string.Empty;
@@ -52,10 +52,12 @@ namespace MeterDataLib.Parsers
             }
             catch (Exception ex)
             {
+                Console.Write(ex);
+
                 result.LogMessages.Add(new FileLogMessage($"[VDKA7C]: {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
             }
             result.InProgress = false;
-            result.PercentageCompleted = 100;
+            result.Progress = "Parse Completed";
             return result;
 
         }
@@ -81,28 +83,44 @@ namespace MeterDataLib.Parsers
         static bool CodePagesRegistered = false;
         static async Task ParseExcelAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
         {
-            
-            if ( ! CodePagesRegistered ) {                 
+
+            if (!CodePagesRegistered)
+            {
                 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
                 CodePagesRegistered = true;
             }
-            
-            using (var edr = ExcelReaderFactory.CreateReader(stream))
+
+            result.Progress = "load excel to memory";
+            if (callBack != null) { await callBack(result); }
+            using MemoryStream ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            result.Progress = "process excel files";
+            if (callBack != null) { await callBack(result); }
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
+
+            using (var edr = ExcelReaderFactory.CreateReader(ms))
             {
-
-
                 int sheet = 0;
                 StringWriter stringWriter = new StringWriter();
                 do
                 {
                     sheet++;
-
                     int line = 0;
                     while (edr.Read())
                     {
-
-
                         line++;
+
+                        if (timer.ElapsedMilliseconds > 100)
+                        {
+                            result.Progress = $"reading excel row {line}";
+                            timer.Restart();
+                            if (callBack != null)
+                            {
+                                await callBack(result);
+                            }
+                        }
+
                         int prevCol = 0;
                         for (int i = 0; i < edr.FieldCount; i++)
                         {
@@ -127,49 +145,62 @@ namespace MeterDataLib.Parsers
                         }
                         stringWriter.WriteLine();
                     }
+
+
+                    result.Progress = $"reading csv";
+                    timer.Restart();
+                    if (callBack != null)
+                    {
+                        await callBack(result);
+                    }
+
                     var data = stringWriter.ToString();
                     if (!string.IsNullOrEmpty(data))
                     {
                         result.LogMessages.Add(new FileLogMessage($"Processing Sheet {sheet}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
                         using (Stream strStream = StringToStream.GenerateStreamFromString(data))
                         {
-                                try
-                                {
-                                    await ParseCsvAsync( result, strStream, filename, mimeType, callBack);
-                                }
-                                catch (Exception ex)
-                                {
-                                    result.LogMessages.Add(new FileLogMessage($"Error processing sheet {sheet} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                                }
+                            try
+                            {
+                                await ParseCsvAsync(result, strStream, filename, mimeType, callBack);
+                            }
+                            catch (Exception ex)
+                            {
+                                result.LogMessages.Add(new FileLogMessage($"[Y6TKZ4] Error processing sheet {sheet} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                            }
                         }
                     }
                 } while (edr.NextResult());
             }
-            
         }
 
         private static async Task ParseZipAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
         {
-            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+
+            result.Progress = "Unzip to memory";
+            if (callBack != null) { await callBack(result); }
+            using MemoryStream ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            result.Progress = "process zip files";
+            if (callBack != null) { await callBack(result); }
+
+            using var zip = new ZipArchive(ms, ZipArchiveMode.Read);
+            foreach (var entry in zip.Entries)
             {
-                foreach (var entry in zip.Entries)
+                using var entryStream = entry.Open();
+
+
+                result.LogMessages.Add(new FileLogMessage($"Processing file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
+                string entryMimeType = MimeTypeHelper.GetMimeType(entry.Name);
+
+                try
                 {
-                    using var entryStream = entry.Open();
- 
-
-                    result.LogMessages.Add(new FileLogMessage($"Processing file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
-                    string entryMimeType = MimeTypeHelper.GetMimeType(entry.Name);
-
-                        try
-                        {
-                            await ParseGeneralAsync(result, entryStream , entry.FullName , entryMimeType, callBack);
-                        }
-                        catch (Exception ex)
-                        {
-                            result.LogMessages.Add(new FileLogMessage($"Error processing file {entry.Name} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
-                        }
+                    await ParseGeneralAsync(result, entryStream, entry.FullName, entryMimeType, callBack);
                 }
-
+                catch (Exception ex)
+                {
+                    result.LogMessages.Add(new FileLogMessage($"[GWLIAU] Error processing file {entry.Name} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                }
             }
         }
 
@@ -180,12 +211,12 @@ namespace MeterDataLib.Parsers
         {
 
 
-         
+
 
             using var csv = new SimpleCsvReader(stream, filename);
             // read the first 10 lines 
-            var first10Lines = await  csv.ReadBufferedAsync(10);
-            if ( first10Lines.Count < 2)
+            var first10Lines = await csv.ReadBufferedAsync(10);
+            if (first10Lines.Count < 2)
             {
                 result.LogMessages.Add(new FileLogMessage($"[KTRBY1]: Less than 2 lines in file - file is empty or not csv", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
                 result.ParserName = "none";
@@ -268,8 +299,8 @@ namespace MeterDataLib.Parsers
     {
         bool CanParse(List<CsvLine> lines);
         string Name { get; }
-        Task Parse(SimpleCsvReader csvReader, ParserResult result,  Func<ParserResult, Task>? callBack = null);
- 
+        Task Parse(SimpleCsvReader csvReader, ParserResult result, Func<ParserResult, Task>? callBack = null);
+
 
     }
 

@@ -51,13 +51,15 @@ namespace MeterDataLib.Parsers
                 int interval = 0;
                 int expectedPeriods = 0;
                 string localTime = string.Empty;
+  
+
                 try
                 {
                     while ((line = await reader.ReadAsync()).Eof == false)
                     {
                         if (timer.ElapsedMilliseconds > 100)
                         {
-                            result.PercentageCompleted = reader.PercentageCompleted() ;
+                            result.Progress = $"reading line {line.LineNumber}" ;
                             timer.Restart();
                             if (callBack != null)
                             {

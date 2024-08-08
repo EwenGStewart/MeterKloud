@@ -34,7 +34,7 @@ namespace MeterKloud
         public int? Days { get; private set; }
         public int? DataPoints { get; private set; }
 
-        public int PercentageCompleted { get; private set; }
+ 
 
         public async Task Parse( Func<Task>?  asyncCallBack = null )
         {
@@ -67,8 +67,13 @@ namespace MeterKloud
 
         async Task UpdateProgress (ParserResult result , Func<Task>? asyncCallBack = null )
         {
-            PercentageCompleted = result.PercentageCompleted;
-            ProcessingStatus = $"parsing {PercentageCompleted}%";
+            
+            ProcessingStatus = result.Progress;
+            this.Errors = result.Errors;
+            this.Sites = result.Sites;
+            this.Days = result.TotalSiteDays;
+            this.DataPoints = result.TotalDataPoints;
+
 
             Console.WriteLine(ProcessingStatus);
             if (asyncCallBack != null)

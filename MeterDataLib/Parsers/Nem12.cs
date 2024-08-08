@@ -450,14 +450,15 @@ namespace MeterDataLib.Parsers
                 var line =  await csvReader.ReadAsync();
                 if (line.Eof)
                 {
-                    result.PercentageCompleted = 100;
+                    result.Progress = "Loading completed";
                     break;
                 }
 
 
-                result.PercentageCompleted =  csvReader.PercentageCompleted();
+
                 if ( timer.ElapsedMilliseconds > 100)
                 {
+                    result.Progress = $"reading line {line.LineNumber}";
                     timer.Restart();
                     if (callBack != null)
                     {

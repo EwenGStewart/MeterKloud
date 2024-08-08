@@ -53,7 +53,7 @@ namespace MeterDataLib.Parsers
                     {
                         if (timer.ElapsedMilliseconds > 100)
                         {
-                            result.PercentageCompleted = reader.PercentageCompleted();
+                            result.Progress = $"reading line {line.LineNumber}";
                             timer.Restart();
                             if (callBack != null)
                             {
