@@ -5,7 +5,7 @@ namespace MeterDataLib.Parsers
 {
     public class ParserResult
     {
-        public const string UNKNOWN = "Unknown";
+        public const string UNKNOWN = "UNKNOWN";
 
         public bool Success => SitesDays.Any() && Errors == 0;
         public  List<SiteDay> SitesDays { get; set; } = new List<SiteDay>();
@@ -21,7 +21,7 @@ namespace MeterDataLib.Parsers
  
         public string ParserName { get; set; } = string.Empty;
 
-        public int Sites => SitesDays.Select (s => s.Site).Distinct().Count();
+        public int Sites => SitesDays.Select (s => s.SiteCode).Distinct().Count();
 
         public int TotalSiteDays => SitesDays.Count;
         public int TotalDataPoints => SitesDays.SelectMany(x=>x.Channels.Values).Sum(s => s.ExpectedReadings);
@@ -37,11 +37,11 @@ namespace MeterDataLib.Parsers
 
         public string SiteName( ) 
             {
-                SetUnknownSites();
+                FixSiteNames();
                 
                 if ( Sites == 1 )
                 {
-                    return SitesDays.First().Site;
+                    return SitesDays.First().SiteCode;
                 }
                 else if ( Sites > 1)
                 {
@@ -57,23 +57,27 @@ namespace MeterDataLib.Parsers
         {
             foreach (var siteDay in SitesDays)
             {
-                if (string.IsNullOrWhiteSpace(siteDay.Site) || siteDay.Site.Trim().Equals(UNKNOWN, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(siteDay.SiteCode) || siteDay.SiteCode.Trim().Equals(UNKNOWN, StringComparison.OrdinalIgnoreCase))
                 {
-                    siteDay.Site = siteName;
+                    siteDay.SiteCode = siteName;
                 }
             }
         }
 
-        public bool UnknownSites => SitesDays.Any(s => s.Site == UNKNOWN);  
+        public bool UnknownSites => SitesDays.Any(s => s.SiteCode == UNKNOWN);  
 
 
-        void SetUnknownSites()
+        internal void FixSiteNames()
         {
-            foreach (var sites in SitesDays)
+            foreach (var siteDay in SitesDays)
             {
-                if (string.IsNullOrWhiteSpace(sites.Site) || sites.Site.Trim().Equals(UNKNOWN, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(siteDay.SiteCode) || siteDay.SiteCode.Trim().Equals(UNKNOWN, StringComparison.OrdinalIgnoreCase))
                 {
-                    sites.Site = UNKNOWN;
+                    siteDay.SiteCode = UNKNOWN;
+                }
+                if (siteDay.SiteCode.Trim().ToUpperInvariant() != siteDay.SiteCode ) 
+                {
+                    siteDay.SiteCode = siteDay.SiteCode.Trim().ToUpperInvariant();
                 }
             }
         }

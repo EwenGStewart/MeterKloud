@@ -110,12 +110,12 @@ namespace MeterDataLib.Parsers
                             }
                         }
 
-                        var siteDate = result.SitesDays.FirstOrDefault(x => x.Site == nmi && x.Date == readDate.Value);
+                        var siteDate = result.SitesDays.FirstOrDefault(x => x.SiteCode == nmi && x.Date == readDate.Value);
                         if (siteDate == null)
                         {
                             siteDate = new SiteDay()
                             {
-                                Site = nmi,
+                                SiteCode = nmi,
                                 Date = readDate.Value,
                                 Channels = new Dictionary<string, ChannelDay>(),
 

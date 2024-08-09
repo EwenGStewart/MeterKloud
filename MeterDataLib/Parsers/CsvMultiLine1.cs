@@ -119,12 +119,12 @@ namespace MeterDataLib.Parsers
                         {
                             DateTime readDate = line.GetDate(0, "yyyyMMdd")!.Value;
 
-                            var siteDay = result.SitesDays.FirstOrDefault(x => x.Site == nmi && x.Date == readDate);
+                            var siteDay = result.SitesDays.FirstOrDefault(x => x.SiteCode == nmi && x.Date == readDate);
                             if (siteDay == null)
                             {
                                 siteDay = new SiteDay()
                                 {
-                                    Site = nmi,
+                                    SiteCode = nmi,
                                     Date = readDate,
                                     Channels = new Dictionary<string, ChannelDay>(),
                                     TimeZoneName = localTime,

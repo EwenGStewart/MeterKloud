@@ -108,7 +108,7 @@ namespace MeterDataLib.Parsers
                     }
                     var siteDay = new SiteDay()
                     {
-                        Site = "UNKNOWN",
+                        SiteCode = ParserResult.UNKNOWN,
                         Date = siteDayGroup.Key.ReadDate,
                         Channels = new Dictionary<string, ChannelDay>(),
                     };

@@ -1,11 +1,12 @@
 ﻿@page "/upload"
 @using System.Collections.ObjectModel
+@using MeterDataLib.Storage
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject MeterDataStorageManager Db
 
 
-
-<MudContainer Fixed Class="px-6 py-4">
+<MudContainer Fixed Class="px-6 py-4" MaxWidth="MaxWidth.ExtraExtraLarge">
 
     <MudStack Spacing="0" Class="pb-4">
         <MudStack Row>
@@ -130,6 +131,22 @@
                 Snackbar.Add(ex.Message, Severity.Error);
             }
         }
+
+
+        // Save the data to the database
+        foreach (MeterDataFile file in _items)
+        {
+            try
+            {
+                await Db.SaveParserResult(file.ParserResult);
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+
 
 
 

@@ -131,7 +131,7 @@ namespace MeterDataLib.Parsers
 
                     var siteDay = new SiteDay()
                     {
-                        Site = siteDayGroup.Key.Nmi,
+                        SiteCode = siteDayGroup.Key.Nmi,
                         Date = siteDayGroup.Key.ReadDate,
                         Channels = new Dictionary<string, ChannelDay>(),
                     };

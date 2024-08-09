@@ -601,11 +601,11 @@ namespace MeterDataLib.Parsers
                                 break;
                             }
 
-                            lastSiteDay = result.SitesDays.Where(zz => zz.Site == nmi && zz.Date == dateOfRead).FirstOrDefault();
+                            lastSiteDay = result.SitesDays.Where(zz => zz.SiteCode == nmi && zz.Date == dateOfRead).FirstOrDefault();
                             nmi ??= string.Empty;
                             if (lastSiteDay == null)
                             {
-                                lastSiteDay = new SiteDay() { Site = nmi, Date = dateOfRead.Value, TimeZoneName = "E. Australia Standard Time", UCT_Offset = 10 };
+                                lastSiteDay = new SiteDay() { SiteCode = nmi, Date = dateOfRead.Value, TimeZoneName = "E. Australia Standard Time", UCT_Offset = 10 };
                                 result.SitesDays.Add(lastSiteDay);
                             }
                             channel ??= string.Empty;

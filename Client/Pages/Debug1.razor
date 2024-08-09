@@ -1,0 +1,136 @@
+﻿@page "/debug1"
+@using MeterDataLib.Storage
+@inject IndexedDbAccessor Db
+@inject IMeterDataStore MeterDataStore
+@inject ISnackbar Snackbar
+
+<MudContainer Fixed Class="px-6 py-4" MaxWidth="MaxWidth.ExtraExtraLarge">
+
+    <MudStack Spacing="0" Class="pb-4">
+        <MudStack Row>
+            <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large"></MudIcon>
+            <MudText Typo="Typo.h1" Color="Color.Dark">DEBUG </MudText>
+        </MudStack>
+        <MudText Typo="Typo.h2" Class="mud-text-secondary">Upload meter data in a variety of formats.</MudText>
+    </MudStack>
+</MudContainer>
+<MudContainer MaxWidth="MaxWidth.Medium">
+
+
+
+    <MudToolBar Style="background-color:blue">
+
+        <MudText Typo="Typo.h1" Color="Color.Info">Raw IndexedDbAccessor </MudText>
+        <MudButton OnClick="GetCommand" Variant="Variant.Filled" Color="Color.Primary">GET</MudButton>
+        <MudButton OnClick="PutCommand" Variant="Variant.Filled" Color="Color.Secondary">PUT</MudButton>
+    </MudToolBar>
+
+    <MudToolBar Style="background-color:black">
+        <MudText Typo="Typo.h1" Color="Color.Info">IMeterDataStore </MudText>
+        <MudButton OnClick="GetAllSites" Variant="Variant.Filled" Color="Color.Primary">Get all sites</MudButton>
+        
+    </MudToolBar>
+
+</MudContainer>
+
+@code {
+
+
+    MeterDataLib.Site storageSite = new MeterDataLib.Site() { Code = "TEST" };
+
+
+
+
+    async Task GetCommand()
+    {
+        try
+        {
+            Console.WriteLine("GET");
+            var site = await Db.GetValueAsync<MeterDataLib.Site>("sites", storageSite.Id);
+
+            if (site == null)
+            {
+                Console.WriteLine("Site not found");
+                Snackbar.Add("Site not found", Severity.Error);
+            }
+            else
+            {
+                Console.WriteLine("Site found");
+                Snackbar.Add("Site found", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            Console.WriteLine("Error getting site");
+            Snackbar.Add("Error getting site", Severity.Error);
+        }
+
+
+
+    }
+
+    async Task PutCommand()
+    {
+
+        try
+        {
+            Console.WriteLine("PUT");
+            await Task.Delay(1);
+            storageSite.DbTimeStampUtc = DateTime.UtcNow;
+            await Db.SetValueAsync<MeterDataLib.Site>("sites", storageSite);
+            Console.WriteLine("Site saved");
+            Snackbar.Add("Site saved", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            Console.WriteLine("Error saving site");
+            Snackbar.Add("Error saving site", Severity.Error);
+        }
+
+    }
+
+    async Task GetAllSites()
+    {
+        try
+        {
+            Console.WriteLine("GetAllSites");
+            var sites = await MeterDataStore.GetSitesAsync();
+
+            Console.WriteLine($"{sites.Count} sites   found");
+            Snackbar.Add($"{sites.Count} sites   found", Severity.Success);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            Console.WriteLine("Error GetAllSites");
+            Snackbar.Add($"Error {ex.Message}", Severity.Error);
+        }
+    }
+
+
+
+
+    async Task PutCommand2()
+    {
+
+        try
+        {
+            Console.WriteLine("PUT");
+            await Task.Delay(1);
+            storageSite.DbTimeStampUtc = DateTime.UtcNow;
+            await Db.SetValueAsync<MeterDataLib.Site>("sites", storageSite);
+            Console.WriteLine("Site saved");
+            Snackbar.Add("Site saved", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            Console.WriteLine("Error saving site");
+            Snackbar.Add("Error saving site", Severity.Error);
+        }
+
+    }
+}
