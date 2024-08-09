@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Xml.Serialization;
 
 namespace MeterDataLib.Parsers
 {
     public class ParserResult
     {
-        
+        public const string UNKNOWN = "Unknown";
+
         public bool Success => SitesDays.Any() && Errors == 0;
         public  List<SiteDay> SitesDays { get; set; } = new List<SiteDay>();
 
@@ -33,6 +35,48 @@ namespace MeterDataLib.Parsers
 
 
 
+        public string SiteName( ) 
+            {
+                SetUnknownSites();
+                
+                if ( Sites == 1 )
+                {
+                    return SitesDays.First().Site;
+                }
+                else if ( Sites > 1)
+                {
+                    return "Multiple Sites";
+                }
+                else
+                {
+                    return "No Sites";
+                }
+            }
+
+        public void SetUnknownSiteName(string siteName)
+        {
+            foreach (var siteDay in SitesDays)
+            {
+                if (string.IsNullOrWhiteSpace(siteDay.Site) || siteDay.Site.Trim().Equals(UNKNOWN, StringComparison.OrdinalIgnoreCase))
+                {
+                    siteDay.Site = siteName;
+                }
+            }
+        }
+
+        public bool UnknownSites => SitesDays.Any(s => s.Site == UNKNOWN);  
+
+
+        void SetUnknownSites()
+        {
+            foreach (var sites in SitesDays)
+            {
+                if (string.IsNullOrWhiteSpace(sites.Site) || sites.Site.Trim().Equals(UNKNOWN, StringComparison.OrdinalIgnoreCase))
+                {
+                    sites.Site = UNKNOWN;
+                }
+            }
+        }
 
 
 

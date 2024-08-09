@@ -27,60 +27,58 @@ namespace MeterKloud
         public long FileSize { get; init; }
         public string FileSizeFormatted => GetFileSize(FileSize);
         public string FileType { get; init; }
-        public string ProcessingStatus { get; private set; } = "Pending";
+        public string ProcessingStatus => ParserResult?.Progress ?? "Pending"; 
 
-        public int? Errors { get; private set; }
-        public int? Sites { get; private set; }
-        public int? Days { get; private set; }
-        public int? DataPoints { get; private set; }
+        public int Errors => ParserResult?.Errors ?? 0;
+        public int Sites => ParserResult?.Sites ?? 0;
 
- 
+
+        public string SiteName => ParserResult?.SiteName() ?? string.Empty;
+
+        public int Days => ParserResult?.SitesDays.Count ?? 0 ;
+        public int DataPoints => ParserResult?.TotalDataPoints ?? 0;
+
+        public bool InProgress { get; private set; } = false;
+
+        public bool Parsed { get; private set; } = false;
+        public bool Success => ParserResult!=null &&  Errors == 0 && Sites >0 ;
+
+        public bool HasUnknownSites => ParserResult?.UnknownSites ?? false;
+
+
+        public ParserResult? ParserResult { get; private set; }
+
+
 
         public async Task Parse( Func<Task>?  asyncCallBack = null )
         {
-            ProcessingStatus = "Opening..";
-            using var stream = OpenStream();
-            ProcessingStatus = "parsing..";
-            var result = await MeterDataLib.Parsers.ParserFactory.ParseAsync(stream, FileName, FileType , (r)=> UpdateProgress(r, asyncCallBack) );
-            Errors = result.Errors;
-            Sites = result.Sites;
-            Days = result.SitesDays.Count;
-            DataPoints = result.TotalDataPoints;
-            if (result.Errors > 0)
+            InProgress = true;
+            try
             {
-                ProcessingStatus = $"{result.SitesDays.Count} days -  {result.Errors} errors";
-                foreach (var error in result.LogMessages)
-                {
-                    Console.WriteLine(error);
-                }
-
-
+                using var stream = OpenStream();
+                var ParserResult = await MeterDataLib.Parsers.ParserFactory.ParseAsync(stream, FileName, FileType, (r) => UpdateProgress(r, asyncCallBack));
             }
-            else
+            catch (Exception ex)
             {
-                ProcessingStatus = $"{result.SitesDays.Count} days";
+                ParserResult = new ParserResult() { InProgress = false, FileName = FileName, LogMessages = new List<FileLogMessage>() { new FileLogMessage(ex.Message, LogLevel.Critical, FileName, 0, 0) } };
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
             }
-            
-
+            finally
+            {
+                InProgress = false;
+                Parsed = true; 
+            }
         }
 
 
         async Task UpdateProgress (ParserResult result , Func<Task>? asyncCallBack = null )
         {
-            
-            ProcessingStatus = result.Progress;
-            this.Errors = result.Errors;
-            this.Sites = result.Sites;
-            this.Days = result.TotalSiteDays;
-            this.DataPoints = result.TotalDataPoints;
-
-
-            Console.WriteLine(ProcessingStatus);
+            this.ParserResult = result;
             if (asyncCallBack != null)
             {
                 await asyncCallBack();
             }
-
         }
 
     

@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeterDataLib", "MeterDataLi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{26BF19F7-1F88-4A51-BDA6-F8806D004C5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMeterLib", "TestMeterLib\TestMeterLib.csproj", "{DAEFE8B2-F750-4F2B-B157-DE698DD3BC33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMeterLib", "TestMeterLib\TestMeterLib.csproj", "{DAEFE8B2-F750-4F2B-B157-DE698DD3BC33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

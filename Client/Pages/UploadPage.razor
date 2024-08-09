@@ -1,6 +1,9 @@
 ﻿@page "/upload"
 @using System.Collections.ObjectModel
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+
 
 <MudContainer Fixed Class="px-6 py-4">
 
@@ -26,17 +29,44 @@
     @if (_state == internalState.UploadFiles)
     {
         <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+
             <MudDataGrid ReadOnly="true" Items="@_items" Height="50vh" Virtualize Bordered Dense Striped HorizontalScrollbar>
                 <Columns>
                     <PropertyColumn Property="zz=>zz.FileName" Title="File" />
                     <PropertyColumn Property="zz=>zz.FileSizeFormatted" Title="Size" />
                     <PropertyColumn Property="zz=>zz.FileType" Title="Type" />
+                    <TemplateColumn Title="Loading" T="MeterDataFile">
+                        <CellTemplate>
+                            @if (context.Item.InProgress)
+                            {
+                                <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+                            }
+                            else if (!context.Item.Parsed)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Pending" Size="Size.Small" Color="Color.Primary"></MudIcon>
+
+                            }
+
+                            else if (context.Item.Success)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success"></MudIcon>
+
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Error" Size="Size.Small" Color="Color.Error"></MudIcon>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+
+
+
                     <PropertyColumn Property="zz=>zz.ProcessingStatus" Title="Status" />
                     <PropertyColumn Property="zz=>zz.Errors" Title="Errors" />
-                    <PropertyColumn Property="zz=>zz.Sites" Title="Sites" />
+                    <PropertyColumn Property="zz=>zz.SiteName" Title="Sites" />
                     <PropertyColumn Property="zz=>zz.Days" Title="Days" />
                     <PropertyColumn Property="zz=>zz.DataPoints" Title="Data Points" />
- 
+
                 </Columns>
             </MudDataGrid>
         </MudContainer>
@@ -72,21 +102,49 @@
             {
                 Snackbar.Add(ex.Message, Severity.Error);
             }
-
-
         }
+
+        foreach (MeterDataFile file in _items.Where(zz => zz.HasUnknownSites))
+        {
+            try
+            {
+                var options = new DialogOptions { CloseOnEscapeKey = true };
+                var diagParams = new DialogParameters<UploadPageDialogGetSiteName>
+                {
+                    { "Filename", file.FileName }
+                };
+                IDialogReference diagRef = await  DialogService.ShowAsync<UploadPageDialogGetSiteName>("Name Site", diagParams, options);
+
+                var siteName = await diagRef.GetReturnValueAsync<string>();
+
+                if (!string.IsNullOrWhiteSpace(siteName))
+                {
+                    Console.WriteLine($"Setting site name to {siteName}");
+                    file.ParserResult?.SetUnknownSiteName(siteName);
+                    await InvokeAsync(StateHasChanged);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+
+
+
     }
 
     async Task UpdateProgress()
     {
-    
+
         await InvokeAsync(StateHasChanged);
         await Task.Delay(1);
 
     }
 
 
- 
+
 
 
 

@@ -1,0 +1,34 @@
+﻿<MudDialog>
+    <TitleContent>
+        Site Name 
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.h6">@PageTitle</MudText>
+        <MudTextField @bind-Value="_siteCode" Label="Site Code" Variant="Variant.Text" Required RequiredError="Please enter a code or nickname for this site" MaxLength="20" ></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="SubmitOnClick">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; } = default!;
+
+
+    [Parameter]
+    public string Filename { get; set; } = string.Empty;
+
+    private string PageTitle => $"Please enter the unique site name or code for file {Filename}";
+
+    string _siteCode = string.Empty; 
+
+    private void SubmitOnClick()
+    {
+        _siteCode = _siteCode.Trim();
+        if (!string.IsNullOrWhiteSpace(_siteCode))
+        {
+            MudDialog.Close(DialogResult.Ok(_siteCode));
+        }
+    }
+
+}
