@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -36,6 +37,7 @@ namespace MeterDataLib.Parsers
         async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
         {
             string filename = reader.Filename;
+            string siteCode =  GetSiteCode(filename);
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
             var records = new List<DataLine>();
@@ -121,7 +123,7 @@ namespace MeterDataLib.Parsers
                     }
                     var siteDay = new SiteDay()
                     {
-                        SiteCode = ParserResult.UNKNOWN,
+                        SiteCode = siteCode,
                         Date = siteDayGroup.Key,
                         Channels = new Dictionary<string, ChannelDay>(),
                         UCT_Offset = siteDayGroup.First().UtcOffset
@@ -202,6 +204,27 @@ namespace MeterDataLib.Parsers
 
             return ;
         }
+
+
+        string GetSiteCode(string filename)
+        {
+           
+            string pattern = @"powerpal_data_\w{8}";
+            Regex regex = new Regex(pattern);
+            Match match = regex.Match(filename);
+            if (match.Success)
+            {
+                return match.Value.ToUpperInvariant();
+            }
+
+            var siteCode = new string(Path.GetFileNameWithoutExtension(filename).Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+            if ( siteCode.Length > 0)
+            {
+                return siteCode;
+            }
+            return ParserResult.UNKNOWN; ;
+        }
+
 
 
         record DataLine(

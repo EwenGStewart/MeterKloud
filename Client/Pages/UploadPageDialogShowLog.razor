@@ -1,0 +1,60 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@PageTitle</MudText>
+    </TitleContent>
+    <DialogContent>
+
+        <MudPaper Class="d-flex flex-column flex-grow-1 gap-0 " Elevation="0" MinHeight="50vh" Height="50vh"  style="background-color: var(--mud-palette-dark-lighten);color: #fff;">
+            <MudText Typo="Typo.caption" Style="font-weight:bold" >Date          Level        [Line/col]    Message   </MudText>
+            <Virtualize TItem="MeterDataLib.Parsers.FileLogMessage" Items="LogMessages">
+                <MudText Typo="Typo.caption" Style="@ColorStyle(context)">@DisplayMessage(context)</MudText>
+            </Virtualize>
+        </MudPaper>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="SubmitOnClick">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; } = default!;
+
+
+    [Parameter]
+    public string Filename { get; set; } = string.Empty;
+
+    [Parameter]
+    public List<MeterDataLib.Parsers.FileLogMessage> LogMessages { get; set; } = new();
+
+
+
+    private string PageTitle => $"Log for file: {Filename}";
+
+    string DisplayMessage(MeterDataLib.Parsers.FileLogMessage message)
+    {
+        return string.Format($"{message.TimeStamp:HH:mm:ss.fff} {message.LogLevel} [{message.LineNumber}/{message.ColumnNumber}] : {message.LogMessage}  ");
+    }
+
+    string ColorStyle(MeterDataLib.Parsers.FileLogMessage message)
+    {
+        switch(message.LogLevel)
+        {
+            case  LogLevel.Error:
+            case LogLevel.Critical:
+                return "color:lightpink";
+            case  LogLevel.Warning:
+                return "color:yellow";
+            default:
+                return "color:white";
+        }
+    }
+
+
+    private void SubmitOnClick()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+
+}

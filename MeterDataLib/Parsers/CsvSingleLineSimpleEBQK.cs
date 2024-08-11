@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -108,7 +109,7 @@ namespace MeterDataLib.Parsers
                     }
                     var siteDay = new SiteDay()
                     {
-                        SiteCode = ParserResult.UNKNOWN,
+                        SiteCode =  IParser.GetDefaultSiteCodeFromFilename(filename),
                         Date = siteDayGroup.Key.ReadDate,
                         Channels = new Dictionary<string, ChannelDay>(),
                     };
@@ -241,7 +242,7 @@ namespace MeterDataLib.Parsers
             return  ;
         }
 
-
+ 
         record DataLine(DateTime LocalTime, decimal E, decimal B, decimal Q, decimal K, int LineNumber) { }
 
 

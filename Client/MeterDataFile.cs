@@ -27,9 +27,14 @@ namespace MeterKloud
         public long FileSize { get; init; }
         public string FileSizeFormatted => GetFileSize(FileSize);
         public string FileType { get; init; }
+
+        public string Format => ParserResult?.ParserName ?? "Unknown";
         public string ProcessingStatus => ParserResult?.Progress ?? "Pending"; 
 
         public int Errors => ParserResult?.Errors ?? 0;
+
+        public int Warnings => ParserResult?.Warnings ?? 0;
+
         public int Sites => ParserResult?.Sites ?? 0;
 
 

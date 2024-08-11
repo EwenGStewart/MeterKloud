@@ -35,8 +35,8 @@
                 <Columns>
                     <PropertyColumn Property="zz=>zz.FileName" Title="File" />
                     <PropertyColumn Property="zz=>zz.FileSizeFormatted" Title="Size" />
-                    <PropertyColumn Property="zz=>zz.FileType" Title="Type" />
-                    <TemplateColumn Title="Loading" T="MeterDataFile">
+                    <PropertyColumn Property="zz=>zz.Format" Title="Format" />
+                    <TemplateColumn Title="Status" T="MeterDataFile">
                         <CellTemplate>
                             @if (context.Item.InProgress)
                             {
@@ -45,6 +45,13 @@
                             else if (!context.Item.Parsed)
                             {
                                 <MudIcon Icon="@Icons.Material.Filled.Pending" Size="Size.Small" Color="Color.Primary"></MudIcon>
+
+                            }
+
+                            else if (context.Item.Success && context.Item.Warnings > 0 )
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Color="Color.Warning"></MudIcon>
+                
 
                             }
 
@@ -57,6 +64,13 @@
                             {
                                 <MudIcon Icon="@Icons.Material.Filled.Error" Size="Size.Small" Color="Color.Error"></MudIcon>
                             }
+
+
+                            @if( context.Item.ParserResult != null && context.Item.ParserResult.LogMessages.Count > 0)
+                            {
+                                <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="() => ShowLog(context.Item)">View Log</MudButton>
+                            }
+
                         </CellTemplate>
                     </TemplateColumn>
 
@@ -221,7 +235,17 @@
     }
 
 
+    async Task ShowLog(MeterDataFile file)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true , FullWidth=true , Position= DialogPosition.TopCenter, MaxWidth=MaxWidth.ExtraLarge  };
+        var diagParams = new DialogParameters<UploadPageDialogShowLog>
+            {
+                { "Filename", file.FileName },
+                { "LogMessages", file.ParserResult?.LogMessages }
+            };
+        IDialogReference diagRef = await DialogService.ShowAsync<UploadPageDialogShowLog>("Log", diagParams, options);
 
+    }
 
 
 }
