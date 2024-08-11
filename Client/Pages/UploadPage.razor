@@ -95,73 +95,130 @@
         await InvokeAsync(StateHasChanged);
         foreach (MeterDataFile file in _items)
         {
+            Console.WriteLine($"Processing {file.FileName}");
             try
             {
+
                 await file.Parse(UpdateProgress);
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add(ex.Message, Severity.Error);
-            }
-        }
-
-        foreach (MeterDataFile file in _items.Where(zz => zz.HasUnknownSites))
-        {
-            try
-            {
-                var options = new DialogOptions { CloseOnEscapeKey = true };
-                var diagParams = new DialogParameters<UploadPageDialogGetSiteName>
+                Console.WriteLine($"Parsed {file.FileName}");
+                if (file.ParserResult == null)
                 {
-                    { "Filename", file.FileName }
-                };
-                IDialogReference diagRef = await  DialogService.ShowAsync<UploadPageDialogGetSiteName>("Name Site", diagParams, options);
-
-                var siteName = await diagRef.GetReturnValueAsync<string>();
-
-                if (!string.IsNullOrWhiteSpace(siteName))
-                {
-                    Console.WriteLine($"Setting site name to {siteName}");
-                    file.ParserResult?.SetUnknownSiteName(siteName);
-                    await InvokeAsync(StateHasChanged);
+                    Console.WriteLine("[8BSYVW] Parse result is null");
                 }
-
+                else
+                {
+                    Console.WriteLine($"[AAXD5K] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}  points:{file.DataPoints} ");
+                }
+                if (file.ParserResult != null &&  file.Parsed && file.Sites > 0 && file.HasUnknownSites )
+                {
+                    Console.WriteLine($"get site code  {file.FileName}");
+                    await GetSiteCode(file);
+                }
+                if ( file.ParserResult != null && file.Parsed && file.Sites > 0  )
+                {
+                    Console.WriteLine($"Save Data  {file.FileName}");
+                    await Db.SaveParserResult(file.ParserResult);
+                }
+                else
+                {
+                    Console.WriteLine($"no Save Data  {file.FileName}");
+                }
+                Console.WriteLine($"[1A8X2B] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}  points:{file.DataPoints} ");
             }
             catch (Exception ex)
             {
-                Snackbar.Add(ex.Message, Severity.Error);
+                Console.WriteLine($"Error parsing {file.FileName}");
+                Console.WriteLine(ex);
+                file.AddException(ex);
             }
-        }
 
-
-        // Save the data to the database
-        foreach (MeterDataFile file in _items)
-        {
+            Console.WriteLine($"[6PURQK] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}  points:{file.DataPoints} ");
             try
             {
-                await Db.SaveParserResult(file.ParserResult);
-                await InvokeAsync(StateHasChanged);
+                if (file.ParserResult == null)
+                {
+
+                    Console.WriteLine($"[1L4XBV] no result");
+                    file.AddException(new Exception("[K79MSS] No parser result"));
+                }
+                else if (file.ParserResult.TotalSiteDays == 0)
+                {
+                    Console.WriteLine($"[WF7DPD] No data in {file.FileName}");
+                    file.AddException(new Exception("[HVQVYM] No data"));
+                    foreach (var msg in file.ParserResult.LogMessages)
+                    {
+
+                        Console.WriteLine(msg);
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine($"[A2D6EQ] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}   points:{file.DataPoints} ");
+
+                    foreach (var msg in file.ParserResult.LogMessages)
+                    {
+
+                        Console.WriteLine(msg);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Snackbar.Add(ex.Message, Severity.Error);
+                Console.WriteLine($"[JTUDF7] Error parsing {file.FileName}");
+                Console.WriteLine(ex);
+                file.AddException(ex);
             }
+        await InvokeAsync(StateHasChanged);
         }
 
-
-
+        
 
     }
+
+
+
+
 
     async Task UpdateProgress()
     {
 
         await InvokeAsync(StateHasChanged);
-        await Task.Delay(1);
+       // await Task.Delay(1);
 
     }
 
 
+    async Task GetSiteCode(MeterDataFile file)
+    {
+        try
+        {
+            if ( ! (file.ParserResult!=null &&  file.Parsed &&  file.Sites> 0 &&  file.HasUnknownSites )  )
+            { 
+                return;
+            }
+            var options = new DialogOptions { CloseOnEscapeKey = true };
+            var diagParams = new DialogParameters<UploadPageDialogGetSiteName>
+                {
+                    { "Filename", file.FileName }
+                };
+            IDialogReference diagRef = await DialogService.ShowAsync<UploadPageDialogGetSiteName>("Name Site", diagParams, options);
 
+            var siteName = await diagRef.GetReturnValueAsync<string>();
+
+            if (!string.IsNullOrWhiteSpace(siteName))
+            {
+                Console.WriteLine($"Setting site name to {siteName}");
+                file.ParserResult?.SetUnknownSiteName(siteName);
+                await InvokeAsync(StateHasChanged);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            file.ParserResult.AddException(ex);
+        }
+    }
 
 
 

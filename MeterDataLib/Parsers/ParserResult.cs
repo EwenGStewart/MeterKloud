@@ -12,6 +12,19 @@ namespace MeterDataLib.Parsers
 
         public List<FileLogMessage> LogMessages { get; set; } = new List<FileLogMessage>();
 
+
+        public void AddException( Exception exception)
+        {
+            LogMessages.Add(new FileLogMessage(exception.Message, LogLevel.Error , FileName, 0, 0));
+        }
+
+        public void AddException(string exception)
+        {
+            LogMessages.Add(new FileLogMessage(exception, LogLevel.Error, FileName, 0, 0));
+        }
+
+
+
         public int Errors => LogMessages.Count(m => m.LogLevel == LogLevel.Error || m.LogLevel == LogLevel.Critical);
 
         public int Warnings => LogMessages.Count(m => m.LogLevel == LogLevel.Warning );

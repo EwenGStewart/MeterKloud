@@ -3,7 +3,7 @@
 <MudStack Style="width: 100%">
     <MudFileUpload T="IReadOnlyList<IBrowserFile>"
                    @ref="@_fileUpload"
-                   OnFilesChanged="OnInputFileChanged"
+                   
                    AppendMultipleFiles=@false
                    Hidden="@false"
                    InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
@@ -88,27 +88,27 @@
     private Task OpenFilePickerAsync()
         => _fileUpload?.OpenFilePickerAsync() ?? Task.CompletedTask;
 
-    private void OnInputFileChanged(InputFileChangeEventArgs e)
-    {
-        try
-        {
-            _error = string.Empty;
-            Console.WriteLine("OnInputFileChanged");
-            ClearDragClass();
-            var files = e.GetMultipleFiles();
-            foreach (var file in files)
-            {
-                _fileNames.Add(file.Name);
-            }
-            Console.WriteLine($"files count {_files.Count}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading files {ex.Message}");
-            _error = ex.Message;
-        }
+    // private void OnInputFileChanged(InputFileChangeEventArgs e)
+    // {
+    //     try
+    //     {
+    //         _error = string.Empty;
+    //         Console.WriteLine("OnInputFileChanged");
+    //         ClearDragClass();
+    //         var files = e.GetMultipleFiles();
+    //         foreach (var file in files)
+    //         {
+    //             _fileNames.Add(file.Name);
+    //         }
+    //         Console.WriteLine($"files count {_files.Count}");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Error loading files {ex.Message}");
+    //         _error = ex.Message;
+    //     }
 
-    }
+    // }
 
     private async Task FilesChanged(IReadOnlyList<IBrowserFile> files)
     {

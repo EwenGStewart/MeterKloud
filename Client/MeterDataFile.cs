@@ -49,14 +49,39 @@ namespace MeterKloud
         public ParserResult? ParserResult { get; private set; }
 
 
+        public void AddException(Exception exception)
+        {
+            ParserResult ??= new ParserResult() { FileName = FileName };
+            ParserResult.AddException(exception);
+        }
+        public void AddException(string exception) 
+        {
+            ParserResult ??= new ParserResult() { FileName = FileName };
+            ParserResult.AddException(exception);
+
+        }
+
 
         public async Task Parse( Func<Task>?  asyncCallBack = null )
         {
             InProgress = true;
             try
             {
+                Console.WriteLine("Calling openstream");
                 using var stream = OpenStream();
-                var ParserResult = await MeterDataLib.Parsers.ParserFactory.ParseAsync(stream, FileName, FileType, (r) => UpdateProgress(r, asyncCallBack));
+                Console.WriteLine("Calling parse");
+                ParserResult = await MeterDataLib.Parsers.ParserFactory.ParseAsync(stream, FileName, FileType, (r) => UpdateProgress(r, asyncCallBack));
+                Console.WriteLine($"Completed   Result:{(ParserResult == null ? "Null" : "returned")}    Success:{ParserResult?.Success??false}");
+                if (ParserResult != null)
+                {
+
+                    Console.WriteLine($"Parser:{ParserResult.ParserName} Sites:{ParserResult.Sites} Days:{ParserResult.TotalSiteDays} Points:{ParserResult.TotalDataPoints}");
+                    Console.WriteLine("messages");
+                    foreach (var msg in ParserResult.LogMessages)
+                    {
+                        Console.WriteLine(msg);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -69,11 +94,14 @@ namespace MeterKloud
                 InProgress = false;
                 Parsed = true; 
             }
+
+
         }
 
 
         async Task UpdateProgress (ParserResult result , Func<Task>? asyncCallBack = null )
         {
+            //Console.WriteLine($"Progress {result.Progress}");
             this.ParserResult = result;
             if (asyncCallBack != null)
             {

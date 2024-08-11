@@ -28,7 +28,9 @@ namespace TestMeterLib
                 Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
                 Assert.True(result.Success);
                 Assert.True(result.ParserName == "NEM12");
-
+                Assert.True(result.Sites > 0);
+                Assert.True(result.Errors == 0);
+                Assert.True(result.TotalSiteDays > 0);
             }
         }
     }
