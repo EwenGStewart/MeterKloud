@@ -39,7 +39,7 @@ namespace MeterDataLib.Parsers
 
 
 
-        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack, CancellationToken? cancellationToken   )
         {
             string filename = reader.Filename;
             var records = new List<DataLine>();
@@ -50,7 +50,7 @@ namespace MeterDataLib.Parsers
                 string[] channelNames;
                
 
-                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel Parsing file {filename}");
+              //  Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel Parsing file {filename}");
                 
 
                 CsvLine line;
@@ -71,13 +71,14 @@ namespace MeterDataLib.Parsers
                     channelNames[i] = header.GetStringUpper(i + 2);
                 }
 
-                Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel start lines  file {filename}");
+             //   Console.WriteLine($"{DateTime.Now:hh:mm:ss:fff} CsvByChannel start lines  file {filename}");
                 line = await reader.ReadAsync();
                 var timer = new System.Diagnostics.Stopwatch();
                 timer.Start();
                 while (!line.Eof)
                 {
-                  
+
+                    cancellationToken?.ThrowIfCancellationRequested();
                     try
                     {
                         if (timer.ElapsedMilliseconds > 100)
@@ -135,7 +136,7 @@ namespace MeterDataLib.Parsers
                 foreach (var siteDayGroup in list)
                 {
                     counter++;
-
+                    cancellationToken?.ThrowIfCancellationRequested();
                     if (timer.ElapsedMilliseconds > 100)
                     {
                         int percentage = counter * 100 / counterTotal ;

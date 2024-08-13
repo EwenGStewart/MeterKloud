@@ -43,7 +43,7 @@ namespace MeterDataLib.Parsers
                 return true;
             return false;
         }
-        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack, CancellationToken? cancellationToken)
         {
             string filename = reader.Filename;
             var timer = new System.Diagnostics.Stopwatch();
@@ -61,6 +61,7 @@ namespace MeterDataLib.Parsers
 
                     while ((line = await reader.ReadAsync()).Eof == false)
                     {
+                        cancellationToken?.ThrowIfCancellationRequested();
                         try
                         {
                             if (timer.ElapsedMilliseconds > 100)
@@ -118,6 +119,7 @@ namespace MeterDataLib.Parsers
                 foreach (var siteDayGroup in list )
                 {
                     counter++;
+                    cancellationToken?.ThrowIfCancellationRequested();
                     if (timer.ElapsedMilliseconds > 100)
                     {
                         int percentage = counter * 100 / counterTotal;

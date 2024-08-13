@@ -1,4 +1,5 @@
 ﻿using ExcelDataReader;
+using System;
 using System.Data.SqlTypes;
 using System.IO.Compression;
 using System.Reflection;
@@ -42,18 +43,25 @@ namespace MeterDataLib.Parsers
         };
 
 
-        public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null)
+        public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack, CancellationToken? cancellationToken = null   )
         {
+            cancellationToken = cancellationToken ?? new CancellationToken();
+            cancellationToken.Value.ThrowIfCancellationRequested();
             ParserResult result = new ParserResult() { FileName = filename, InProgress = true, Progress = "Starting" };
             try
             {
                 mimeType ??= string.Empty;
-                await ParseGeneralAsync(result, stream, filename, mimeType, CallBack);
+                await ParseGeneralAsync(result, stream, filename, mimeType, CallBack, cancellationToken.Value);
+
             }
+            
+            catch (OperationCanceledException )
+            {
+                result.LogMessages.Add(new FileLogMessage("[5ES3JI]:  Cancelled", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+            }
+
             catch (Exception ex)
             {
-                Console.Write(ex);
-
                 result.LogMessages.Add(new FileLogMessage($"[VDKA7C]: {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
             }
             result.InProgress = false;
@@ -62,26 +70,26 @@ namespace MeterDataLib.Parsers
 
         }
 
-        static async Task ParseGeneralAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
+        static async Task ParseGeneralAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack, CancellationToken cancellationToken)
         {
             mimeType ??= string.Empty;
             if (IsExcel(filename, mimeType))
             {
-                await ParseExcelAsync(result, stream, filename, mimeType, callBack);
+                await ParseExcelAsync(result, stream, filename, mimeType, callBack, cancellationToken);
             }
             else if (IsZipFile(filename, mimeType))
             {
-                await ParseZipAsync(result, stream, filename, mimeType, callBack);
+                await ParseZipAsync(result, stream, filename, mimeType, callBack, cancellationToken);
             }
             else
             {
-                await ParseCsvAsync(result, stream, filename, mimeType, callBack);
+                await ParseCsvAsync(result, stream, filename, mimeType, callBack, cancellationToken);
             }
         }
 
 
         static bool CodePagesRegistered = false;
-        static async Task ParseExcelAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
+        static async Task ParseExcelAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack  , CancellationToken cancellationToken )
         {
 
             if (!CodePagesRegistered)
@@ -93,7 +101,8 @@ namespace MeterDataLib.Parsers
             result.Progress = "load excel to memory";
             if (callBack != null) { await callBack(result); }
             using MemoryStream ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
+            await stream.CopyToAsync(ms , cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             result.Progress = "process excel files";
             if (callBack != null) { await callBack(result); }
             var timer = new System.Diagnostics.Stopwatch();
@@ -107,7 +116,7 @@ namespace MeterDataLib.Parsers
                 {
                     sheet++;
                     int line = 0;
-                    while (edr.Read())
+                    while (edr.Read() && !cancellationToken.IsCancellationRequested)
                     {
                         line++;
 
@@ -162,8 +171,15 @@ namespace MeterDataLib.Parsers
                         {
                             try
                             {
-                                await ParseCsvAsync(result, strStream, filename, mimeType, callBack);
+                                cancellationToken.ThrowIfCancellationRequested();
+                                await ParseCsvAsync(result, strStream, filename, mimeType, callBack,cancellationToken);
                             }
+
+                            catch (OperationCanceledException)
+                            {
+                                return;
+                            }
+
                             catch (Exception ex)
                             {
                                 result.LogMessages.Add(new FileLogMessage($"[Y6TKZ4] Error processing sheet {sheet} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
@@ -174,13 +190,16 @@ namespace MeterDataLib.Parsers
             }
         }
 
-        private static async Task ParseZipAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack = null)
+        private static async Task ParseZipAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack  , CancellationToken cancellationToken  )
         {
+            cancellationToken.ThrowIfCancellationRequested();
 
             result.Progress = "Unzip to memory";
             if (callBack != null) { await callBack(result); }
             using MemoryStream ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
+            await stream.CopyToAsync(ms, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
             result.Progress = "process zip files";
             if (callBack != null) { await callBack(result); }
 
@@ -189,13 +208,18 @@ namespace MeterDataLib.Parsers
             {
                 using var entryStream = entry.Open();
 
+                cancellationToken.ThrowIfCancellationRequested();
 
                 result.LogMessages.Add(new FileLogMessage($"Processing file {entry.Name}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
                 string entryMimeType = MimeTypeHelper.GetMimeType(entry.Name);
 
                 try
                 {
-                    await ParseGeneralAsync(result, entryStream, entry.FullName, entryMimeType, callBack);
+                    await ParseGeneralAsync(result, entryStream, entry.FullName, entryMimeType, callBack, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                   return;
                 }
                 catch (Exception ex)
                 {
@@ -207,13 +231,13 @@ namespace MeterDataLib.Parsers
 
 
 
-        private static async Task ParseCsvAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null)
+        private static async Task ParseCsvAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack  , CancellationToken? cancellationToken  )
         {
 
 
+            cancellationToken?.ThrowIfCancellationRequested();
 
-
-            using var csv = new SimpleCsvReader(stream, filename);
+            using var csv = new SimpleCsvReader(stream, filename , cancellationToken);
             // read the first 10 lines 
             var first10Lines = await csv.ReadBufferedAsync(10);
             if (first10Lines.Count < 2)
@@ -233,7 +257,7 @@ namespace MeterDataLib.Parsers
 
             result.ParserName = parser.Name;
             result.LogMessages.Add(new FileLogMessage($"[0I16MU]: Parser  {parser.Name} found.", Microsoft.Extensions.Logging.LogLevel.Debug, filename, 0, 0));
-            await parser.Parse(csv, result, CallBack);
+            await parser.Parse(csv, result, CallBack , cancellationToken);
 
 
         }

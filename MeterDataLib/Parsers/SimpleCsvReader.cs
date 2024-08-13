@@ -6,6 +6,7 @@ namespace MeterDataLib.Parsers
     internal class SimpleCsvReader : IDisposable
     {
         readonly StreamReader _streamReader;
+        readonly CancellationToken _cancellationToken;
         bool _eof = false; 
         string _filename;
         private List<CsvLine> _buffer = new List<CsvLine>();
@@ -18,12 +19,15 @@ namespace MeterDataLib.Parsers
         
         public string Filename => _filename;
         
-        public SimpleCsvReader(Stream stream, string filename)
+
+
+
+        public SimpleCsvReader(Stream stream, string filename, CancellationToken? cancellationToken)
         {
             _streamReader = new StreamReader(stream);
             _filename = filename;
             _eof = false;
-
+            _cancellationToken = cancellationToken ?? new CancellationToken(); 
         }
 
         public int PercentageCompleted()
@@ -116,7 +120,8 @@ namespace MeterDataLib.Parsers
             {
                 try
                 {
-                    var nextLine = await _streamReader.ReadLineAsync();
+                    _cancellationToken.ThrowIfCancellationRequested();
+                    var nextLine = await _streamReader.ReadLineAsync(_cancellationToken);
                     if (nextLine == null)
                     {
                         _eof = true;

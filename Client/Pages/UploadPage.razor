@@ -21,17 +21,17 @@
 
     <div style="display:@( ( _state == internalState.GetFiles ? "block" : "none") )">
 
-        <MudContainer MaxWidth="MaxWidth.Medium">
-            <UploadPageGetFiles OnFilesSelected="OnFilesSelected" />
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" >
+            <UploadPageGetFiles OnFilesSelected="OnFilesSelected" @ref=UploadPageGetFiles />
         </MudContainer>
 
     </div>
 
-    @if (_state == internalState.UploadFiles)
+    @if (_state == internalState.UploadFiles || _state == internalState.Completed)
     {
         <MudContainer MaxWidth="MaxWidth.ExtraLarge">
 
-            <MudDataGrid ReadOnly="true" Items="@_items" Height="50vh" Virtualize Bordered Dense Striped HorizontalScrollbar>
+             <MudDataGrid ReadOnly="true" Items="@_items" Height="50vh" Virtualize Bordered Dense Striped HorizontalScrollbar>
                 <Columns>
                     <PropertyColumn Property="zz=>zz.FileName" Title="File" />
                     <PropertyColumn Property="zz=>zz.FileSizeFormatted" Title="Size" />
@@ -84,168 +84,17 @@
 
                 </Columns>
             </MudDataGrid>
+            <MudToolBar>
+                <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="UploadMoreFiles" Disabled="this.UploadMOreDisabled" Class="px-3 mx-3">Upload Files</MudButton>
+                <MudButton Color="Color.Info" Variant="Variant.Filled" Href="/sites" Disabled="this.ViewDataDisabled" Class="px-3 mx-3">View Data</MudButton>
+                <MudSpacer></MudSpacer>
+                <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="CancelUpload" Disabled="this.CancelButtonDisabled" Class="px-3 mx-3">Cancel</MudButton>
+
+            </MudToolBar>
         </MudContainer>
     }
 
 
 </MudContainer>
 
-@code {
 
-    enum internalState
-    {
-        GetFiles,
-        UploadFiles
-    }
-    internalState _state = internalState.GetFiles;
-
-
-    ObservableCollection<MeterDataFile> _items = new ObservableCollection<MeterDataFile>();
-
-    async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
-    {
-        _items = new ObservableCollection<MeterDataFile>(files.Select(f => new MeterDataFile(f)));
-        _state = internalState.UploadFiles;
-        await InvokeAsync(StateHasChanged);
-        foreach (MeterDataFile file in _items)
-        {
-            Console.WriteLine($"Processing {file.FileName}");
-            try
-            {
-
-                await file.Parse(UpdateProgress);
-                Console.WriteLine($"Parsed {file.FileName}");
-                if (file.ParserResult == null)
-                {
-                    Console.WriteLine("[8BSYVW] Parse result is null");
-                }
-                else
-                {
-                    Console.WriteLine($"[AAXD5K] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}  points:{file.DataPoints} ");
-                }
-                if (file.ParserResult != null &&  file.Parsed && file.Sites > 0 && file.HasUnknownSites )
-                {
-                    Console.WriteLine($"get site code  {file.FileName}");
-                    await GetSiteCode(file);
-                }
-                if ( file.ParserResult != null && file.Parsed && file.Sites > 0  )
-                {
-                    Console.WriteLine($"Save Data  {file.FileName}");
-                    await Db.SaveParserResult(file.ParserResult);
-                }
-                else
-                {
-                    Console.WriteLine($"no Save Data  {file.FileName}");
-                }
-                Console.WriteLine($"[1A8X2B] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}  points:{file.DataPoints} ");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error parsing {file.FileName}");
-                Console.WriteLine(ex);
-                file.AddException(ex);
-            }
-
-            Console.WriteLine($"[6PURQK] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}  points:{file.DataPoints} ");
-            try
-            {
-                if (file.ParserResult == null)
-                {
-
-                    Console.WriteLine($"[1L4XBV] no result");
-                    file.AddException(new Exception("[K79MSS] No parser result"));
-                }
-                else if (file.ParserResult.TotalSiteDays == 0)
-                {
-                    Console.WriteLine($"[WF7DPD] No data in {file.FileName}");
-                    file.AddException(new Exception("[HVQVYM] No data"));
-                    foreach (var msg in file.ParserResult.LogMessages)
-                    {
-
-                        Console.WriteLine(msg);
-                    }
-
-                }
-                else
-                {
-                    Console.WriteLine($"[A2D6EQ] COMPLETED {file.FileName}  Messages:{file.ParserResult?.LogMessages.Count ?? 0}  TotalSiteDays:{file.Days}   points:{file.DataPoints} ");
-
-                    foreach (var msg in file.ParserResult.LogMessages)
-                    {
-
-                        Console.WriteLine(msg);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[JTUDF7] Error parsing {file.FileName}");
-                Console.WriteLine(ex);
-                file.AddException(ex);
-            }
-        await InvokeAsync(StateHasChanged);
-        }
-
-        
-
-    }
-
-
-
-
-
-    async Task UpdateProgress()
-    {
-
-        await InvokeAsync(StateHasChanged);
-       // await Task.Delay(1);
-
-    }
-
-
-    async Task GetSiteCode(MeterDataFile file)
-    {
-        try
-        {
-            if ( ! (file.ParserResult!=null &&  file.Parsed &&  file.Sites> 0 &&  file.HasUnknownSites )  )
-            { 
-                return;
-            }
-            var options = new DialogOptions { CloseOnEscapeKey = true };
-            var diagParams = new DialogParameters<UploadPageDialogGetSiteName>
-                {
-                    { "Filename", file.FileName }
-                };
-            IDialogReference diagRef = await DialogService.ShowAsync<UploadPageDialogGetSiteName>("Name Site", diagParams, options);
-
-            var siteName = await diagRef.GetReturnValueAsync<string>();
-
-            if (!string.IsNullOrWhiteSpace(siteName))
-            {
-                Console.WriteLine($"Setting site name to {siteName}");
-                file.ParserResult?.SetUnknownSiteName(siteName);
-                await InvokeAsync(StateHasChanged);
-            }
-
-        }
-        catch (Exception ex)
-        {
-            file.ParserResult.AddException(ex);
-        }
-    }
-
-
-    async Task ShowLog(MeterDataFile file)
-    {
-        var options = new DialogOptions { CloseOnEscapeKey = true , FullWidth=true , Position= DialogPosition.TopCenter, MaxWidth=MaxWidth.ExtraLarge  };
-        var diagParams = new DialogParameters<UploadPageDialogShowLog>
-            {
-                { "Filename", file.FileName },
-                { "LogMessages", file.ParserResult?.LogMessages }
-            };
-        IDialogReference diagRef = await DialogService.ShowAsync<UploadPageDialogShowLog>("Log", diagParams, options);
-
-    }
-
-
-}

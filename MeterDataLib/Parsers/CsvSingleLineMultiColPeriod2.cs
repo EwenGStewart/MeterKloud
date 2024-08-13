@@ -38,7 +38,7 @@ namespace MeterDataLib.Parsers
             }
             return false;
         }
-        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack)
+        async Task IParser.Parse(SimpleCsvReader reader, ParserResult result, Func<ParserResult, Task>? callBack, CancellationToken? cancellationToken)
         {
             string filename = reader.Filename;
             var timer = new System.Diagnostics.Stopwatch();
@@ -47,10 +47,12 @@ namespace MeterDataLib.Parsers
                 CsvLine line;
                 // skip the first line 
                 await  reader.ReadAsync();
+                cancellationToken?.ThrowIfCancellationRequested();
                 try
                 {
                     while ((line = await reader.ReadAsync()).Eof == false)
                     {
+                        cancellationToken?.ThrowIfCancellationRequested();
                         if (timer.ElapsedMilliseconds > 100)
                         {
                             result.Progress = $"reading line {line.LineNumber}";

@@ -4,10 +4,33 @@
     </TitleContent>
     <DialogContent>
 
-        <MudPaper Class="d-flex flex-column flex-grow-1 gap-0 " Elevation="0" MinHeight="50vh" Height="50vh"  style="background-color: var(--mud-palette-dark-lighten);color: #fff;">
-            <MudText Typo="Typo.caption" Style="font-weight:bold" >Date          Level        [Line/col]    Message   </MudText>
+        <MudPaper Class="d-flex flex-column flex-grow-1 gap-0 pa-3 " Elevation="0" MinHeight="50vh" Height="50vh"  style="background-color: var(--mud-palette-dark-lighten);color: #fff;">
+            <MudText Typo="Typo.caption" Style="font-weight:bold;color::white">
+                    <span style="display: inline-block;width:85px">Date</span>
+                    <span style="display: inline-block;width:60px">Level</span>
+                    <span style="display: inline-block;width:60px">Line/Col</span>
+                    <span style="display: inline-block;">Message</span>
+               
+            </MudText>
+            <MudText Typo="Typo.caption" Style="font-weight:bold;color::white">
+                <span style="display: inline-block;width:85px">------------</span>
+                <span style="display: inline-block;width:60px">-------</span>
+                <span style="display: inline-block;width:60px">----------</span>
+                <span style="display: inline-block;">-------------------------------------------------</span>
+            </MudText>
+
+           
             <Virtualize TItem="MeterDataLib.Parsers.FileLogMessage" Items="LogMessages">
-                <MudText Typo="Typo.caption" Style="@ColorStyle(context)">@DisplayMessage(context)</MudText>
+
+                
+
+                <MudText Typo="Typo.caption" Style="@ColorStyle(context)">
+                    <span style="display: inline-block;width:85px">@($"{context.TimeStamp:HH:mm:ss.fff}")</span>
+                    <span style="display: inline-block;width:60px">@($"{context.LogLevel}")</span>
+                    <span style="display: inline-block;width:60px">@($"[{context.LineNumber}/{context.ColumnNumber}]")</span>
+                    <span style="display: inline-block;">@context.LogMessage</span>
+               
+                </MudText>
             </Virtualize>
         </MudPaper>
 
@@ -31,10 +54,7 @@
 
     private string PageTitle => $"Log for file: {Filename}";
 
-    string DisplayMessage(MeterDataLib.Parsers.FileLogMessage message)
-    {
-        return string.Format($"{message.TimeStamp:HH:mm:ss.fff} {message.LogLevel} [{message.LineNumber}/{message.ColumnNumber}] : {message.LogMessage}  ");
-    }
+  
 
     string ColorStyle(MeterDataLib.Parsers.FileLogMessage message)
     {

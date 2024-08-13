@@ -4,7 +4,7 @@
     {
         bool CanParse(List<CsvLine> lines);
         string Name { get; }
-        Task Parse(SimpleCsvReader csvReader, ParserResult result, Func<ParserResult, Task>? callBack = null);
+        Task Parse(SimpleCsvReader csvReader, ParserResult result, Func<ParserResult, Task>? callBack = null , CancellationToken? cancellationToken = null  );
 
 
         static string GetDefaultSiteCodeFromFilename(string filename)

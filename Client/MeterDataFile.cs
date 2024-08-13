@@ -16,9 +16,9 @@ namespace MeterKloud
             _browserFile = file;
         }
 
-        public Stream OpenStream()
+        public Stream OpenStream(CancellationToken cancellationToken)
         {
-            return _browserFile.OpenReadStream(MAXALLOWEDSIZE);
+            return _browserFile.OpenReadStream(MAXALLOWEDSIZE, cancellationToken);
         }
 
 
@@ -67,32 +67,20 @@ namespace MeterKloud
         }
 
 
-        public async Task Parse( Func<Task>?  asyncCallBack = null )
+        public async Task Parse( Func<Task>?  asyncCallBack = null  , CancellationToken? cancellationToken = null )
         {
             InProgress = true;
             try
             {
-                Console.WriteLine("Calling openstream");
-                using var stream = OpenStream();
-                Console.WriteLine("Calling parse");
-                ParserResult = await MeterDataLib.Parsers.ParserFactory.ParseAsync(stream, FileName, FileType, (r) => UpdateProgress(r, asyncCallBack));
-                Console.WriteLine($"Completed   Result:{(ParserResult == null ? "Null" : "returned")}    Success:{ParserResult?.Success??false}");
-                if (ParserResult != null)
-                {
-
-                    Console.WriteLine($"Parser:{ParserResult.ParserName} Sites:{ParserResult.Sites} Days:{ParserResult.TotalSiteDays} Points:{ParserResult.TotalDataPoints}");
-                    Console.WriteLine("messages");
-                    foreach (var msg in ParserResult.LogMessages)
-                    {
-                        Console.WriteLine(msg);
-                    }
-                }
+                cancellationToken ??= new CancellationToken();
+                using var stream = OpenStream(cancellationToken.Value);
+                ParserResult = await MeterDataLib.Parsers.ParserFactory.ParseAsync(stream, FileName, FileType, (r) => UpdateProgress(r, asyncCallBack) , cancellationToken);
+                
+                
             }
             catch (Exception ex)
             {
                 ParserResult = new ParserResult() { InProgress = false, FileName = FileName, LogMessages = new List<FileLogMessage>() { new FileLogMessage(ex.Message, LogLevel.Critical, FileName, 0, 0) } };
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
             }
             finally
             {
@@ -106,7 +94,7 @@ namespace MeterKloud
 
         async Task UpdateProgress (ParserResult result , Func<Task>? asyncCallBack = null )
         {
-            //Console.WriteLine($"Progress {result.Progress}");
+      
             this.ParserResult = result;
             if (asyncCallBack != null)
             {

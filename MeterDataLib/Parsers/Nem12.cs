@@ -422,7 +422,7 @@ namespace MeterDataLib.Parsers
         //}
 
     
-        async Task IParser.Parse(SimpleCsvReader csvReader, ParserResult result, Func<ParserResult, Task>? callBack)
+        async Task IParser.Parse(SimpleCsvReader csvReader, ParserResult result, Func<ParserResult, Task>? callBack, CancellationToken? cancellationToken)
         {
 
             CsvLine? last100 = null;
@@ -447,6 +447,7 @@ namespace MeterDataLib.Parsers
             timer.Start();
             while (true)
             {
+                cancellationToken?.ThrowIfCancellationRequested();
                 var line =  await csvReader.ReadAsync();
                 if (line.Eof)
                 {

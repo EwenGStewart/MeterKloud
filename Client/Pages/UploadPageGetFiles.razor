@@ -18,7 +18,7 @@
                    @ondragleave="@ClearDragClass"
                    @ondragend="@ClearDragClass">
         <ActivatorContent>
-            <MudPaper Height="300px"
+            <MudPaper Height="50vh"
                       Outlined="true"
                       Class="@_dragClass">
                 <MudText Typo="Typo.h6">
@@ -69,21 +69,27 @@
     private string _error = string.Empty;
     const long maxFileSize = 1000 * 1000 * 1024; // 1GB
 
-    // private async Task ClearAsync()
-    // {
-    //     _error = string.Empty;
-    //     try
-    //     {
-    //         await (_fileUpload?.ClearAsync() ?? Task.CompletedTask);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         _error = ex.Message;
-    //     }
+    public async Task ClearAsync()
+    {
+        _error = string.Empty;
+        try
+        {
+            if (_fileUpload != null)
+            {
+                await (_fileUpload?.ClearAsync() ?? Task.CompletedTask);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("[7R1LBR] Exception when clearing data");
+            Console.WriteLine(ex);
 
-    //     _fileNames.Clear();
-    //     ClearDragClass();
-    // }
+            // _error = ex.Message;
+        }
+
+        _fileNames.Clear();
+        ClearDragClass();
+    }
 
     private Task OpenFilePickerAsync()
         => _fileUpload?.OpenFilePickerAsync() ?? Task.CompletedTask;
@@ -117,7 +123,10 @@
 
             Console.WriteLine("FILES CHANGED");
             _files = files;
-            await OnFilesSelected.InvokeAsync(_files);
+            if (_files != null && _files.Any())
+            {
+                await OnFilesSelected.InvokeAsync(_files);
+            }
         }
         catch (Exception ex)
         {
