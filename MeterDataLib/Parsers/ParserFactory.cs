@@ -43,11 +43,13 @@ namespace MeterDataLib.Parsers
         };
 
 
-        public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack, CancellationToken? cancellationToken = null   )
+        public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack, CancellationToken? cancellationToken = null  , ParserResult? parserResult = null  )
         {
             cancellationToken = cancellationToken ?? new CancellationToken();
             cancellationToken.Value.ThrowIfCancellationRequested();
-            ParserResult result = new ParserResult() { FileName = filename, InProgress = true, Progress = "Starting" };
+            ParserResult result = parserResult ??  new ParserResult() { FileName = filename};
+            result.InProgress = true;
+            result.Progress = "Parse Started";
             try
             {
                 mimeType ??= string.Empty;

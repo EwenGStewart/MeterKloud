@@ -24,15 +24,44 @@ namespace MeterKloud
             _cache = memoryCache;
         }
 
+
         public async Task<Site?> GetSiteAsync(string siteId)
         {
-            return await _indexedDbAccessor.GetValueAsync<Site?>(SITE_COLLECTION, siteId);
+            var sites = _cache.Get<List<Site>>(GetCacheKeySites());
+            if (sites != null)
+            {
+                var cachedSite = sites.Find(x => x.Id == siteId);
+                if (cachedSite != null)
+                {
+                    return cachedSite;
+                }
+            }
+            
+            var site = await _indexedDbAccessor.GetValueAsync<Site>(SITE_COLLECTION, siteId);
+            return site;
         }
+
+
+
+
+
 
         public async Task<Site?> GetSiteByCodeAsync(string siteCode)
         {
 
             siteCode = siteCode.Trim().ToUpperInvariant();
+            var sites = _cache.Get<List<Site>>(GetCacheKeySites());
+            if (sites != null)
+            {
+                var cachedSite = sites.Find(x => x.Code == siteCode);
+                if (cachedSite != null)
+                {
+                    return cachedSite;
+                }
+            }
+
+
+
             var site =  ( await GetSitesAsync()).Where(x=>x.Code == siteCode).FirstOrDefault() ;
             return site;
         }
@@ -43,19 +72,32 @@ namespace MeterKloud
             toDate ??= DateTime.Today.AddDays(10);
             string fromKey1 = GetSiteDayId(siteId, fromDate.Value);
             string toKey1 = GetSiteDayId(siteId, toDate.Value);
-            return await _indexedDbAccessor.GetRangeAsync<SiteDay>(SITEDAY_COLLECTION, fromKey1, toKey1);
-         }
+                
+            var last = _cache.Get<CacheSiteDayLookUp>(GetCacheKeySiteDays());
+            if (last != null && last.siteId == siteId && last.fromdate <= fromDate && last.todate >= toDate && last.siteDays.Any())
+            {
+                return last.siteDays.Where( x=>x.Date >= fromDate && x.Date <= toDate ).ToList();
+            }
+
+            var result = await _indexedDbAccessor.GetRangeAsync<SiteDay>(SITEDAY_COLLECTION, fromKey1, toKey1);
+            if ( result != null && result.Count != 0)
+            {
+                _cache.Set(GetCacheKeySiteDays(), new CacheSiteDayLookUp(siteId, fromDate.Value, toDate.Value, result), new TimeSpan(1, 0, 0));
+            }
+            return result!;
+
+        }
 
 
 
         public async Task<List<Site>> GetSitesAsync()
         {
-            var sites = _cache.Get<List<Site>>(SITE_COLLECTION);
+            var sites = _cache.Get<List<Site>>(GetCacheKeySites());
             if (sites == null)
             {
                 sites = await _indexedDbAccessor.GetAllValuesAsync<Site>(SITE_COLLECTION);
                 sites??= new List<Site>();
-                _cache.Set(SITE_COLLECTION, sites , new  TimeSpan(1,0,0));
+                _cache.Set(GetCacheKeySites(), sites , new  TimeSpan(1,0,0));
             }
             return sites;
         }
@@ -63,7 +105,7 @@ namespace MeterKloud
         public async  Task<Site> PutSiteAsync(Site site)
         {
              await _indexedDbAccessor.SetValueAsync(SITE_COLLECTION, site);
-            _cache.Remove(SITE_COLLECTION);
+            _cache.Remove(GetCacheKeySites());
             return site;
         }
 
@@ -72,7 +114,8 @@ namespace MeterKloud
              var key = GetSiteDayId(siteId, siteDay.Date);
              siteDay.Id = key;
              await _indexedDbAccessor.SetValueAsync(SITEDAY_COLLECTION, siteDay);
-             return siteDay;
+            _cache.Remove(GetCacheKeySiteDays());
+            return siteDay;
         }
 
 
@@ -81,8 +124,28 @@ namespace MeterKloud
             return $"{siteId}_{day:yyyy-MM-dd}";
         }
 
+         
+
+        string GetCacheKeySites()
+        {
+            return $"{SITE_COLLECTION}##ALL";
+        }
+
+        string GetCacheKeySiteDays( )
+        {
+            return $"{SITEDAY_COLLECTION}##Last";
+        }
+
+
+        record CacheSiteDayLookUp (string siteId , DateTime fromdate , DateTime todate , List<SiteDay> siteDays); 
+         
+
+
 
     }
+
+
+
 
 
 

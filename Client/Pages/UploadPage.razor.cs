@@ -1,3 +1,4 @@
+using MeterDataLib.Parsers;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
@@ -40,7 +41,11 @@ namespace MeterKloud.Pages
         bool ViewDataDisabled => !(CanViewSites) ; 
 
 
-
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            await Api.InitApi();
+        }
 
         async Task UploadMoreFiles(MouseEventArgs mouseEventArgs)
         {
@@ -65,16 +70,15 @@ namespace MeterKloud.Pages
                     try
                     {
 
-                        await file.Parse(UpdateProgress, _cancellationToken);
-                        if (file.ParserResult != null && file.Parsed && file.Sites > 0 && file.HasUnknownSites)
-                        {
-                            await GetSiteCode(file);
-                        }
-                        if (file.ParserResult != null && file.Parsed && file.Sites > 0)
-                        {
-                            await Db.SaveParserResult(file.ParserResult);
-                        }
+                        await file.Parse(UpdateProgress, _cancellationToken.Value , Api );
+               
                     }
+                    catch (OperationCanceledException)
+                    {
+                        file.AddException("Operation Cancelled");
+                    }   
+
+
                     catch (Exception ex)
                     {
                         file.AddException(ex);
@@ -124,13 +128,7 @@ namespace MeterKloud.Pages
         }
 
 
-        async Task UpdateProgress()
-        {
-
-            await InvokeAsync(StateHasChanged);
-            // await Task.Delay(1);
-
-        }
+        async Task UpdateProgress(ParserResult result) => await InvokeAsync(StateHasChanged);
 
 
         async Task GetSiteCode(MeterDataFile file)

@@ -16,12 +16,6 @@ namespace MeterKloud
             _browserFile = file;
         }
 
-        public Stream OpenStream(CancellationToken cancellationToken)
-        {
-            return _browserFile.OpenReadStream(MAXALLOWEDSIZE, cancellationToken);
-        }
-
-
 
         public string FileName { get; init; }
         public long FileSize { get; init; }
@@ -67,15 +61,13 @@ namespace MeterKloud
         }
 
 
-        public async Task Parse( Func<Task>?  asyncCallBack = null  , CancellationToken? cancellationToken = null )
+        public async Task Parse( Func<ParserResult,Task> asyncCallBack , CancellationToken cancellationToken , MeterKloudClientApi api  )        
         {
             InProgress = true;
             try
             {
-                cancellationToken ??= new CancellationToken();
-                using var stream = OpenStream(cancellationToken.Value);
-                ParserResult = await MeterDataLib.Parsers.ParserFactory.ParseAsync(stream, FileName, FileType, (r) => UpdateProgress(r, asyncCallBack) , cancellationToken);
-                
+                ParserResult = new ParserResult() { InProgress = true, FileName = FileName };
+                ParserResult = await api.UploadStream(_browserFile, asyncCallBack, cancellationToken, ParserResult);
                 
             }
             catch (Exception ex)
@@ -92,15 +84,7 @@ namespace MeterKloud
         }
 
 
-        async Task UpdateProgress (ParserResult result , Func<Task>? asyncCallBack = null )
-        {
-      
-            this.ParserResult = result;
-            if (asyncCallBack != null)
-            {
-                await asyncCallBack();
-            }
-        }
+ 
 
     
 

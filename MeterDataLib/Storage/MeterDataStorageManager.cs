@@ -1,4 +1,6 @@
 ﻿using MeterDataLib.Parsers;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace MeterDataLib.Storage
 {
@@ -10,7 +12,10 @@ namespace MeterDataLib.Storage
             _storage = storage;
         }
 
-        public async Task SaveParserResult(ParserResult parserResult)
+        public Site? LastSIte { get; private set; }
+
+
+        public async Task SaveParserResult(ParserResult parserResult , List<Site>? _siteListCache  )
         {
 
             parserResult.FixSiteNames();
@@ -38,12 +43,19 @@ namespace MeterDataLib.Storage
 
                 }
 
-                if (site.LastUpdatedTimeStampUtc > site.DbTimeStampUtc)
-                {
-                    site = await _storage.PutSiteAsync(site);
-                }
-
+                site.LastAccessTimeUtc   = DateTime.UtcNow;
+                site = await _storage.PutSiteAsync(site);
                 await _storage.PutSiteAsync(site);
+                LastSIte = site;
+                if (_siteListCache != null)
+                {
+                    var existing = _siteListCache.Where(x => x.Id == site.Id).FirstOrDefault();
+                    if (existing != null)
+                    {
+                        _siteListCache.Remove(existing);
+                    }
+                    _siteListCache.Add(site);
+                }
                 foreach (var siteDay in siteGroup)
                 {
                     await _storage.PutSiteDay(site.Id, siteDay);
@@ -51,6 +63,14 @@ namespace MeterDataLib.Storage
 
             }
         }
+
+
+        public async Task<List<Site>> GetSites()
+        {
+            return await _storage.GetSitesAsync();
+        }
+
+
 
     }
 }

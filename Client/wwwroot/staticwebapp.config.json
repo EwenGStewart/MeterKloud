@@ -1,7 +1,7 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": [ "/_framework/*", "/css/*" , "/js/*" ]
+    "exclude": [ "/_framework/*", "/css/*" , "/js/*" , "/images/*" ]
   },
 
   "responseOverrides": {

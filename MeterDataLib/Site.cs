@@ -28,6 +28,14 @@ namespace MeterDataLib
         public DateTime DbTimeStampUtc { get; set; } = DateTime.MinValue;
         public DateTime LastUpdatedTimeStampUtc { get; set; } = DateTime.MinValue;
 
+        public DateTime LastAccessTimeUtc { get; set; } = DateTime.MinValue;
+
+
+        private List<SiteDay>? _siteDays = null; 
+
+
+
+
     }
 
 

@@ -3,6 +3,7 @@ using MeterDataLib.Storage;
 using MeterKloud;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 using MudBlazor.Services;
 
 
@@ -18,27 +19,20 @@ builder.Services.AddMudServices();
 //builder.Services.AddScoped<AuthenticationStateProvider, MyServerAuthenticationStateProvider>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddStaticWebAppsAuthentication();
-Console.WriteLine("Adding AddMemoryCache");
-builder.Services.AddMemoryCache();
-Console.WriteLine("Adding IndexedDbAccessor");
-builder.Services.AddScoped<IndexedDbAccessor>();
-Console.WriteLine("Adding IndexDbMeterDataStore");
-builder.Services.AddScoped<IMeterDataStore,IndexDbMeterDataStore>();
-Console.WriteLine("Adding MeterDataStorageManager");
-builder.Services.AddScoped<MeterDataStorageManager>();
-Console.WriteLine("build");
-var host = builder.Build();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IndexedDbAccessor>();
+builder.Services.AddSingleton<IMeterDataStore,IndexDbMeterDataStore>();
+builder.Services.AddSingleton<MeterDataStorageManager>();
+builder.Services.AddSingleton<MeterKloudClientApi>();
+
+var host = builder.Build();
 await using  (var scope = host.Services.CreateAsyncScope())
 {
-    await using (var indexedDB = scope.ServiceProvider.GetService<IndexedDbAccessor>())
-    {
 
-        if (indexedDB is not null)
-        {
-            await indexedDB.InitializeAsync();
-        }
-    }
+    var api = scope.ServiceProvider.GetRequiredService<MeterKloudClientApi>();
+    await api.InitApi();
+
 }
 
 
