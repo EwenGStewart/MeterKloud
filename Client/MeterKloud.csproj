@@ -18,5 +18,16 @@
   <ItemGroup>
     <ProjectReference Include="..\MeterDataLib\MeterDataLib.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="wwwroot\images\MeterKloud.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\MeterKloudDrawTitle.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\MeterKloudDrawTitleClear.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
  
 </Project>
