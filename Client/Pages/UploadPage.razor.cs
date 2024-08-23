@@ -19,7 +19,7 @@ namespace MeterKloud.Pages
         internalState _state = internalState.GetFiles;
 
 
-        ObservableCollection<MeterDataFile> _items = new ObservableCollection<MeterDataFile>();
+        ObservableCollection<MeterDataFile> _items = [];
 
         UploadPageGetFiles UploadPageGetFiles { get; set; } = default!;
 

@@ -72,7 +72,7 @@ namespace MeterKloud
             }
             catch (Exception ex)
             {
-                ParserResult = new ParserResult() { InProgress = false, FileName = FileName, LogMessages = new List<FileLogMessage>() { new FileLogMessage(ex.Message, LogLevel.Critical, FileName, 0, 0) } };
+                ParserResult = new ParserResult() { InProgress = false, FileName = FileName, LogMessages = [new FileLogMessage(ex.Message, LogLevel.Critical, FileName, 0, 0)] };
             }
             finally
             {

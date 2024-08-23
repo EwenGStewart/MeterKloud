@@ -19,12 +19,12 @@ namespace MeterDataLib.Parsers
         //    , new CsvSingleLineSimpleEBKvaPF()
         //};
 
-        static List<IParser> Parsers = new List<IParser>() { new Nem12(),new CsvByChannel()
+        static List<IParser> Parsers = [ new Nem12(),new CsvByChannel()
         , new CsvSingleLine7() ,new CsvPowerPal() ,new CsvPowerPal() , new CsvMultiLine1()
             , new CsvSingleLineMultiColPeriod() , new CsvSingleLineMultiColPeriod2()
             , new CsvSingleLinePeakOffPeakDateNumber(), new CsvSingleLineSimpleEBKvaPF()
             , new CsvSingleLineSimpleEBQK()
-        };
+        ];
 
 
 
@@ -43,7 +43,7 @@ namespace MeterDataLib.Parsers
         };
 
 
-        public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack, CancellationToken? cancellationToken = null  , ParserResult? parserResult = null  )
+        public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null, CancellationToken? cancellationToken = null  , ParserResult? parserResult = null  )
         {
             cancellationToken = cancellationToken ?? new CancellationToken();
             cancellationToken.Value.ThrowIfCancellationRequested();

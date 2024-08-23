@@ -1,0 +1,65 @@
+﻿@page "/sites"
+@inject MeterKloudClientApi API
+@using MeterDataLib
+
+<MudContainer>
+
+    <MudText Typo="Typo.h1">Sites</MudText>
+    <MudText Typo="Typo.h2">@FolderCount folder  @SiteCount sites </MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/Upload">Upload Date</MudButton>
+
+    @foreach (var directory in Folders)
+    {
+
+        <MudText Typo="Typo.h3">@directory.Key</MudText>
+
+        <div class=" d-flex flex-row flex-wrap gap-4 flex-grow-0 justify-start align-content-start ">
+
+
+            @foreach (var site in directory.OrderByDescending(zz => zz.LastAccessTimeUtc))
+            {
+                <MudButton Href="@($"/graphDailyConsumption/{site.Id}")">
+                <MudPaper Elevation="25" Width="10rem" Height="10rem" Outlined>
+                    <MudText Typo="Typo.h4">@site.Code</MudText>
+                </MudPaper>
+                </MudButton>
+            }
+
+
+        </div>
+
+
+    }
+
+
+</MudContainer>
+
+@code {
+
+
+    public List<Site> SiteList { get; set; } = new List<Site>();
+
+
+    IEnumerable<IGrouping<string, Site>> Folders
+    {
+        get
+        {
+            return SiteList.GroupBy(zz => zz.Folder).OrderByDescending(zz => zz.Max(yy => yy.LastAccessTimeUtc));
+        }
+    }
+
+    int FolderCount => Folders.Count();
+
+    int SiteCount => SiteList.Count();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SiteList = await API.GetSites();
+
+    }
+
+
+
+
+
+}

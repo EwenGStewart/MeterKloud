@@ -9,13 +9,13 @@ namespace MeterDataLib.Parsers
         readonly CancellationToken _cancellationToken;
         bool _eof = false; 
         string _filename;
-        private List<CsvLine> _buffer = new List<CsvLine>();
+        private List<CsvLine> _buffer = [];
 
         public int LineNumber { get; private set; } = 0;
         public int ColNumber { get; private set; } = 0;
 
         public string CurrentLine { get; private set; } = string.Empty;
-        public string[] CurrentCols { get; private set; } = Array.Empty<string>();
+        public string[] CurrentCols { get; private set; } = [];
         
         public string Filename => _filename;
         
@@ -125,7 +125,7 @@ namespace MeterDataLib.Parsers
                     if (nextLine == null)
                     {
                         _eof = true;
-                        return new CsvLine(Array.Empty<string>(), LineNumber, true);
+                        return new CsvLine([], LineNumber, true);
                     }
                     LineNumber++;
                     if (string.IsNullOrWhiteSpace(nextLine) == false)
@@ -146,10 +146,10 @@ namespace MeterDataLib.Parsers
                 {
                     Console.WriteLine($"[GRLPN9] Error reading file - {ex.Message}");
                     Console.WriteLine(ex.StackTrace);
-                    return new CsvLine(Array.Empty<string>(), LineNumber, true);
+                    return new CsvLine([], LineNumber, true);
                 }
             }
-            return new CsvLine(Array.Empty<string>(), LineNumber, true);
+            return new CsvLine([], LineNumber, true);
         }
 
 

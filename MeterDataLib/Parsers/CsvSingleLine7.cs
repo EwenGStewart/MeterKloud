@@ -153,7 +153,7 @@ namespace MeterDataLib.Parsers
                     {
                         SiteCode = siteDayGroup.Key.Nmi,
                         Date = siteDayGroup.Key.ReadDate,
-                        Channels = new Dictionary<string, ChannelDay>(),
+                        Channels = [],
                     };
                     result.SitesDays.Add(siteDay);
                     foreach (var channelGroup in siteDayGroup.GroupBy(x => x.Suffix).Where(x => x.Count() > 1))

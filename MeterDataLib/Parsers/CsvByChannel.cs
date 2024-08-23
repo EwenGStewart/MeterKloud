@@ -153,7 +153,7 @@ namespace MeterDataLib.Parsers
                     {
                         SiteCode = siteDayGroup.Key.Nmi,
                         Date = siteDayGroup.Key.ReadDate,
-                        Channels = new Dictionary<string, ChannelDay>(),
+                        Channels = [],
                         UCT_Offset = 10,
                         TimeZoneName = "AEST"
                     };

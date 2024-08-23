@@ -1,4 +1,6 @@
-﻿namespace MeterDataLib
+﻿using MeterDataLib.Parsers;
+
+namespace MeterDataLib
 {
     public class ChannelDay
     {
@@ -6,12 +8,19 @@
         public string Channel { get; set; } = string.Empty;
         public string ChannelNumber { get; set; } = string.Empty;
 
+
+
+
         public ChanelType ChannelType { get; set; }
 
         public bool IsNet { get; set; }
         public bool IsCheck { get; set; }
         public bool IsAvg { get; set; }
         public string MeterId { get; set; } = string.Empty;
+
+        public string ChannelNumberOrMeterName => string.IsNullOrWhiteSpace(ChannelNumber) ? (string.IsNullOrWhiteSpace(MeterId) ? ParserResult.UNKNOWN : MeterId.Trim().ToUpperInvariant()) : ChannelNumber.Trim().ToUpperInvariant();
+
+
         public string RegisterId     { get; set; } = string.Empty;
 
         public UnitOfMeasure UnitOfMeasure { get; set; }
@@ -25,7 +34,7 @@
         public Quality OverallQuality { get; set; }
         public IndexRead? StartIndexRead { get; set; }
         public IndexRead? EndIndexRead { get;set; } 
-        public decimal[] Readings { get; set; } = Array.Empty<decimal>();
+        public decimal[] Readings { get; set; } = [];
         public Quality[]? ReadQualities { get; set; }
  
         public TimeOfUseClass[]? TimeOfUseClasses { get; set; }
@@ -34,31 +43,12 @@
         public string SourceProviderCode { get; set; } = string.Empty;
 
         public EquipmentType EquipmentType { get; set; }
-        public List<MeterDataInfo>  Metadata { get; set; } = new();
+        public List<MeterDataInfo>  Metadata { get; set; } = [];
         public bool Ignore { get; set; }
         public bool Controlled { get; set; }
         public SeasonClass? Season { get; set; }
         
         public List<ChannelDay>? PreviousVersions { get; set; } 
-
-    }
-
-
-    public record MeterDataInfo(string MetaDataName, int FromIndex = 0, int ToIndex = 0, string Value = "")
-    {
-        public MeterDataInfo(string MetaDataName, string Value) : this(MetaDataName, 0, 0, Value)
-        {
-        }
-
-    }
-
-    public static class MetaDataName
-    {
-        public const string ReasonCode = "ReasonCode";
-        public const string ReasonDescription = "ReasonDescription";
-        public const string EstimationType = "EstimationType";
-        public const string TransactionCode = "TransCode";
-        public const string ServiceOrder = "ServiceOrder";
 
     }
 

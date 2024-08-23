@@ -127,7 +127,7 @@ namespace MeterDataLib.Parsers
                     {
                         SiteCode = siteCode,
                         Date = siteDayGroup.Key,
-                        Channels = new Dictionary<string, ChannelDay>(),
+                        Channels = [],
                         UCT_Offset = siteDayGroup.First().UtcOffset
                     };
                     result.SitesDays.Add(siteDay);

@@ -113,7 +113,7 @@ namespace MeterDataLib.Parsers
                     {
                         SiteCode =  IParser.GetDefaultSiteCodeFromFilename(filename),
                         Date = siteDayGroup.Key.ReadDate,
-                        Channels = new Dictionary<string, ChannelDay>(),
+                        Channels = [],
                     };
                     result.SitesDays.Add(siteDay);
 

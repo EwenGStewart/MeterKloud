@@ -1,0 +1,138 @@
+﻿@page "/graphDailyConsumption"
+@page "/graphDailyConsumption/{siteId}"
+@inject MeterKloudClientApi API
+@inject NavigationManager NavigationManager
+@using Plotly.Blazor.Traces.ScatterLib
+@using Site = MeterDataLib.Site;
+
+
+<MudText Typo="Typo.h1">@SitesName()</MudText>
+
+@if ( _pageState == PageStateValue.Error)
+{
+    <MudAlert Icon="" Severity="Severity.Error">[8TSAL9] Error - could not load the requested site</MudAlert>
+
+}
+else if ( _pageState == PageStateValue.Loading)
+{
+        <MudProgressCircular Indeterminate="true"  />
+}
+
+
+    <MudPaper Elevation="25" Height="600px" Outlined >
+    
+    @if (_pageState == PageStateValue.Loaded)
+    {
+        <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart" />
+    }
+
+    </MudPaper>
+
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public string? SiteId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "Code")]
+    public string? SiteCode { get; set; }
+
+    Site? _site;
+    PlotlyChart _chart = default!;
+    IList<ITrace> _data = new List<ITrace>();
+    Config _config = new Config();
+    Layout _layout = new Layout();
+
+
+    private enum PageStateValue      
+    {
+        Loading,
+        Loaded,
+        Error
+    }
+
+    private PageStateValue _pageState = PageStateValue.Loading;
+
+
+    public string SitesName()
+    {
+        if ( _site != null)
+        {
+            if ( ! string.IsNullOrWhiteSpace(_site.Name)  && !  _site.Name.Equals(_site.Code, StringComparison.OrdinalIgnoreCase ) )
+            {
+                return  $"Site:  {_site.Code} - {_site.Name}";
+            }
+            else { 
+                return  $"Site:  {_site.Code}";
+            }
+        }
+        if ( _pageState == PageStateValue.Loading)
+        {
+            return "Loading...";
+        }
+        if (!string.IsNullOrWhiteSpace(SiteId))
+        {
+            return "SiteId: " + SiteId;
+        }
+        if (!string.IsNullOrWhiteSpace(SiteCode))
+        {
+            return "SiteCode: " + SiteCode;
+        }
+        return "Unknown";
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _site = null;
+        _pageState = PageStateValue.Loading;
+        if ( SiteId != null)
+        {
+            var site = await API.GetSite(SiteId);
+            _site = site; 
+        }
+        else if ( SiteCode != null)
+        {
+            var site = await  API.GetSiteByCode(SiteCode);
+            if ( site != null)
+            {
+                NavigationManager.NavigateTo($"/graphDailyConsumption/{site.Id}");
+            }
+        }
+        else if ( _site == null && SiteId == null )
+        {
+            var site = await API.GetLastSiteAccessed();
+            if ( site != null)
+            {
+                NavigationManager.NavigateTo($"/graphDailyConsumption/{site.Id}");
+            }
+        }
+
+        if ( _site != null )
+        {
+
+            var dailyTotals = await  API.GetDailyConsumption(_site.Id);
+            var trace = new Bar
+                {
+                    X = dailyTotals.X, 
+                    Y = dailyTotals.Y,
+                    Name = "Daily Consumption (kWh) "
+                };
+            this._data = new List<ITrace> { trace };
+            _pageState = PageStateValue.Loaded;
+        }
+        else
+        {
+            _pageState = PageStateValue.Error;
+        }   
+
+    }
+
+
+    // Using of the interface IList is important for the event callback!
+     
+}

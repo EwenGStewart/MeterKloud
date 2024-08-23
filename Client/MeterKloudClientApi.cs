@@ -7,6 +7,14 @@ using System;
 using static System.Formats.Asn1.AsnWriter;
 using MeterDataLib.Parsers;
 using Microsoft.AspNetCore.Components.Forms;
+using System.Net.Sockets;
+using Site = MeterDataLib.Site;
+using MeterDataLib;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.JSInterop;
+
+
+
 
 namespace MeterKloud
 {
@@ -19,7 +27,7 @@ namespace MeterKloud
         private readonly IndexedDbAccessor _indexedDb ;
         private IndexDbMeterDataStore? indexDbMeterDataStore = null; 
         private MeterDataStorageManager? meterDataStorageManager = null;
-        private List<MeterDataLib.Site> _sites = new();
+        private List<MeterDataLib.Site> _sites = [];
 
         public MeterKloudClientApi( IMemoryCache memoryCache, IndexedDbAccessor indexedDbAccessor)
         {
@@ -66,7 +74,15 @@ namespace MeterKloud
         }
 
 
-        public MeterDataLib.Site? GetLastSite => _sites.Any() ? _sites.OrderByDescending(xx => xx.LastAccessTimeUtc).ThenBy(xx => xx.Code).FirstOrDefault() : null;
+        public async Task<Site?>  GetLastSiteAccessed()
+        {
+            if (meterDataStorageManager == null)
+            {
+                return null;
+            }
+            var site = await meterDataStorageManager.GetLastSiteAccessed();
+            return site;
+        }
 
 
         public async Task<ParserResult> UploadStream(IBrowserFile browserFile, Func<ParserResult, Task>? CallBack, CancellationToken? cancellationToken , ParserResult result  ) 
@@ -106,6 +122,114 @@ namespace MeterKloud
 
 
 
+        public async Task<List<Site>> GetSites()
+        {
+            if (meterDataStorageManager == null)
+            {
+                return [];
+            }
+            return await meterDataStorageManager.GetSites();
+        }
+
+
+
+        public async Task<Site?> GetSite(string id)
+        {
+            if (meterDataStorageManager == null)
+            {
+                return null;
+            }
+            var site = await  meterDataStorageManager.GetSite(id);
+            return site;
+        }
+
+        public async Task<Site?> GetSiteByCode(string id)
+        {
+            if (meterDataStorageManager == null)
+            {
+                return null;
+            }
+            var site = await meterDataStorageManager.GetSiteByCode(id);
+            if (site != null)
+            {
+                _sites.Add(site);
+            }
+            return site;
+        }
+
+
+
+        public async Task<List<SiteDay>> GetSiteDays(string id, DateTime fromDate , DateTime toDate )
+        {
+            if (meterDataStorageManager == null)
+            {
+                return [];
+            }
+            var siteDays  = await meterDataStorageManager.GetSiteDays(id, fromDate , toDate );
+           
+            return siteDays;
+        }
+
+        public async Task<List<SiteDay>> GetSiteDays(string id)
+        {
+            if (meterDataStorageManager == null)
+            {
+                return [];
+            }
+            var site = await meterDataStorageManager.GetSite(id);
+            if (site == null)
+            {
+                return [];
+            }
+            var fromDate = site.FirstDay.Date;
+            var toDate = site.LastDay.Date;
+            var minFromDate =  new DateTime(toDate.Year - 2, toDate.Month, 1);
+            if ( fromDate < minFromDate)
+            {
+                fromDate = minFromDate;
+            }
+            var siteDays = await meterDataStorageManager.GetSiteDays(id, fromDate, toDate);
+            return siteDays;
+        }
+
+
+        public async   Task<MeterDataLib.Query.MeterDataQuery.DailyConsumptionProfileResult>    GetDailyConsumption ( string siteId )
+        {
+            if (meterDataStorageManager == null)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.DailyConsumptionProfileResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+            
+            var days = await GetSiteDays(siteId);
+            if ( days.Count == 0)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.DailyConsumptionProfileResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+            var result = MeterDataLib.Query.MeterDataQuery.GetDailyNetConsumption(days.OrderBy(x=>x.Date).First().Date, days.OrderBy(x=>x.Date).Last().Date, days);
+            return result;
+
+        }
+
+
+        public async Task<MeterDataLib.Query.MeterDataQuery.DetailedConsumptionProfileResult> GetDetailedConsumption(string siteId)
+        {
+            if (meterDataStorageManager == null)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.DetailedConsumptionProfileResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+
+            var days = await GetSiteDays(siteId);
+            if (days.Count == 0)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.DetailedConsumptionProfileResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+            var result = MeterDataLib.Query.MeterDataQuery.GetDetailedNetConsumption(days.OrderBy(x => x.Date).First().Date, days.OrderBy(x => x.Date).Last().Date, days);
+            return result;
+
+        }
+
+
+
         async Task LoadPreviousSites()
         {
             if (meterDataStorageManager == null)
@@ -119,6 +243,9 @@ namespace MeterKloud
 
         }
 
+
+
+        
 
 
 

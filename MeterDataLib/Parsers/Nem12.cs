@@ -15,7 +15,7 @@ namespace MeterDataLib.Parsers
     {
  
 
-        private CsvLine CsvLine { get; set; } = new CsvLine(Array.Empty<string>(), 0, true);
+        private CsvLine CsvLine { get; set; } = new CsvLine([], 0, true);
         string IParser.Name => "NEM12";
 
         const int MAX_ERRORS = 10;

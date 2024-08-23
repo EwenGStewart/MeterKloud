@@ -1,4 +1,3 @@
-using FluentAssertions;
 using MeterDataLib.Parsers;
 using System.Collections;
 using System.Globalization;
@@ -49,7 +48,7 @@ namespace TestMeterLib
             {
                 // Use the stream here
                 //test 
-                var result  = await ParserFactory.ParseAsync(stream, resource, mimeType);
+                var result = await ParserFactory.ParseAsync(stream, resource, mimeType, null );
                 bool actualResult = result.Success;
                 Assert.Equal(expectedResult, actualResult);
             }
@@ -58,7 +57,7 @@ namespace TestMeterLib
 
 
         [Theory]
-        [InlineData("4103354306_20160604_20170605_20170605000000_EnergyAustralia_DETAILED (1).csv", "text/csv"  )]
+        [InlineData("4103354306_20160604_20170605_20170605000000_EnergyAustralia_DETAILED (1).csv", "text/csv")]
         [InlineData("61029293722_meter_usage_data_cipc1_05_2015.csv", "text/csv")]
         [InlineData("6407276797_20150803_20160517_20160518160200_UNITEDENERGY_DETAILED.csv", "text/csv")]
         [InlineData("SampleNem", "")]
@@ -111,8 +110,6 @@ namespace TestMeterLib
         [InlineData("SampleNem12-2.csv", "text/csv")]
         [InlineData("SampleNem12-3.csv", "text/csv")]
         [InlineData("SampleNem12-4.CSV", "text/csv")]
-
-
         [InlineData("MultiLineCsv1.csv", "text/csv")]
         [InlineData("SampleCsv.csv", "text/csv")]
         [InlineData("SampleCsv3.csv", "text/csv")]
@@ -142,14 +139,14 @@ namespace TestMeterLib
 
                 Console.WriteLine("Parsing " + resource);
                 var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}" );
+                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
                 foreach (var log in result.LogMessages)
                 {
-                    Console.WriteLine( $"{log.LogLevel} {log.LogMessage}   Line:{log.LineNumber} Col:{log.ColumnNumber}  Filename:{log.FileName}");
+                    Console.WriteLine($"{log.LogLevel} {log.LogMessage}   Line:{log.LineNumber} Col:{log.ColumnNumber}  Filename:{log.FileName}");
                 }
 
                 bool actualResult = result.Success;
-                Assert.True( actualResult);
+                Assert.True(actualResult);
             }
         }
 
@@ -179,10 +176,10 @@ namespace TestMeterLib
         [InlineData("SampleNem12Excel3.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
         [InlineData("SampleNem12Zip.zip", "application/x-zip-compressed", true)]
 
- 
 
 
-        public async  Task  Nem12(string resource, string mimeType, bool isNem12)
+
+        public async Task Nem12(string resource, string mimeType, bool isNem12)
         {
             Console.SetOut(new RedirectOutput(Output));
             using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
@@ -296,6 +293,5 @@ namespace TestMeterLib
 
 
     }
-
 
 }

@@ -71,6 +71,29 @@ namespace MeterDataLib.Storage
         }
 
 
+        public async Task<Site?> GetSite(string id)
+        {
+            return await _storage.GetSiteAsync(id);
+        }
+
+        public async Task<Site?> GetSiteByCode(string code)
+        {
+            return await _storage.GetSiteByCodeAsync(code);
+        }
+
+        public async Task<Site?> GetLastSiteAccessed()
+        {
+            return await _storage.GetLastSiteAccessed();
+        }
+
+        public async Task<List<SiteDay>> GetSiteDays(string siteId, DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            return await _storage.GetSiteDays(siteId, fromDate, toDate);
+        }
+
+
+
+
 
     }
 }

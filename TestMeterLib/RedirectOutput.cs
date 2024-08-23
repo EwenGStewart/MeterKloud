@@ -3,14 +3,9 @@ using Xunit.Abstractions;
 
 namespace TestMeterLib
 {
-    public class RedirectOutput : TextWriter
+    public class RedirectOutput(ITestOutputHelper output) : TextWriter
     {
-        private readonly ITestOutputHelper _output;
-
-        public RedirectOutput(ITestOutputHelper output)
-        {
-            _output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public override Encoding Encoding { get; } = Encoding.UTF8;
 

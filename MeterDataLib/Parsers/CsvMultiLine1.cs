@@ -127,7 +127,7 @@ namespace MeterDataLib.Parsers
                                 {
                                     SiteCode = nmi,
                                     Date = readDate,
-                                    Channels = new Dictionary<string, ChannelDay>(),
+                                    Channels = [],
                                     TimeZoneName = localTime,
                                     UCT_Offset = (localTime == "AEST" ? 10 : null),
                                 };

@@ -2,7 +2,7 @@
 {
 
 
-    public enum Quality { Unknown=0, Actual, Null, Final, Substituted, Estimated , Variable}
+    public enum Quality { Unknown=0, Actual, Null, Final, Substituted, Estimated , Variable, Missing }
 
 
     public static class QualityExtensions
@@ -17,6 +17,7 @@
                 Quality.Substituted => "S",
                 Quality.Estimated => "E",
                 Quality.Variable => "V",
+                Quality.Missing => ".",
                 _ =>  "?"
             };
         }
@@ -37,6 +38,7 @@
                 "S" => Quality.Substituted,
                 "E" => Quality.Estimated,
                 "V" => Quality.Variable,
+                "." => Quality.Missing,
                 "?" => Quality.Unknown,
                 _ => Quality.Unknown
             };

@@ -13,6 +13,11 @@ namespace MeterDataLib.Storage
         public Task<Site?> GetSiteAsync(string siteId);
 
         public Task<Site?> GetSiteByCodeAsync(string siteCode);
+
+
+        public Task<Site?> GetLastSiteAccessed(); 
+        
+        
         public Task<Site> PutSiteAsync(Site site); 
 
 

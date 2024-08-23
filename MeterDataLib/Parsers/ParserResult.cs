@@ -8,9 +8,9 @@ namespace MeterDataLib.Parsers
         public const string UNKNOWN = "UNKNOWN";
 
         public bool Success => SitesDays.Any() && Errors == 0;
-        public  List<SiteDay> SitesDays { get; set; } = new List<SiteDay>();
+        public  List<SiteDay> SitesDays { get; set; } = [];
 
-        public List<FileLogMessage> LogMessages { get; set; } = new List<FileLogMessage>();
+        public List<FileLogMessage> LogMessages { get; set; } = [];
 
 
         public void AddException( Exception exception)
