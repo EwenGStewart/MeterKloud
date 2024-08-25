@@ -2,6 +2,7 @@
 @page "/GraphProfileConsumption/{siteId}"
 @inject MeterKloudClientApi API
 @inject NavigationManager NavigationManager
+@using MeterDataLib.Query
 @using Plotly.Blazor.LayoutLib.XAxisLib
 @using Plotly.Blazor.Traces.ScatterLib
 @using Site = MeterDataLib.Site;
@@ -24,7 +25,7 @@ else if (_pageState == PageStateValue.Loading)
 
     @if (_pageState == PageStateValue.Loaded)
     {
-        <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart"   />
+        <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart" />
     }
 
 </MudPaper>
@@ -117,68 +118,27 @@ else if (_pageState == PageStateValue.Loading)
         if (_site != null)
         {
 
-            var dailyTotals = await API.GetDetailedConsumption(_site.Id);
-            var trace = new Scatter
-                {
-                    X = dailyTotals.X,
-                    Y = dailyTotals.Y,
-                    Fill =   FillEnum.ToZeroY,
-                    Name = $"Net Consumption (kWh)"
-                };
-            this._data = new List<ITrace> { trace };
-            this._layout = new Layout
-                {
-                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Consumption( kWh) by {dailyTotals.Interval}" },
-                    XAxis = new[] {
-                        new Plotly.Blazor.LayoutLib.XAxis    
-                        {
-                            Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title() { Text = "Time" } ,
-                            Type = Plotly.Blazor.LayoutLib.XAxisLib.TypeEnum.Date,
-                            AutoRange =  Plotly.Blazor.LayoutLib.XAxisLib.AutoRangeEnum.False,
-                            Range = new List<object> { dailyTotals.ActualDateRange.ExclusiveToDate.AddMonths(-1), dailyTotals.ActualDateRange.ExclusiveToDate },
-                            RangeSelector = new RangeSelector 
-                            {
-                                Buttons = new List<Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button>
-                                {   new Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button
-                                    {
-                                        Count = 1,
-                                        Label = "1m",
-                                        Step = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepEnum.Month,
-                                        StepMode = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepModeEnum.Backward
-                                    },
-                                    new Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button
-                                    {
-                                        Count = 6,
-                                        Label = "6m",
-                                        Step = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepEnum.Month,
-                                        StepMode = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepModeEnum.Backward
-                                    },
-                                    new Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button
-                                    {
-                                        Step =  Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepEnum.All
-                                    }
-                                }
-                            },
-                            RangeSlider = new RangeSlider
-                            {
-                                Visible = true,
-                                Range = new List<object> { dailyTotals.ActualDateRange.FromDate, dailyTotals.ActualDateRange.ExclusiveToDate }
-                            }
+            var heatMap = await API.GetHeatAsync(_site.Id);
+            var profile = new MeterDataLib.Query.MeterDataQuery.ProfileResult(heatMap);
 
-                        }
-                    },
-                    YAxis = new Plotly.Blazor.LayoutLib.YAxis[]
-                    {
-                        new Plotly.Blazor.LayoutLib.YAxis
+            // Add traces
+            var seasons = new List<Season> { Season.Winter, Season.Spring, Season.Summer, Season.Autumn };
+            var daysOfWeek = new List<DayOfWeek> { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+            this._data = new List<ITrace>() ;
+            foreach (var season in seasons)
+            {
+                foreach (var dow in daysOfWeek)
+                {
+                    var trace = new Scatter
                         {
-                            Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title(){ Text= "Consumption (kWh)" },
-                            Type =  Plotly.Blazor.LayoutLib.YAxisLib.TypeEnum.Linear ,
-                            AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.True, 
-                            Range = new List<object> { dailyTotals.MinValue, dailyTotals.MaxValue }
-                        }
-                    }
-                };
-
+                            X = profile.X,
+                            Y = profile.GetProfile(dayOfWeek: dow, season: season).Cast<object>().ToList(),
+                            Fill = FillEnum.None,
+                            Name = $"{season} {dow}"
+                        };
+                    this._data.Add(trace);
+                }
+            }
             _pageState = PageStateValue.Loaded;
 
         }
@@ -189,7 +149,6 @@ else if (_pageState == PageStateValue.Loading)
 
     }
 
-
-    // Using of the interface IList is important for the event callback!
+ 
 
 }
