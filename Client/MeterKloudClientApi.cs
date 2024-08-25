@@ -229,6 +229,13 @@ namespace MeterKloud
         }
 
 
+        public async Task<MeterDataLib.Query.MeterDataQuery.HeatMapResult> GetHeatAsync(string siteId)
+        {
+            var days = await GetSiteDays(siteId);
+            var result = MeterDataLib.Query.MeterDataQuery.GetHeatMapConsumption(days.OrderBy(x => x.Date).First().Date, days.OrderBy(x => x.Date).Last().Date, days);
+            return result;
+        }
+
 
         async Task LoadPreviousSites()
         {
