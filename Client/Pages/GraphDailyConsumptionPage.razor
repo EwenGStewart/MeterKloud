@@ -23,7 +23,14 @@ else if ( _pageState == PageStateValue.Loading)
     
     @if (_pageState == PageStateValue.Loaded)
     {
-        <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart" />
+        <ErrorBoundary>
+            <ChildContent>
+                <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart" />
+            </ChildContent>
+            <ErrorContent>
+                <MudAlert Icon="" Severity="Severity.Error">[8TSAL9] Error - Could not render chart</MudAlert>
+            </ErrorContent>
+        </ErrorBoundary>
     }
 
     </MudPaper>
@@ -116,10 +123,14 @@ else if ( _pageState == PageStateValue.Loading)
         {
 
             var dailyTotals = await  API.GetDailyConsumption(_site.Id);
+
+
+
             var trace = new Bar
                 {
                     X = dailyTotals.X, 
                     Y = dailyTotals.Y,
+                    
                     Name = "Daily Consumption (kWh) "
                 };
             this._data = new List<ITrace> { trace };

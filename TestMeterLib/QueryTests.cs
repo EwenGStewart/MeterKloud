@@ -27,7 +27,7 @@ namespace TestMeterLib
                 var toDate = result.SitesDays.Select(x => x.Date).Max();
                 var daily = MeterDataQuery.GetDailyNetConsumption(fromDate,toDate,result.SitesDays);
                 daily.Should().NotBeNull();
-                Console.WriteLine($"Profile: Days:{daily.Days} Range:{daily.ActualDateRange}  Max:{daily.MaxValue}@{daily.MaxDay:yyyy-MM-dd}   Min:{daily.MinValue}@{daily.MinDay:yyyy-MM-dd}  Avg:{daily.AvgDay}  Med:{daily.Median}  Sum:{daily.Profile.Sum()}   ");
+                Console.WriteLine($"Profile: Days:{daily.Days} Range:{daily.ActualDateRange}  Max:{daily.MaxValue}@{daily.MaxDay:yyyy-MM-dd}     Avg:{daily.AvgDay}  Med:{daily.Median}  Sum:{daily.Profile.Sum()}   ");
                 Console.WriteLine("-----------------------------------------------");
                 for ( int i = 0; i < daily.Profile.Length; i++)
                 {
@@ -312,7 +312,7 @@ namespace TestMeterLib
                     var daily = MeterDataQuery.GetDailyNetConsumption(fromDate, toDate, siteDays);
 
                     daily.Should().NotBeNull();
-                    Console.WriteLine($"Profile: Days:{daily.Days} Range:{daily.ActualDateRange}  Max:{daily.MaxValue}@{daily.MaxDay:yyyy-MM-dd}   Min:{daily.MinValue}@{daily.MinDay:yyyy-MM-dd}  Avg:{daily.AvgDay}  Med:{daily.Median}  Sum:{daily.Profile.Sum()}   ");
+                    Console.WriteLine($"Profile: Days:{daily.Days} Range:{daily.ActualDateRange}  Max:{daily.MaxValue}@{daily.MaxDay:yyyy-MM-dd}     Avg:{daily.AvgDay}  Med:{daily.Median}  Sum:{daily.Profile.Sum()}   ");
                     Console.WriteLine("-----------------------------------------------");
 
                     if (first && sum.HasValue && sum.Value != 0 )

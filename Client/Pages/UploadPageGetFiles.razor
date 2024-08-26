@@ -93,28 +93,7 @@
 
     private Task OpenFilePickerAsync()
         => _fileUpload?.OpenFilePickerAsync() ?? Task.CompletedTask;
-
-    // private void OnInputFileChanged(InputFileChangeEventArgs e)
-    // {
-    //     try
-    //     {
-    //         _error = string.Empty;
-    //         Console.WriteLine("OnInputFileChanged");
-    //         ClearDragClass();
-    //         var files = e.GetMultipleFiles();
-    //         foreach (var file in files)
-    //         {
-    //             _fileNames.Add(file.Name);
-    //         }
-    //         Console.WriteLine($"files count {_files.Count}");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Error loading files {ex.Message}");
-    //         _error = ex.Message;
-    //     }
-
-    // }
+ 
 
     private async Task FilesChanged(IReadOnlyList<IBrowserFile> files)
     {
@@ -134,37 +113,7 @@
             _error = ex.Message;
         }
     }
-
-    // private async Task Upload()
-    // {
-
-    //     if (_files.Any())
-    //     {
-    //         if (_files.Count > 10)
-    //         {
-    //             Snackbar.Add("Maximum of 10 files can be uploaded", Severity.Error);
-    //             return;
-    //         }
-    //         foreach (var file in _files)
-    //         {
-    //             if (file.Size > 1000 * 1000 * 1024)
-    //             {
-    //                 Snackbar.Add($"Maximum file size is 1GB - file {file.Name} is larger than this.", Severity.Error);
-    //                 return;
-    //             }
-
-    //         }
-
-    //         await OnFilesSelected.InvokeAsync(_files);
-    //     }
-    //     else
-    //     {
-    //         Snackbar.Add("No files to upload", Severity.Error);
-    //     }
-
-
-
-    // }
+     
 
     private void SetDragClass()
         => _dragClass = $"{DefaultDragClass} mud-border-primary";
@@ -173,28 +122,5 @@
         => _dragClass = DefaultDragClass;
 
 
-    // private async Task Debug()
-    // {
-    //     Console.WriteLine("Debug");
-    //     foreach (var file in _files)
-    //     {
-    //         Console.WriteLine(file.Name);
-    //         try
-    //         {
-    //             using (var stream = file.OpenReadStream(maxFileSize))
-    //             {
-    //                 var buffer = new byte[stream.Length];
-    //                 await stream.ReadAsync(buffer, 0, buffer.Length);
-
-    //                 Console.WriteLine($"File {file.Name} loaded ");
-    //             }
-    //         }
-    //         catch (Exception ex)
-    //         {
-    //             Console.WriteLine($"Error loading file {file.Name} {ex.Message}");
-    //         }
-
-    //     }
-    //     return;
-    // }
+     
 }

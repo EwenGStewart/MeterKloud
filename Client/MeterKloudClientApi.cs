@@ -20,6 +20,8 @@ namespace MeterKloud
 {
     public class MeterKloudClientApi
     {
+        const long MAXALLOWEDSIZE = 1000 * 1000 * 1024;
+
         readonly IMemoryCache _memCache;
         bool _initialized = false;
         bool _inInit = false;
@@ -93,8 +95,9 @@ namespace MeterKloud
                 string fileName = browserFile.Name;
                 string fileType = browserFile.ContentType;
                 result.FileName = fileName;
+
                 result.LogMessages.Add(new FileLogMessage($"Load file {fileName} with content type {fileType} ", LogLevel.Information, fileName, 0, 0));
-                result = await  MeterDataLib.Parsers.ParserFactory.ParseAsync(browserFile.OpenReadStream(), fileName, fileType, CallBack, cancellationToken, result);
+                result = await  MeterDataLib.Parsers.ParserFactory.ParseAsync(browserFile.OpenReadStream(MAXALLOWEDSIZE), fileName, fileType, CallBack, cancellationToken, result);
                 if ( result.TotalSiteDays > 0  && meterDataStorageManager!=null )
                 {
                     await meterDataStorageManager.SaveParserResult(result, _sites);
@@ -234,6 +237,28 @@ namespace MeterKloud
             var days = await GetSiteDays(siteId);
             var result = MeterDataLib.Query.MeterDataQuery.GetHeatMapConsumption(days.OrderBy(x => x.Date).First().Date, days.OrderBy(x => x.Date).Last().Date, days);
             return result;
+        }
+
+
+        public async Task<MeterDataLib.Query.MeterDataQuery.DailyDemandResult> GetDailyDemand(string siteId, DateTime? fromDate= null , DateTime? toDate=null)
+        {
+            if (meterDataStorageManager == null)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.DailyDemandResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+
+
+            var days = fromDate.HasValue && toDate.HasValue ?  await GetSiteDays(siteId, fromDate.Value, toDate.Value) : await GetSiteDays(siteId);
+            if (days.Count == 0)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.DailyDemandResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+            fromDate ??= days.OrderBy(x => x.Date).First().Date;
+            toDate ??= days.OrderBy(x => x.Date).Last().Date;
+            var result = MeterDataLib.Query.MeterDataQuery.GetDailyDemand(fromDate.Value, toDate.Value, days,30);
+            return result;
+
+
         }
 
 

@@ -8,7 +8,7 @@ namespace MeterDataLib.Parsers
 {
     public static class ParserFactory
     {
-
+      
         //static List<Parser> parsers = new List<Parser>() {   new CsvMultiLine1(), new CsvPowerPal()
         //    , new CsvSingleLine7()
         //    , new CsvByChannel()

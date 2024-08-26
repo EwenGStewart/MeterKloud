@@ -20,11 +20,18 @@ else if (_pageState == PageStateValue.Loading)
 }
 
 
-<MudPaper Elevation="25" Height="90vh" Outlined>
+<MudPaper Elevation="25" Height="50vh" Outlined>
 
     @if (_pageState == PageStateValue.Loaded)
     {
-        <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart"   />
+        <ErrorBoundary>
+            <ChildContent>
+                <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart" />
+            </ChildContent>
+            <ErrorContent>
+                <MudAlert Icon="" Severity="Severity.Error">[8TSAL9] Error - Could not render chart</MudAlert>
+            </ErrorContent>
+        </ErrorBoundary>
     }
 
 </MudPaper>
@@ -117,67 +124,84 @@ else if (_pageState == PageStateValue.Loading)
         if (_site != null)
         {
 
-            var dailyTotals = await API.GetDetailedConsumption(_site.Id);
-            var trace = new Scatter
-                {
-                    X = dailyTotals.X,
-                    Y = dailyTotals.Y,
-                    Fill =   FillEnum.ToZeroY,
-                    Name = $"Net Consumption (kWh)"
-                };
-            this._data = new List<ITrace> { trace };
-            this._layout = new Layout
-                {
-                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Consumption( kWh) by {dailyTotals.Interval}" },
-                    XAxis = new[] {
-                        new Plotly.Blazor.LayoutLib.XAxis    
-                        {
-                            Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title() { Text = "Time" } ,
-                            Type = Plotly.Blazor.LayoutLib.XAxisLib.TypeEnum.Date,
-                            AutoRange =  Plotly.Blazor.LayoutLib.XAxisLib.AutoRangeEnum.False,
-                            Range = new List<object> { dailyTotals.ActualDateRange.ExclusiveToDate.AddMonths(-1), dailyTotals.ActualDateRange.ExclusiveToDate },
-                            RangeSelector = new RangeSelector 
-                            {
-                                Buttons = new List<Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button>
-                                {   new Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button
-                                    {
-                                        Count = 1,
-                                        Label = "1m",
-                                        Step = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepEnum.Month,
-                                        StepMode = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepModeEnum.Backward
-                                    },
-                                    new Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button
-                                    {
-                                        Count = 6,
-                                        Label = "6m",
-                                        Step = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepEnum.Month,
-                                        StepMode = Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepModeEnum.Backward
-                                    },
-                                    new Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.Button
-                                    {
-                                        Step =  Plotly.Blazor.LayoutLib.XAxisLib.RangeSelectorLib.ButtonLib.StepEnum.All
-                                    }
-                                }
-                            },
-                            RangeSlider = new RangeSlider
-                            {
-                                Visible = true,
-                                Range = new List<object> { dailyTotals.ActualDateRange.FromDate, dailyTotals.ActualDateRange.ExclusiveToDate }
-                            }
-
-                        }
-                    },
-                    YAxis = new Plotly.Blazor.LayoutLib.YAxis[]
+            var dailyTotals = await API.GetDailyDemand(_site.Id);
+            if (dailyTotals.AnyKva() == false)
+            {
+                var trace = new Bar
                     {
-                        new Plotly.Blazor.LayoutLib.YAxis
-                        {
-                            Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title(){ Text= "Consumption (kWh)" },
-                            Type =  Plotly.Blazor.LayoutLib.YAxisLib.TypeEnum.Linear ,
-                            AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.True, 
-                            Range = new List<object> { dailyTotals.MinValue, dailyTotals.MaxValue }
-                        }
-                    }
-                };
+                        X = dailyTotals.X,
+                        Y = dailyTotals.Y_kW,
+                        TextArray = dailyTotals.DemandLabels(),
+                        HoverTemplate = "%{text}<extra></extra>",
+                        
+                    };
+                this._data = new List<ITrace> { trace };
+
+                this._layout = new Layout
+                    {
+                        Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Demand" },
+                        BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                        YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
+                    },
+
+                    };
+            }
+            else
+            {
+                var traceKw = new Bar
+                    {
+                        X = dailyTotals.X,
+                        Y = dailyTotals.Y_kW,
+                        TextArray = dailyTotals.DemandLabels(),
+                        Name = "max kW",
+                        HoverTemplate = "%{text}<extra></extra>",
+                        TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.Auto,
+                    };
+
+                var traceKva = new Bar
+                    {
+                        X = dailyTotals.X,
+                        Y = dailyTotals.Y_kVA_Diff(),
+                        TextArray = dailyTotals.DemandLabels(),
+                        Name = "max kVA", 
+                        HoverTemplate = "%{text}<extra></extra>",
+                        TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.None,
+                    };
+
+
+                var tracePf = new Scatter
+                    {
+                        X = dailyTotals.X,
+                        Y = dailyTotals.Y_Pf,
+                        TextArray = dailyTotals.DemandLabels(),
+                        Name = "Power Factor",
+                        HoverTemplate = "%{text}<extra></extra>",
+                        YAxis = "y2",
+                        Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { Color = "rgba(255, 182, 193, 0.7)" },
+                        
+                        
+                    };
+
+                
+                this._data = new List<ITrace> { traceKw , traceKva, tracePf};
+
+                this._layout = new Layout
+                    {
+                        Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Demand" },
+                        BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                        YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "Pf" }, Overlaying="y",  Side = Plotly.Blazor.LayoutLib.YAxisLib.SideEnum.Right }
+                    },
+
+                    };
+
+
+            }
+
+
+
 
             _pageState = PageStateValue.Loaded;
 

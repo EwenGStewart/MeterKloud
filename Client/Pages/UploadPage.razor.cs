@@ -10,6 +10,7 @@ namespace MeterKloud.Pages
 {
     public partial class UploadPage
     {
+
         private enum internalState
         {
             GetFiles,

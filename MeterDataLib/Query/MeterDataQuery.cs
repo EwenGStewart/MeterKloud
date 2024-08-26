@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices.Marshalling;
+﻿using Microsoft.VisualBasic;
+using System.Runtime.InteropServices.Marshalling;
 using System.Security.Cryptography.X509Certificates;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -55,6 +56,9 @@ namespace MeterDataLib.Query
 
             public DateTime MaxDay => Profile.Select((x, i) => new { Value = x, Date = Dates[i] }).Where(x => x.Value.HasValue).OrderByDescending(x => x.Value).FirstOrDefault()?.Date ?? ActualDateRange.FromDate;
         }
+
+
+
 
 
         public class DetailedConsumptionProfileResult(QueryDateRange queryDateRange) : TimeBasedResult(queryDateRange)
@@ -120,6 +124,26 @@ namespace MeterDataLib.Query
                     return _z;
                 }
             }
+
+
+            public IList<object> XReverse => X.Reverse().ToList();
+            public IList<object> YReverse => Y.Reverse().ToList();
+            public IList<object> ZReverse { get
+                {
+                    var z = Z.Reverse().ToList();
+                    foreach (var item in z)
+                    {
+                        if (item is decimal[] values)
+                        {
+                            Array.Reverse(values);
+                        }
+                    }
+                    return z;
+                } 
+            }
+
+
+
 
 
         }
@@ -281,6 +305,147 @@ namespace MeterDataLib.Query
             }
 
         }
+
+
+
+
+
+
+
+        public class DailyDemandResult(QueryDateRange queryDateRange)
+        {
+            public QueryDateRange RequestedDateRange { get; set; } = queryDateRange;
+            public QueryDateRange ActualDateRange { get; set; } = queryDateRange;
+
+            public int Days => ActualDateRange.TotalDays;
+
+            public TimeInterval Interval { get; set; } = new TimeInterval(TimeIntervalSize.Day, 1);
+
+            public DateTime[] Dates => Interval.Range(ActualDateRange);
+
+
+            public int Points => Interval.NumberOfBuckets(ActualDateRange);
+
+            public decimal?[] Demand_kW{ get; set; } = [];
+
+            public decimal?[] Demand_kW_atMax_kVA { get; set; } = [];
+            public decimal?[] Demand_kVA { get; set; } = [];
+            public decimal?[] Demand_Pf { get; set; } = [];
+            
+            public DateTime?[] TimeOfMaxKva { get; set; } = [];
+
+            public bool AnyKva()
+            {
+                for (int i = 0; i < Demand_kVA.Length; i++)
+                {
+                    if (Demand_kVA[i].HasValue && Math.Round(Demand_kVA[i] ?? 0, 3) > Math.Round(Demand_kW[i] ?? 0, 3))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+
+
+            public int Missing => Demand_kW.Where(x => !x.HasValue).Count();
+
+            public IList<object> X => Array.ConvertAll<DateTime, object>(Dates, v => (object)v);
+            public IList<object> Y_kW => Array.ConvertAll<decimal?, object>(Demand_kW, v => (object)v!);
+            public IList<object> Y_kVA_Diff()
+            {
+                var result = new List<object>();
+                for (int i = 0; i < Demand_kVA.Length; i++)
+                {
+                    if (Demand_kVA[i].HasValue && Demand_kW[i].HasValue)
+                    {
+                        result.Add( Math.Round( Demand_kVA[i]!.Value - Demand_kW[i]!.Value,3));
+                    }
+                    else
+                    {
+                        result.Add(0);
+                    }
+                }
+                return result;
+            }
+
+            public IList<object> Y_Pf => Array.ConvertAll<decimal?, object>(Demand_Pf, v => (object)v!); 
+            public string[] DemandLabels()
+            {
+                var result = new string[Points];
+                if (AnyKva())
+                {
+                    for (int i = 0; i < Points; i++)
+                    {
+                        if (Demand_kVA[i].HasValue )
+                        {
+                            decimal kva = Math.Round(Demand_kVA[i] ?? 0, 3);
+                            decimal kw = Math.Round(Demand_kW[i] ?? 0, 3);
+                            decimal kwAtMax = Math.Round(Demand_kW_atMax_kVA[i] ?? 0, 3);
+                            decimal pf = Math.Round(Demand_Pf[i] ?? 1, 3);
+                            DateTime dateAndTime = TimeOfMaxKva[i] ?? DateTime.MinValue;
+                            if (kwAtMax != kw)
+                            {
+                                result[i] = $"kVA:{kva:0.000}<br>kW:{kw:0.000}<br>kW at Max kVA:{kwAtMax:0.000}<br>PF:{pf:0.000}<br>{dateAndTime:dd-MMM-yy}<br>Time:{dateAndTime:HH:mm}";
+                            }
+                            else
+                            {
+                                result[i] = $"kVA:{kva:0.000}<br>kW:{kw:0.000}<br>PF:{pf:0.000}<br>{dateAndTime:dd-MMM-yy}<br>Time:{dateAndTime:HH:mm}";
+                            }
+                        }
+                        else
+                        {
+                            result[i] = "No Data";
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < Points; i++)
+                    {
+                        if (Demand_kW[i].HasValue )
+                        {
+                            decimal kw = Math.Round(Demand_kW[i] ?? 0, 3);
+                            DateTime dateAndTime = TimeOfMaxKva[i] ?? DateTime.MinValue;
+                            result[i] = $"kW:{kw:0.000}<br>{dateAndTime:dd-MMM-yy}<br>Time:{dateAndTime:HH:mm}";
+                        }
+                        else
+                        {
+                            result[i] = "No Data";
+                        }
+                    }
+
+                }
+                return result;
+            }
+
+
+
+
+            public bool IsEmpty => Demand_kW.Length == 0 || Demand_kW.All(x => !x.HasValue);
+
+            public decimal Max_kVA_Value => Demand_kVA.Where(x => x.HasValue).Select(x => x!.Value).Max();
+            public DateTime Max_kVA_DateTime => Dates[Demand_kVA.Select((value, i) => (value, i)).Where(x => x.value.HasValue).OrderByDescending(x => x.value).First().i];
+
+            public decimal Max_kW_Value => Demand_kW.Where(x => x.HasValue).Select(x => x!.Value).Max();
+            public DateTime Max_kW_DateTime => Dates[Demand_kVA.Select((value, i) => (value, i)).Where(x => x.value.HasValue).OrderByDescending(x => x.value).First().i];
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         const int IDEAL_POINTS = 500;
@@ -527,7 +692,74 @@ namespace MeterDataLib.Query
 
 
 
+        public static DailyDemandResult GetDailyDemand(DateTime fromDate, DateTime toDate, IEnumerable<SiteDay> siteDays, int demandIntervalMinutes = 30 )
+        {
 
+            var dr = new QueryDateRange(fromDate, toDate).TrimYears(5).TrimFuture();
+            if (!dr.IsValid)
+            {
+                throw new ArgumentException("Invalid Date Range");
+            }
+            if (demandIntervalMinutes < 1 || demandIntervalMinutes > 60)
+            {
+                throw new ArgumentException("Invalid Demand Interval - must be from 1-60 minutes");
+            }
+
+            var result = new DailyDemandResult(dr);
+            var resultInterval = new TimeInterval(TimeIntervalSize.Day, 1);
+            result.Interval = resultInterval;
+            var demandInterval = new TimeInterval(TimeIntervalSize.Minute, demandIntervalMinutes);
+            var days = siteDays.Where(x => x.Date >= fromDate && x.Date <= toDate).ToList();
+            DateTime minDate = days.Min(x => x.Date);
+            DateTime maxDate = days.Max(x => x.Date);
+
+            // no data = return an empty time series
+            if (days.Count == 0)
+            {
+                return result;
+            }
+            
+            if ( minDate > dr.FromDate)
+            {
+                dr = new QueryDateRange(minDate, dr.ToDate);
+            }
+            if (maxDate < dr.ToDate)
+            {
+                dr = new QueryDateRange(dr.FromDate, maxDate);
+            }
+            if (!dr.IsValid)
+            {
+                throw new ArgumentException("Invalid Date Range - after trimming for available data ");
+            }
+
+            int points = result.Points;
+
+            result.Demand_kW = new decimal?[points];
+            result.Demand_kVA = new decimal?[points];
+            result.Demand_Pf = new decimal?[points];
+            result.TimeOfMaxKva = new DateTime?[points];
+            result.Demand_kW_atMax_kVA = new decimal?[points];
+            var options = new EnergyDailySummaryOptions() { CalculateKvaAtMaxKw = false, Interval = demandInterval.IntervalInMinutes };
+
+
+            foreach (var siteDay in siteDays.Where(x => x.Date >= fromDate && x.Date <= toDate))
+            {
+                var dayOffset = resultInterval.Index(dr.FromDate, siteDay.Date);
+                if (dayOffset < 0 || dayOffset >= dr.TotalDays)
+                {
+                    continue;
+                }
+                var siteDayDemand = siteDay.GetDailySummary(options);
+                result.Demand_kW[dayOffset] = siteDayDemand.Max_kW;
+                result.Demand_kVA[dayOffset] = siteDayDemand.Max_kVA;
+                result.Demand_Pf[dayOffset] = siteDayDemand.PowerFactor;
+                result.TimeOfMaxKva[dayOffset] = siteDayDemand.TimeOfMax;
+                result.Demand_kW_atMax_kVA[dayOffset] = siteDayDemand.Max_Kw_atMax_kVa;
+            }
+
+            return result; 
+
+        }
 
         public static decimal CalculateMedian(decimal[] array)
         {
