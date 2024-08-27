@@ -144,13 +144,13 @@ namespace MeterKloud
             {
 
                 sites = await _indexedDbAccessor.GetAllValuesAsync<Site>(SITE_COLLECTION);
-                Console.WriteLine($"GetSitesAsync - from IndexDb {sites.Count}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSitesAsync - from IndexDb {sites.Count}");
                 sites ??= [];
                 SetSiteListToCache(sites);
             }
             else
             {
-                Console.WriteLine($"GetSitesAsync - from cache {sites.Count}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSitesAsync - from cache {sites.Count}");
              
             }
             return sites;
@@ -218,13 +218,13 @@ namespace MeterKloud
             try
             {
                 var result = _cache.Get<List<Site>>(GetCacheKeySites);
-                Console.WriteLine($"GetSiteListFromCache {result?.Count}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteListFromCache {result?.Count}");
                 return result;
             }
             catch (Exception x)
             {
 
-                Console.WriteLine($"GetSiteListFromCache - error");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteListFromCache - error");
                 Console.WriteLine(x);
                 return null; 
             }
@@ -235,13 +235,13 @@ namespace MeterKloud
         {
             try
             {
-                Console.WriteLine($"SetSiteListToCache {sites.Count}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteListToCache {sites.Count}");
                 _cache.Set(GetCacheKeySites, sites, new TimeSpan(1, 0, 0));
                 
             }
             catch (Exception x)
             {
-                Console.WriteLine($"SetSiteListToCache - error");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteListToCache - error");
                 Console.WriteLine(x);
             }
         }   
@@ -250,12 +250,13 @@ namespace MeterKloud
         {
             try
             {
-                Console.WriteLine($"SetLastSiteId {siteId}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetLastSiteId {siteId}");
                 _cache.Set(GetCacheKeyLast, siteId);
+
             }
             catch (Exception x)
             {
-                Console.WriteLine($"SetLastSiteId - error");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetLastSiteId - error");
                 Console.WriteLine(x);
             }
         }
@@ -268,13 +269,13 @@ namespace MeterKloud
             {
                 var result = _cache.Get<CacheSiteDayLookUp>(GetCacheKeySiteDays(id));
                 
-                Console.WriteLine($"GetSiteDaysFromCache {result?.siteId ?? "null"}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteDaysFromCache {result?.siteId ?? "null"}");
                 return result;
             }
             catch (Exception x)
             {
 
-                Console.WriteLine($"GetSiteDaysFromCache - error");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteDaysFromCache - error");
                 Console.WriteLine(x);
                 return null;
             }
@@ -286,13 +287,13 @@ namespace MeterKloud
             try
             {
      
-                Console.WriteLine($"ClearSiteDaysFromCache");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> ClearSiteDaysFromCache");
                 _cache.Remove(GetCacheKeySiteDays(id));
       
             }
             catch (Exception x)
             {
-                Console.WriteLine($"ClearSiteDaysFromCache - error");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> ClearSiteDaysFromCache - error");
                 Console.WriteLine(x);
             }
         }
@@ -303,7 +304,7 @@ namespace MeterKloud
             try
 
             {
-                Console.WriteLine($"SetSiteDaysToCache {siteId}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteDaysToCache {siteId}");
                 var site = await GetSiteAsync(siteId);
                 if ( site != null)
                 {
@@ -315,7 +316,7 @@ namespace MeterKloud
             }
             catch (Exception x)
             {
-                Console.WriteLine($"SetSiteDaysToCache - error");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteDaysToCache - error");
                 Console.WriteLine(x);
             }
         }

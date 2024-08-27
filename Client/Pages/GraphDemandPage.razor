@@ -5,6 +5,7 @@
 @using Plotly.Blazor.LayoutLib.XAxisLib
 @using Plotly.Blazor.Traces.ScatterLib
 @using Site = MeterDataLib.Site;
+@using static MeterDataLib.Query.MeterDataQuery
 
 
 <MudText Typo="Typo.h1">@SitesName()</MudText>
@@ -19,24 +20,82 @@ else if (_pageState == PageStateValue.Loading)
     <MudProgressCircular Indeterminate="true" />
 }
 
+<MudGrid>
 
-<MudPaper Elevation="25" Height="50vh" Outlined>
+    <MudItem xs="12">
 
-    @if (_pageState == PageStateValue.Loaded)
-    {
-        <ErrorBoundary>
-            <ChildContent>
-                <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart" />
-            </ChildContent>
-            <ErrorContent>
-                <MudAlert Icon="" Severity="Severity.Error">[8TSAL9] Error - Could not render chart</MudAlert>
-            </ErrorContent>
-        </ErrorBoundary>
-    }
+        <MudPaper Elevation="25" Height="40vh" Outlined>
 
-</MudPaper>
+            @if (_pageState == PageStateValue.Loaded)
+            {
+                <ErrorBoundary>
+                    <ChildContent>
+                        <PlotlyChart @bind-Config="_config" @bind-Layout="_layout" @bind-Data="_data" @ref="_chart" ClickAction="ClickAction" AfterRender="SubscribeEvents" />
+                    </ChildContent>
+                    <ErrorContent>
+                        <MudAlert Icon="" Severity="Severity.Error">[EG7BVS] Error - Could not render chart</MudAlert>
+                    </ErrorContent>
+                </ErrorBoundary>
+            }
+
+        </MudPaper>
+    </MudItem>
 
 
+
+    <MudItem xs="12" xl="4">
+        <MudPaper Elevation="25" Height="40vh" Outlined>
+            @if (_pageState == PageStateValue.Loaded)
+            {
+                <ErrorBoundary>
+                    <ChildContent>
+                        <PlotlyChart @bind-Config="_configDaily" @bind-Layout="_layoutDaily" @bind-Data="_dataDaily" @ref="_chartDaily" ClickAction="ClickActionDaily" AfterRender="SubscribeEventsDaily" />
+                    </ChildContent>
+                    <ErrorContent>
+                        <MudAlert Icon="" Severity="Severity.Error">[XP4FYY] Error - Could not render chart</MudAlert>
+                    </ErrorContent>
+                </ErrorBoundary>
+            }
+        </MudPaper>
+    </MudItem>
+
+
+    <MudItem xs="12" xl="4">
+        <MudPaper Elevation="25" Height="40vh" Outlined>
+            @if (_pageState == PageStateValue.Loaded)
+            {
+                <ErrorBoundary>
+                    <ChildContent>
+                        <PlotlyChart @bind-Config="_config30Min" @bind-Layout="_layout30Min" @bind-Data="_data30Min" @ref="_chart30Min" ClickAction="ClickAction30Min" AfterRender="SubscribeEvents30Min" />
+                    </ChildContent>
+                    <ErrorContent>
+                        <MudAlert Icon="" Severity="Severity.Error">[XP4FYY] Error - Could not render chart</MudAlert>
+                    </ErrorContent>
+                </ErrorBoundary>
+            }
+        </MudPaper>
+    </MudItem>
+
+
+    <MudItem xs="12" xl="4">
+        <MudPaper Elevation="25" Height="40vh" Outlined>
+            @if (_pageState == PageStateValue.Loaded)
+            {
+                <ErrorBoundary>
+                    <ChildContent>
+                        <PlotlyChart @bind-Config="_configVector" @bind-Layout="_layoutVector" @bind-Data="_dataVector" @ref="_chartVector"  />
+                    </ChildContent>
+                    <ErrorContent>
+                        <MudAlert Icon="" Severity="Severity.Error">[XP4FYY] Error - Could not render chart</MudAlert>
+                    </ErrorContent>
+                </ErrorBoundary>
+            }
+        </MudPaper>
+    </MudItem>
+
+
+
+</MudGrid>
 
 
 
@@ -49,11 +108,123 @@ else if (_pageState == PageStateValue.Loading)
     [SupplyParameterFromQuery(Name = "Code")]
     public string? SiteCode { get; set; }
 
+    [SupplyParameterFromQuery(Name = "SelectedMonth")]
+    public string? SelectedMonth { get; set; }
+
+    [SupplyParameterFromQuery(Name = "SelectedDay")]
+    public string? SelectedDay { get; set; }
+
+    [SupplyParameterFromQuery(Name = "SelectedPeriod")]
+    public string? SelectedPeriod { get; set; }
+
+
+
+
     Site? _site;
+
     PlotlyChart _chart = default!;
     IList<ITrace> _data = new List<ITrace>();
     Config _config = new Config();
     Layout _layout = new Layout();
+
+    PlotlyChart _chartDaily = default!;
+    IList<ITrace> _dataDaily = new List<ITrace>();
+    Config _configDaily = new Config();
+    Layout _layoutDaily = new Layout();
+
+    PlotlyChart _chart30Min = default!;
+    IList<ITrace> _data30Min = new List<ITrace>();
+    Config _config30Min = new Config();
+    Layout _layout30Min = new Layout();
+
+
+    PlotlyChart _chartVector = default!;
+    IList<ITrace> _dataVector = new List<ITrace>();
+    Config _configVector = new Config();
+    Layout _layoutVector = new Layout();
+
+
+    MonthlyDemandResult? _monthlyTotals;
+
+
+    bool _reLayoutDaily = false;
+    bool _reLayout30Min = false;
+    bool _reLayoutVector = false;
+    DateTime? _DayToDisplay = null;
+
+
+
+    DateTime MonthToHighlight ()
+    {
+        if ( _site == null || _monthlyTotals == null  )
+        {
+            return DateTime.MinValue;
+        }
+
+        if (SelectedMonth != null)
+        {
+            if (DateTime.TryParse(SelectedMonth, out DateTime date))
+            {
+                if ( date >= _monthlyTotals.ActualDateRange.FromDate && date <= _monthlyTotals.ActualDateRange.ToDate)
+                {
+                    return date;
+                }
+                if ( date.Year == _monthlyTotals.ActualDateRange.FromDate.Year && date.Month == _monthlyTotals.ActualDateRange.FromDate.Month)
+                {
+                    return _monthlyTotals.ActualDateRange.FromDate;
+                }
+            }
+        }
+        return _monthlyTotals.MonthWithMax;
+
+
+    }
+
+    DateTime SelectedDayToHighlight( DailyDemandResult dailyDemandResult)
+    {
+
+
+        if ( SelectedDay != null)
+        {
+            if (DateTime.TryParse(SelectedDay, out DateTime date))
+            {
+                if ( date >= dailyDemandResult.ActualDateRange.FromDate && date <= dailyDemandResult.ActualDateRange.ToDate)
+                {
+                    return date;
+                }
+            }
+        }
+        return dailyDemandResult.Max_kVA_DateTime.Date;
+    }
+
+
+    DateTime SelectedPeriodDate( DateTime currentDay)
+    {
+        if (_site == null || _monthlyTotals == null)
+        {
+            return DateTime.MinValue;
+        }
+
+        if (SelectedPeriod != null  && SelectedDay !=null )
+        {
+            if (TimeOnly.TryParse(SelectedPeriod, out TimeOnly time))
+            {
+
+                return new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, time.Hour, time.Minute, 0);
+            }
+
+            if (DateTime.TryParse(SelectedPeriod, out DateTime date))
+            {
+                if (date.Date == currentDay)
+                {
+                    return date;
+                }
+            }
+            return DateTime.MinValue;
+        }
+        return DateTime.MinValue;
+    }
+
 
 
     private enum PageStateValue
@@ -97,6 +268,8 @@ else if (_pageState == PageStateValue.Loading)
 
     protected override async Task OnParametersSetAsync()
     {
+
+        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> OnParametersSetAsync {SiteId} {SiteCode} {_site?.Id ?? "null"}    {SelectedMonth} {SelectedDay} {SelectedPeriod}");
         _site = null;
         _pageState = PageStateValue.Loading;
         if (SiteId != null)
@@ -124,86 +297,43 @@ else if (_pageState == PageStateValue.Loading)
         if (_site != null)
         {
 
-            var dailyTotals = await API.GetDailyDemand(_site.Id);
-            if (dailyTotals.AnyKva() == false)
+            if (_monthlyTotals == null)
             {
-                var trace = new Bar
-                    {
-                        X = dailyTotals.X,
-                        Y = dailyTotals.Y_kW,
-                        TextArray = dailyTotals.DemandLabels(),
-                        HoverTemplate = "%{text}<extra></extra>",
-                        
-                    };
-                this._data = new List<ITrace> { trace };
 
-                this._layout = new Layout
-                    {
-                        Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Demand" },
-                        BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
-                        YAxis = new[] {
-                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
-                    },
-
-                    };
+                await SetMonthlyTotals();
             }
-            else
+            if ( _monthlyTotals == null)
             {
-                var traceKw = new Bar
-                    {
-                        X = dailyTotals.X,
-                        Y = dailyTotals.Y_kW,
-                        TextArray = dailyTotals.DemandLabels(),
-                        Name = "max kW",
-                        HoverTemplate = "%{text}<extra></extra>",
-                        TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.Auto,
-                    };
-
-                var traceKva = new Bar
-                    {
-                        X = dailyTotals.X,
-                        Y = dailyTotals.Y_kVA_Diff(),
-                        TextArray = dailyTotals.DemandLabels(),
-                        Name = "max kVA", 
-                        HoverTemplate = "%{text}<extra></extra>",
-                        TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.None,
-                    };
-
-
-                var tracePf = new Scatter
-                    {
-                        X = dailyTotals.X,
-                        Y = dailyTotals.Y_Pf,
-                        TextArray = dailyTotals.DemandLabels(),
-                        Name = "Power Factor",
-                        HoverTemplate = "%{text}<extra></extra>",
-                        YAxis = "y2",
-                        Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { Color = "rgba(255, 182, 193, 0.7)" },
-                        
-                        
-                    };
-
-                
-                this._data = new List<ITrace> { traceKw , traceKva, tracePf};
-
-                this._layout = new Layout
-                    {
-                        Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Demand" },
-                        BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
-                        YAxis = new[] {
-                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
-                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "Pf" }, Overlaying="y",  Side = Plotly.Blazor.LayoutLib.YAxisLib.SideEnum.Right }
-                    },
-
-                    };
-
-
+                _pageState = PageStateValue.Error;
+                return;
             }
 
+            SetMonthlyChart();
+
+
+            var monthToHighlight = MonthToHighlight();
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> OnParametersSetAsyncEnd  MonthToHighlight = {monthToHighlight:MMM-yyyy} Param={this.SelectedMonth}");
+            var dailyMaxTotals = _monthlyTotals.GetDaily(monthToHighlight);
+            SetDailyChart(dailyMaxTotals);
+
+            DateTime dayToHighlight = SelectedDayToHighlight(dailyMaxTotals);
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> OnParametersSetAsyncEnd  DayToHighlight = {dayToHighlight:dd-MMM-yyyy} Param={this.SelectedDay}");
+            var dayResult = await API.GetQuadrants(_site.Id, dayToHighlight, dayToHighlight);
+            setDayChart(dayResult);
+
+            if (dayResult.Quadrants.Length > 0)
+            {
+                SetVectorChart(dayResult);
+            }
 
 
 
             _pageState = PageStateValue.Loaded;
+            StateHasChanged();
+            _reLayoutDaily = true;
+            _reLayout30Min = true;
+            _reLayoutVector = true;
+
 
         }
         else
@@ -211,9 +341,550 @@ else if (_pageState == PageStateValue.Loading)
             _pageState = PageStateValue.Error;
         }
 
+        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> OnParametersSetAsyncEnd {SiteId} {SiteCode} {_site?.Id ?? "null"}    {SelectedMonth} {SelectedDay} {SelectedPeriod}");
     }
 
 
-    // Using of the interface IList is important for the event callback!
+
+
+    void SetMonthlyChart()
+    {
+        if (_monthlyTotals == null)
+        {
+            return;
+        }
+        if (_monthlyTotals.AnyKva() == false)
+        {
+            var trace = new Bar
+                {
+                    X = _monthlyTotals.X,
+                    Y = _monthlyTotals.Y_kW,
+                    TextArray = _monthlyTotals.DemandLabels(),
+                    HoverTemplate = "%{text}<extra></extra>",
+
+                };
+            this._data = new List<ITrace> { trace };
+
+            this._layout = new Layout
+                {
+                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Monthly demand kW  {_monthlyTotals.ActualDateRange.FromDate:MMM-yyyy} to {_monthlyTotals.ActualDateRange.ToDate:MMM-yyyy}" },
+                    BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                    YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
+                        },
+
+                };
+        }
+        else
+        {
+            var traceKw = new Bar
+                {
+                    X = _monthlyTotals.X,
+                    Y = _monthlyTotals.Y_kW,
+                    TextArray = _monthlyTotals.DemandLabels(),
+                    Name = "max kW",
+                    HoverTemplate = "%{text}<extra></extra>",
+                    TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.Auto,
+                };
+
+            var traceKva = new Bar
+                {
+                    X = _monthlyTotals.X,
+                    Y = _monthlyTotals.Y_kVA_Diff(),
+                    TextArray = _monthlyTotals.DemandLabels(),
+                    Name = "max kVA",
+                    HoverTemplate = "%{text}<extra></extra>",
+                    TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.None,
+                };
+
+
+            var tracePf = new Scatter
+                {
+                    X = _monthlyTotals.X,
+                    Y = _monthlyTotals.Y_Pf,
+                    TextArray = _monthlyTotals.DemandLabels(),
+                    Name = "Power Factor",
+                    HoverTemplate = "%{text}<extra></extra>",
+                    YAxis = "y2",
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { Color = "rgba(255, 182, 193, 0.7)" },
+                };
+            this._data = new List<ITrace> { traceKw, traceKva, tracePf };
+            this._layout = new Layout
+                {
+                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Monthly demand kVA and kW  {_monthlyTotals.ActualDateRange.FromDate:MMM-yyyy} to {_monthlyTotals.ActualDateRange.ToDate:MMM-yyyy}" },
+                    BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                    YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "Pf" }, Overlaying="y",  Side = Plotly.Blazor.LayoutLib.YAxisLib.SideEnum.Right }
+                    },
+
+                };
+
+
+        }
+    }
+
+
+
+
+    void SetDailyChart(DailyDemandResult dailyTotals)
+    {
+
+
+        if (dailyTotals.AnyKva() == false)
+        {
+            var trace = new Bar
+                {
+                    X = dailyTotals.X,
+                    Y = dailyTotals.Y_kW,
+                    TextArray = dailyTotals.DemandLabels(),
+                    HoverTemplate = "%{text}<extra></extra>",
+
+                };
+            this._dataDaily = new List<ITrace> { trace };
+
+            this._layoutDaily = new Layout
+                {
+                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Daily demand  kW  {dailyTotals.ActualDateRange.FromDate:dd-MMM-yyyy} to {dailyTotals.ActualDateRange.ToDate:dd-MMM-yyyy}" },
+                    BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                    YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
+                    },
+
+                };
+        }
+        else
+        {
+            var traceKw = new Bar
+                {
+                    X = dailyTotals.X,
+                    Y = dailyTotals.Y_kW,
+                    TextArray = dailyTotals.DemandLabels(),
+                    Name = "max kW",
+                    HoverTemplate = "%{text}<extra></extra>",
+                    TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.Auto,
+                };
+
+            var traceKva = new Bar
+                {
+                    X = dailyTotals.X,
+                    Y = dailyTotals.Y_kVA_Diff(),
+                    TextArray = dailyTotals.DemandLabels(),
+                    Name = "max kVA",
+                    HoverTemplate = "%{text}<extra></extra>",
+                    TextPosition = Plotly.Blazor.Traces.BarLib.TextPositionEnum.None,
+                };
+
+
+            var tracePf = new Scatter
+                {
+                    X = dailyTotals.X,
+                    Y = dailyTotals.Y_Pf,
+                    TextArray = dailyTotals.DemandLabels(),
+                    Name = "Power Factor",
+                    HoverTemplate = "%{text}<extra></extra>",
+                    YAxis = "y2",
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { Color = "rgba(255, 182, 193, 0.7)" },
+                };
+            this._dataDaily = new List<ITrace> { traceKw, traceKva, tracePf };
+            this._layoutDaily = new Layout
+                {
+                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Daily demand  kW and kVA {dailyTotals.ActualDateRange.FromDate:dd-MMM-yyyy} to {dailyTotals.ActualDateRange.ToDate:dd-MMM-yyyy}" },
+                    BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                    YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } },
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "Pf" }, Overlaying="y",  Side = Plotly.Blazor.LayoutLib.YAxisLib.SideEnum.Right }
+                    },
+
+                };
+
+
+        }
+        var highestDay = dailyTotals.Max_kVA_DateTime.Date;
+
+
+
+
+    }
+
+
+
+    void SetVectorChart(QuadrantResult dayTotals)
+    {
+        if (dayTotals.Quadrants.Length == 0)
+        {
+            return;
+        }
+
+        var maxE = dayTotals.Quadrants.Select(x => x.RealPowerConsumption_kW  ).Max();
+        var maxB = dayTotals.Quadrants.Select(x => x.RealPowerGeneration_kW).Max();
+        var maxQ = dayTotals.Quadrants.Select(x => x.ReactivePowerConsumption_kVAr).Max();
+        var maxK = dayTotals.Quadrants.Select(x => x.ReactivePowerGeneration_kVAr).Max();
+
+        var range = Math.Round( Math.Max(maxE, Math.Max(maxB, Math.Max(maxQ, maxK))) * 1.2m,0) ;
+        if (range == 0 )
+        {
+            range = 1;
+        }
+        //get the period 
+        var quadrant2display = dayTotals.Quadrants.OrderByDescending(x => x.ApparentPower_kVA).First();
+
+        var periodTime = SelectedPeriodDate(dayTotals.ActualDateRange.FromDate);
+        if (periodTime != DateTime.MinValue && periodTime.Date == dayTotals.ActualDateRange.FromDate)
+        {
+            quadrant2display = dayTotals.Quadrants.Where(x => x.ReadingDateTime <= periodTime).OrderByDescending(x => x.ReadingDateTime).First();
+        }
+        _dataVector = new List<ITrace>();
+
+        if (quadrant2display.RealPowerConsumption_kW > 0 )
+        {
+
+            var trace = new Scatter
+                {
+                    X = new List<object>() { 0, quadrant2display.RealPowerConsumption_kW },
+                    Y = new List<object>() { 0, 0},
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kW",
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() {  SymbolArray= new Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum?[] { null , Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum.Arrow } },
+                };
+            _dataVector.Add(trace);
+        }
+
+
+        if (quadrant2display.RealPowerGeneration_kW > 0)
+        {
+
+            var trace = new Scatter
+                {
+                    X = new List<object>() { 0, -1 * quadrant2display.RealPowerGeneration_kW },
+                    Y = new List<object>() { 0, 0 },
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kW (gen)",
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { SymbolArray = new Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum?[] { null, Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum.Arrow } },
+                };
+            _dataVector.Add(trace);
+        }
+
+
+        if (quadrant2display.ReactivePowerConsumption_kVAr > 0)
+        {
+
+            var trace = new Scatter
+                {
+                    X = new List<object>() { 0, 0 },
+                    Y = new List<object>() { 0, quadrant2display.ReactivePowerConsumption_kVAr },
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kVAr",
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { SymbolArray = new Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum?[] { null, Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum.Arrow } },
+                };
+            _dataVector.Add(trace);
+        }
+
+
+
+
+        if (quadrant2display.ReactivePowerGeneration_kVAr > 0)
+        {
+
+            var trace = new Scatter
+                {
+                    X = new List<object>() { 0, 0},
+                    Y = new List<object>() { 0, -1 * quadrant2display.ReactivePowerGeneration_kVAr  },
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kVAr (gen)",
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { SymbolArray = new Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum?[] { null, Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum.Arrow } },
+                };
+            _dataVector.Add(trace);
+        }
+
+
+        if ( quadrant2display.ReactivePowerNet_kVAr != 0 )
+        {
+            var trace = new Scatter
+                {
+                    X = new List<object>() { 0, quadrant2display.RealPowerConsumption_kW },
+                    Y = new List<object>() { 0, quadrant2display.ReactivePowerNet_kVAr },
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kVA",
+                    Fill = FillEnum.ToZeroY,
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() {  SymbolArray= new Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum?[] { null , Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum.Arrow } },
+                };
+            _dataVector.Add(trace);
+        }
+
+
+        if (quadrant2display.ReactivePowerNet_kVAr != 0   &&  quadrant2display.RealPowerGeneration_kW > 0 )
+        {
+            var trace = new Scatter
+                {
+                    X = new List<object>() { 0, quadrant2display.RealPowerNet_kW },
+                    Y = new List<object>() { 0, quadrant2display.ReactivePowerNet_kVAr },
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kVA (net)",
+                    Fill = FillEnum.ToZeroY,
+                    Marker = new Plotly.Blazor.Traces.ScatterLib.Marker() { SymbolArray = new Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum?[] { null, Plotly.Blazor.Traces.ScatterLib.MarkerLib.SymbolEnum.Arrow } },
+                };
+            _dataVector.Add(trace);
+        }
+
+
+
+
+        this._layoutVector = new Layout
+             {
+                Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Vector Diagram  {quadrant2display.ReadingDateTime:dd-MMM-yyyy HH:mm}   {quadrant2display.IntervalMinutes} Minutes" },
+                 XAxis = new[] {
+                     new Plotly.Blazor.LayoutLib.XAxis  { 
+                        Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title() { Text = "kW" }, 
+                        Range =  new List<object>() { -1 * range, range } ,
+                        ShowGrid = true,
+                        ShowLine = true,
+                        ShowTickLabels = true,
+                        AutoRange = AutoRangeEnum.False
+                     },   
+                 },
+
+                YAxis = new[] {
+                     new Plotly.Blazor.LayoutLib.YAxis  {
+                        Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kVAr" },
+                        Range =  new List<object>() { -1 * range, range } ,
+                        ShowGrid = true,
+                        ShowLine = true,
+                        ShowTickLabels = true,
+                        AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.False
+                     },
+                 },
+
+            };
+
+    }
+
+
+
+
+    async Task SetMonthlyTotals()
+    {
+        if (_site == null)
+        {
+            return;
+        }
+        var dailyTotals = await API.GetDailyDemand(_site.Id);
+
+        MonthlyDemandResult monthlyTotals = new MeterDataLib.Query.MeterDataQuery.MonthlyDemandResult(dailyTotals);
+
+        var dates = monthlyTotals.Dates;
+        var kw = monthlyTotals.Demand_kW;
+        var kva = monthlyTotals.Demand_kVA;
+        for (int i = 0; i < monthlyTotals.Points; i++)
+        {
+            string kwX = i < kw.Length ? kw[i].ToString()  : "xxx";
+            string kvaX = i < kva.Length ? kva[i].ToString()  : "xxx";
+            Console.WriteLine($"{dates[i]:dd-MMM-yyyy} {kwX} {kvaX} ");
+
+        }
+
+
+        _monthlyTotals = monthlyTotals;
+    }
+
+
+
+
+
+    void setDayChart(QuadrantResult dayTotals)
+    {
+        if (dayTotals.AnyKva() == false)
+        {
+            var trace = new Scatter
+                {
+                    X = dayTotals.X,
+                    Y = dayTotals.Y_kW,
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                };
+            this._data30Min = new List<ITrace> { trace };
+
+            this._layout30Min = new Layout
+                {
+                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Intra-day demand  kW  {dayTotals.ActualDateRange.FromDate:dd-MMM-yyyy}" },
+                    BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                    YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW" } },
+                    },
+
+                };
+        }
+        else
+        {
+            var traceKw = new Scatter
+                {
+                    X = dayTotals.X,
+                    Y = dayTotals.Y_kW,
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kW"
+                };
+
+            var traceKva = new Scatter
+                {
+                    X = dayTotals.X,
+                    Y = dayTotals.Y_kVA,
+                    Mode = ModeFlag.Lines | ModeFlag.Markers,
+                    Name = "kVA"
+                };
+
+
+            this._data30Min = new List<ITrace> { traceKw, traceKva };
+            this._layout30Min = new Layout
+                {
+                    Title = new Plotly.Blazor.LayoutLib.Title() { Text = $"Intra-day demand  kW & kVA  {dayTotals.ActualDateRange.FromDate:dd-MMM-yyyy}" },
+                    BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Stack,
+                    YAxis = new[] {
+                        new Plotly.Blazor.LayoutLib.YAxis  { Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title() { Text = "kW/kVa" } }
+                    },
+                };
+        }
+
+
+
+    }
+
+
+    public void ClickAction(IEnumerable<Plotly.Blazor.Interop.EventDataPoint> eventData)
+    {
+        @if (eventData != null && eventData.Any() && _monthlyTotals != null && _chartDaily != null && _site != null)
+        {
+            var clickInfo = eventData.First();
+            var x = clickInfo.X;
+            Console.WriteLine($"Clicked on {x}");
+            var strPtr = clickInfo.PointIndex.ToString();
+            Console.WriteLine($"strPtr {x}");
+            if (int.TryParse(strPtr, out int index))
+            {
+
+                var dates = _monthlyTotals.Dates;
+                if (index < 0 || index >= dates.Length)
+                {
+                    return;
+                }
+                var selectedDate = dates[index];
+              
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> Selected Date {selectedDate}");
+                NavigationManager.NavigateTo($"/GraphDemand/{_site.Id}?SelectedMonth={selectedDate:dd-MMM-yyyy}");
+
+                // var daily = _monthlyTotals.GetDaily(selectedDate);
+                // setDailyChart(daily);
+                // _reLayoutDaily = true;
+
+                // Console.WriteLine($"Set Date to {daily.Max_kVA_DateTime:dd-MMM-yyyy}" );
+                // _DayToDisplay = daily.Max_kVA_DateTime.Date;
+                // _reLayout30Min = true;
+
+                // StateHasChanged();
+            }
+
+        }
+
+    }
+
+    public void ClickActionDaily(IEnumerable<Plotly.Blazor.Interop.EventDataPoint> eventData)
+    {
+        if (eventData != null && eventData.Any() && _site != null)
+        {
+            var clickInfo = eventData.First();
+            var x = clickInfo.X;
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> Daily clicked on {x} {x.GetType().ToString()}");
+            var strPtr = clickInfo.PointIndex.ToString();
+            Console.WriteLine($"Daily strPtr {strPtr}");
+
+            if (DateTime.TryParse(x.ToString(), out DateTime selectedDate))
+            {
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> Selected Date {selectedDate}");
+                NavigationManager.NavigateTo($"/GraphDemand/{_site.Id}?SelectedMonth={this.SelectedMonth}&SelectedDay={selectedDate:yyyy-MM-dd}");
+
+
+                // Console.WriteLine($"Set Date to {selectedDate:dd-MMM-yyyy}");
+
+                // _DayToDisplay = selectedDate;
+                // _reLayout30Min = true;
+                // StateHasChanged();
+
+            }
+
+
+        }
+    }
+
+    public void ClickAction30Min(IEnumerable<Plotly.Blazor.Interop.EventDataPoint> eventData)
+    {
+        if (eventData != null && eventData.Any() && _site != null)
+        {
+            var clickInfo = eventData.First();
+            var x = clickInfo.X;
+            var strPtr = clickInfo.PointIndex.ToString();
+            Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} ->  30Min clicked on {x} {strPtr}");
+
+            if (DateTime.TryParse(x.ToString(), out DateTime selectedDate))
+            {
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> Selected Date {selectedDate}");
+                NavigationManager.NavigateTo($"/GraphDemand/{_site.Id}?SelectedMonth={this.SelectedMonth}&SelectedDay={this.SelectedDay}&SelectedPeriod={selectedDate:yyyy-MM-dd HH:mm:ss}");
+
+
+                // Console.WriteLine($"Set Date to {selectedDate:dd-MMM-yyyy}");
+
+                // _DayToDisplay = selectedDate;
+                // _reLayout30Min = true;
+                // StateHasChanged();
+
+            }
+        }
+    }
+
+
+    public async void SubscribeEvents()
+    {
+        await _chart.SubscribeClickEvent();
+    }
+
+    public async void SubscribeEventsDaily()
+    {
+        await _chartDaily.SubscribeClickEvent();
+    }
+    public async void SubscribeEvents30Min()
+    {
+        await this._chart30Min.SubscribeClickEvent();
+    }
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} ->  OnAfterRender {firstRender} ");
+
+         if (_reLayoutDaily && _chartDaily != null)
+         {
+             _reLayoutDaily = false;
+             await _chartDaily.React();
+         }
+
+        if (_reLayout30Min && _chart30Min != null)
+        {
+            _reLayout30Min = false;
+            await _chart30Min.React();
+        }
+        if (_reLayoutVector && _chartVector != null)
+        {
+            _reLayoutVector = false;
+            await _chartVector.React();
+        }
+
+        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} ->  OnAfterRender Done  {firstRender} ");
+
+
+    }
+
+
+
+
+
+
 
 }

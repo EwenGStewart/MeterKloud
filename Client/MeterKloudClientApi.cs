@@ -12,6 +12,8 @@ using Site = MeterDataLib.Site;
 using MeterDataLib;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.JSInterop;
+using static MeterDataLib.Query.MeterDataQuery;
+using System.Security.Policy;
 
 
 
@@ -259,6 +261,27 @@ namespace MeterKloud
             return result;
 
 
+        }
+
+
+
+        public async Task<QuadrantResult> GetQuadrants(string siteId, DateTime? fromDate, DateTime? toDate , int demandIntervalMinutes = 30)
+        {
+            if (meterDataStorageManager == null)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.QuadrantResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+
+
+            var days = fromDate.HasValue && toDate.HasValue ? await GetSiteDays(siteId, fromDate.Value, toDate.Value) : await GetSiteDays(siteId);
+            if (days.Count == 0)
+            {
+                return new MeterDataLib.Query.MeterDataQuery.QuadrantResult(new MeterDataLib.Query.QueryDateRange(DateTime.Today, DateTime.Today));
+            }
+            fromDate ??= days.OrderBy(x => x.Date).First().Date;
+            toDate ??= days.OrderBy(x => x.Date).Last().Date;
+            var result = MeterDataLib.Query.MeterDataQuery.GetQuadrants(fromDate.Value, toDate.Value, days, 30);
+            return result;
         }
 
 

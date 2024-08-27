@@ -38,7 +38,7 @@ namespace MeterDataLib
         public string TimeZoneName { get; set; } = string.Empty;
         public decimal? UCT_Offset { get; set; } = null;
 
-        const int MinutesPerDay = 24 * 60;
+        public const int MinutesPerDay = 24 * 60;
 
         static ChanelType[] QuadrantTypes = new ChanelType[] { ChanelType.ActivePowerConsumption, ChanelType.ActivePowerGeneration, ChanelType.ReactivePowerConsumption, ChanelType.ReactivePowerGeneration };
 
@@ -233,7 +233,7 @@ namespace MeterDataLib
             var totalActivePowerGeneration = quadrants.Select(x => x.ActivePowerGeneration_kWh).Sum();
             var totalReactivePowerConsumption = quadrants.Select(x => x.ReactivePowerConsumption_kVArh).Sum();
             var totalReactivePowerGeneration = quadrants.Select(x => x.ReactivePowerGeneration_kVArh).Sum();
-            decimal maxKw = quadrants.OrderByDescending(x => x.RealPowerConsumption_Kw).First().RealPowerConsumption_Kw;
+            decimal maxKw = quadrants.OrderByDescending(x => x.RealPowerConsumption_kW).First().RealPowerConsumption_kW;
             var maxQuad = quadrants.OrderByDescending(x => x.CalculateKva(setKvaToZeroWhenActiveGenerationExceedsConsumption: true)).ThenByDescending(x=>x.ReadingDateTime).First();
             var maxKva = maxQuad.ApparentPower_kVA;
             var maxKvaTime = maxQuad.ReadingDateTime;

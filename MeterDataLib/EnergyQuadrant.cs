@@ -21,9 +21,16 @@ namespace MeterDataLib
 
         public decimal NetActivePower_kWh => ActivePowerConsumption_kWh - ActivePowerGeneration_kWh;
         public decimal NetReactivePower_kVArh => ReactivePowerConsumption_kVArh - ReactivePowerGeneration_kVArh;
-        public decimal RealPowerConsumption_Kw => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * ActivePowerConsumption_kWh;
+        public decimal RealPowerConsumption_kW => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * ActivePowerConsumption_kWh;
         public decimal RealPowerGeneration_kW => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * ActivePowerGeneration_kWh;
         public decimal RealPowerNet_kW => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * NetActivePower_kWh;
+
+        public decimal ReactivePowerConsumption_kVAr => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * ReactivePowerConsumption_kVArh;
+        public decimal ReactivePowerGeneration_kVAr => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * ReactivePowerGeneration_kVArh;
+        public decimal ReactivePowerNet_kVAr => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * NetReactivePower_kVArh;
+
+
+
 
         public int Quadrant =>
               NetActivePower_kWh == 0 && NetReactivePower_kVArh == 0 ? 0
@@ -41,7 +48,7 @@ namespace MeterDataLib
 
 
         public decimal ApparentPower_kVA => IntervalMinutes <= 0 ? 0 : 60 / IntervalMinutes * (decimal)Math.Sqrt(Math.Pow((double)ActivePowerConsumption_kWh, 2) + Math.Pow((double)NetReactivePower_kVArh, 2));
-        public decimal PowerFactor => IntervalMinutes <= 0 || ApparentPower_kVA == 0 ? 0 : RealPowerConsumption_Kw / ApparentPower_kVA;
+        public decimal PowerFactor => IntervalMinutes <= 0 || ApparentPower_kVA == 0 ? 0 : RealPowerConsumption_kW / ApparentPower_kVA;
 
 
 
@@ -53,11 +60,11 @@ namespace MeterDataLib
 
         public override string ToString()
         {
-            return $"{ReadingDateTime:yyyy-MM-dd HH:mm},M={Meter},C={ChannelNumber},Chans={ChannelList},I={IntervalMinutes},Q={Quality},E={ActivePowerConsumption_kWh},B={ActivePowerGeneration_kWh},Q={ReactivePowerConsumption_kVArh},K={ReactivePowerGeneration_kVArh},Kw={RealPowerConsumption_Kw:0.0000.000},Kva={ApparentPower_kVA:0.000},PF={PowerFactor:0.000}";
+            return $"{ReadingDateTime:yyyy-MM-dd HH:mm},M={Meter},C={ChannelNumber},Chans={ChannelList},I={IntervalMinutes},Q={Quality},E={ActivePowerConsumption_kWh},B={ActivePowerGeneration_kWh},Q={ReactivePowerConsumption_kVArh},K={ReactivePowerGeneration_kVArh},Kw={RealPowerConsumption_kW:0.0000.000},Kva={ApparentPower_kVA:0.000},PF={PowerFactor:0.000}";
         }
         public string ToCsvString()
         {
-            return $"{ReadingDateTime:yyyy-MM-dd HH:mm},{Meter},{ChannelNumber},{ChannelList},{IntervalMinutes},{Quality},{ActivePowerConsumption_kWh},{ActivePowerGeneration_kWh},{ReactivePowerConsumption_kVArh},{ReactivePowerGeneration_kVArh},{RealPowerConsumption_Kw:0.000},{ApparentPower_kVA:0.000},{PowerFactor:0.000}";
+            return $"{ReadingDateTime:yyyy-MM-dd HH:mm},{Meter},{ChannelNumber},{ChannelList},{IntervalMinutes},{Quality},{ActivePowerConsumption_kWh},{ActivePowerGeneration_kWh},{ReactivePowerConsumption_kVArh},{ReactivePowerGeneration_kVArh},{RealPowerConsumption_kW:0.000},{ApparentPower_kVA:0.000},{PowerFactor:0.000}";
         }
 
 
