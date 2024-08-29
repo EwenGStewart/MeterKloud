@@ -22,11 +22,117 @@
                 return FitCurveWithSimpleDivision(inputArray, outputLength);
             }
             return SmoothCurve(inputArray, outputLength);
+        }
 
+        public static Quality[] UnifyQuality(Quality[] inputArray, int outputLength )
+        {
+            if (inputArray.Length == outputLength) { return inputArray; }
+            if (inputArray.Length == 0) { throw new ArgumentException("Input array is empty"); }
+            if (inputArray.Length > outputLength)
+            {
+                Quality[] outputArray = new Quality[outputLength];
+                for (int i = 0; i < inputArray.Length; i++)
+                {
+                    int index = i * outputLength / inputArray.Length;
+                    if (outputArray[index] == Quality.Unknown || (int)outputArray[index] < (int)inputArray[i] )
+                    {
+                        outputArray[index] = inputArray[i];
+                    }
+                }
+                return outputArray;
+            }
+            
+            else
+            {
+                Quality[] outputArray = new Quality[outputLength];
+                for (int i = 0; i < inputArray.Length; i++)
+                {
+                    int index = i * outputLength / inputArray.Length;
+                    int index2 = (i + 1) * outputLength / inputArray.Length;
+                    for (int j = index; j < index2; j++)
+                    {
 
+                        outputArray[j] = inputArray[i];
+                    }
+                }
+                return outputArray;
+            }
+            
+        }
+
+        public static string[] UnifyString(string[] inputArray, int outputLength)
+        {
+            if (inputArray.Length == outputLength) { return inputArray; }
+            if (inputArray.Length == 0) { throw new ArgumentException("Input array is empty"); }
+            if (inputArray.Length > outputLength)
+            {
+                string[] outputArray = new string[outputLength];
+                for (int i = 0; i < inputArray.Length; i++)
+                {
+                    int index = i * outputLength / inputArray.Length;
+                    outputArray[index] ??= string.Empty;
+                    if (outputArray[index].Length < (inputArray[i]?.Length ??0) )
+                    {
+                        outputArray[index] = inputArray[i];
+                    }
+                }
+                return outputArray;
+            }
+
+            else
+            {
+                string[] outputArray = new string[outputLength];
+                for (int i = 0; i < inputArray.Length; i++)
+                {
+                    int index = i * outputLength / inputArray.Length;
+                    int index2 = (i + 1) * outputLength / inputArray.Length;
+                    for (int j = index; j < index2; j++)
+                    {
+
+                        outputArray[j] = inputArray[i]??string.Empty;
+                    }
+                }
+                return outputArray;
+            }
 
         }
 
+
+        public static int[] UnifyInt(int[] inputArray, int outputLength)
+        {
+            if (inputArray.Length == outputLength) { return inputArray; }
+            if (inputArray.Length == 0) { throw new ArgumentException("Input array is empty"); }
+            if (inputArray.Length > outputLength)
+            {
+                int[] outputArray = new int[outputLength];
+                for (int i = 0; i < inputArray.Length; i++)
+                {
+                    int index = i * outputLength / inputArray.Length;
+                    if (outputArray[index] < inputArray[i])
+                    {
+                        outputArray[index] = inputArray[i];
+                    }
+                }
+                return outputArray;
+            }
+
+            else
+            {
+                int[] outputArray = new int[outputLength];
+                for (int i = 0; i < inputArray.Length; i++)
+                {
+                    int index = i * outputLength / inputArray.Length;
+                    int index2 = (i + 1) * outputLength / inputArray.Length;
+                    for (int j = index; j < index2; j++)
+                    {
+
+                        outputArray[j] = inputArray[i];
+                    }
+                }
+                return outputArray;
+            }
+
+        }
 
         static decimal[] FitCurveWithSimpleDivision(decimal[] inputArray, int outputLength)
         {

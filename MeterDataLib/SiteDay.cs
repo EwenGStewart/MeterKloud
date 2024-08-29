@@ -224,7 +224,8 @@ namespace MeterDataLib
             if (demandInterval < 1 || demandInterval > MinutesPerDay) { demandInterval = 30;  }
             var keyChannels = Channels.Values.Where(x => !x.Ignore && QuadrantTypes.Contains(x.ChannelType) && x.IntervalMinutes > 0);
             var quadrants = GetEnergyQuadrants( new QuadrantOptions() { Interval = demandInterval });
-            var readInterval = keyChannels.Where( x=>x.IntervalMinutes > 0 && x.IntervalMinutes <= MinutesPerDay).Select(x => x.IntervalMinutes).Min();
+            
+            var readInterval = keyChannels.Any() ? keyChannels.Where( x=>x.IntervalMinutes > 0 && x.IntervalMinutes <= MinutesPerDay).Select(x => x.IntervalMinutes).Min() : 30;
             var meters =  keyChannels.Select(x=>x.MeterId).Distinct().Count();
             var channels = keyChannels.Count();
             var readings = keyChannels.Select(x => x.Readings.Length).Sum();

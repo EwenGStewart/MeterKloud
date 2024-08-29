@@ -77,6 +77,7 @@ namespace MeterDataLib.Parsers
                         else if (line.GetStringUpper(0) == "STREAM ID")
                         {
                             meter = line.GetStringUpper(1).Replace("METER", "").Trim();
+
                             channel = line.GetStringUpper(3);
                             uom = line.GetStringUpper(4);
                             if (UnitOfMeasureExtensions.ToUom(uom) == UnitOfMeasure.Other)

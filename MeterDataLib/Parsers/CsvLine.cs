@@ -57,7 +57,7 @@ namespace MeterDataLib.Parsers
         {
             if (Columns.Length > col)
             {
-                return Columns[col].ToUpper();
+                return Columns[col].ToUpper().Replace('"',' ').Trim();
             }
             return string.Empty;
         }

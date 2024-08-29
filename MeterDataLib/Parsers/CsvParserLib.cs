@@ -53,6 +53,7 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
+                    channelDay.Ignore = true;
                     return; 
                     
                 case "KW":
@@ -61,6 +62,7 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
+                    channelDay.Ignore = true;
                     return;
 
                 case "KVA":
@@ -69,6 +71,7 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
+                    channelDay.Ignore = true;
                     return;
 
                 case "KVAH":
@@ -77,6 +80,7 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
+                    channelDay.Ignore = true;
                     return;
 
                 case "KVARH":
@@ -85,6 +89,7 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
+                    channelDay.Ignore = true;
                     return;
                 default:
                     break;

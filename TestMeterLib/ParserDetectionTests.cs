@@ -7,6 +7,8 @@ using Xunit.Abstractions;
 
 namespace TestMeterLib
 {
+
+
     public class ParserDetectionTests(ITestOutputHelper Output)
     {
 
@@ -19,8 +21,6 @@ namespace TestMeterLib
         [InlineData("SampleNem12-2.csv", "text/csv", true)]
         [InlineData("SampleNem12-3.csv", "text/csv", true)]
         [InlineData("SampleNem12-4.CSV", "text/csv", true)]
-
-
         [InlineData("MultiLineCsv1.csv", "text/csv", true)]
         [InlineData("SampleCsv.csv", "text/csv", true)]
         [InlineData("SampleCsv3.csv", "text/csv", true)]

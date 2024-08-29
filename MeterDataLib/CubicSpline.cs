@@ -2,6 +2,10 @@
 {
     public static class Interpolation
     {
+
+       
+
+
         public static (double[] xs, double[] ys) Interpolate1D(double[] xs, double[] ys, int count)
         {
             if (xs is null || ys is null || xs.Length != ys.Length)
