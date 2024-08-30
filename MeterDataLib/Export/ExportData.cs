@@ -5,7 +5,7 @@ namespace MeterDataLib.Export
     public static class ExportData
     {
         const int MaxDays = 366 * 4;
-        private static readonly ChanelType[] StandardChannelTypes = new ChanelType[] { ChanelType.ActivePowerConsumption, ChanelType.ActivePowerGeneration, ChanelType.ApparentPowerConsumption, ChanelType.ApparentPowerGeneration };
+        private static readonly ChanelType[] StandardChannelTypes = new ChanelType[] { ChanelType.ActivePowerConsumption, ChanelType.ActivePowerGeneration, ChanelType.ReactivePowerConsumption, ChanelType.ReactivePowerGeneration };
 
 
 
