@@ -146,7 +146,7 @@ namespace MeterDataLib.Parsers
                     var channelDay = new ChannelDay()
                     {
                         Channel = "E1",
-                        ChannelType = ChanelType.ActivePowerConsumption,
+                        ChannelType = ChanelType.ActiveEnergyConsumption,
                         ChannelNumber = "1",
                         IsNet = true,
                         UnitOfMeasure = UnitOfMeasure.kWh,

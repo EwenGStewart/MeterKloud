@@ -40,7 +40,7 @@ namespace MeterDataLib
 
         public const int MinutesPerDay = 24 * 60;
 
-        static ChanelType[] QuadrantTypes = new ChanelType[] { ChanelType.ActivePowerConsumption, ChanelType.ActivePowerGeneration, ChanelType.ReactivePowerConsumption, ChanelType.ReactivePowerGeneration };
+        static ChanelType[] QuadrantTypes = new ChanelType[] { ChanelType.ActiveEnergyConsumption, ChanelType.ActiveEnergyGeneration, ChanelType.ReactiveEnergyConsumption, ChanelType.ReactiveEnergyGeneration };
 
         EnergyQuadrant[] EmptyQuadrant(int? interval)
         {
@@ -146,35 +146,35 @@ namespace MeterDataLib
                 {
 
                     var quality = channelDay.ReadQualities?[i] ?? channelDay.OverallQuality;
-                    decimal activePowerConsumption = channelDay.ChannelType == ChanelType.ActivePowerConsumption ? readings[i] : 0;
-                    decimal activePowerGeneration = channelDay.ChannelType == ChanelType.ActivePowerGeneration ? readings[i] : 0;
-                    decimal reactivePowerConsumption = channelDay.ChannelType == ChanelType.ReactivePowerConsumption ? readings[i] : 0;
-                    decimal reactivePowerGeneration = channelDay.ChannelType == ChanelType.ReactivePowerGeneration ? readings[i] : 0;
+                    decimal activeEnergyConsumption = channelDay.ChannelType == ChanelType.ActiveEnergyConsumption ? readings[i] : 0;
+                    decimal activeEnergyGeneration = channelDay.ChannelType == ChanelType.ActiveEnergyGeneration ? readings[i] : 0;
+                    decimal reactiveEnergyConsumption = channelDay.ChannelType == ChanelType.ReactiveEnergyConsumption ? readings[i] : 0;
+                    decimal reactivePowerGeneration = channelDay.ChannelType == ChanelType.ReactiveEnergyGeneration ? readings[i] : 0;
 
-                    if (activePowerConsumption < 0)
+                    if (activeEnergyConsumption < 0)
                     {
-                        activePowerGeneration -= activePowerConsumption;
-                        activePowerConsumption = 0;
+                        activeEnergyGeneration -= activeEnergyConsumption;
+                        activeEnergyConsumption = 0;
                     }
-                    if (activePowerGeneration < 0)
+                    if (activeEnergyGeneration < 0)
                     {
-                        activePowerConsumption -= activePowerGeneration;
-                        activePowerGeneration = 0;
+                        activeEnergyConsumption -= activeEnergyGeneration;
+                        activeEnergyGeneration = 0;
                     }
-                    if (reactivePowerConsumption < 0)
+                    if (reactiveEnergyConsumption < 0)
                     {
-                        reactivePowerGeneration -= reactivePowerConsumption;
-                        reactivePowerConsumption = 0;
+                        reactivePowerGeneration -= reactiveEnergyConsumption;
+                        reactiveEnergyConsumption = 0;
                     }
                     if (reactivePowerGeneration < 0)
                     {
-                        reactivePowerConsumption -= reactivePowerGeneration;
+                        reactiveEnergyConsumption -= reactivePowerGeneration;
                         reactivePowerGeneration = 0;
                     }
 
 
                     EnergyQuadrant energyQuadrant = new EnergyQuadrant(Date.AddMinutes(i * targetInterval), meter, channelNumber, channelList, targetInterval, quality,
-                        activePowerConsumption, activePowerGeneration, reactivePowerConsumption, reactivePowerGeneration);
+                        activeEnergyConsumption, activeEnergyGeneration, reactiveEnergyConsumption, reactivePowerGeneration);
                     quadrants.Add(energyQuadrant);
                 }
 
@@ -188,10 +188,10 @@ namespace MeterDataLib
                 result = quadrants.GroupBy(x => new { x.ReadingDateTime, x.Meter })
                     .Select(x => new EnergyQuadrant(x.Key.ReadingDateTime, x.Key.Meter, x.Max(y => y.ChannelNumber), string.Join('|', x.Select(y => y.ChannelList).Distinct().Order()), x.First().IntervalMinutes,
                         x.Max(y => y.Quality),
-                        x.Sum(y => y.ActivePowerConsumption_kWh),
-                        x.Sum(y => y.ActivePowerGeneration_kWh),
-                        x.Sum(y => y.ReactivePowerConsumption_kVArh),
-                        x.Sum(y => y.ReactivePowerGeneration_kVArh)
+                        x.Sum(y => y.ActiveEnergyConsumption_kWh),
+                        x.Sum(y => y.ActiveEnergyGeneration_kWh),
+                        x.Sum(y => y.ReactiveEnergyConsumption_kVArh),
+                        x.Sum(y => y.ReactiveEnergyGeneration_kVArh)
                         )).OrderBy(x => x.ReadingDateTime).ThenBy(x => x.Meter).ToArray();
             }
             else
@@ -200,10 +200,10 @@ namespace MeterDataLib
                 result = quadrants.GroupBy(x => x.ReadingDateTime)
                     .Select(x => new EnergyQuadrant(x.Key, null, null, null, x.First().IntervalMinutes,
                         x.Max(y => y.Quality),
-                        x.Sum(y => y.ActivePowerConsumption_kWh),
-                        x.Sum(y => y.ActivePowerGeneration_kWh),
-                        x.Sum(y => y.ReactivePowerConsumption_kVArh),
-                        x.Sum(y => y.ReactivePowerGeneration_kVArh)
+                        x.Sum(y => y.ActiveEnergyConsumption_kWh),
+                        x.Sum(y => y.ActiveEnergyGeneration_kWh),
+                        x.Sum(y => y.ReactiveEnergyConsumption_kVArh),
+                        x.Sum(y => y.ReactiveEnergyGeneration_kVArh)
                         )).OrderBy(x => x.ReadingDateTime).ToArray();
             }
 
@@ -224,23 +224,22 @@ namespace MeterDataLib
             if (demandInterval < 1 || demandInterval > MinutesPerDay) { demandInterval = 30;  }
             var keyChannels = Channels.Values.Where(x => !x.Ignore && QuadrantTypes.Contains(x.ChannelType) && x.IntervalMinutes > 0);
             var quadrants = GetEnergyQuadrants( new QuadrantOptions() { Interval = demandInterval });
-            
-            var readInterval = keyChannels.Any() ? keyChannels.Where( x=>x.IntervalMinutes > 0 && x.IntervalMinutes <= MinutesPerDay).Select(x => x.IntervalMinutes).Min() : 30;
+            var readInterval = keyChannels.Where( x=>x.IntervalMinutes > 0 && x.IntervalMinutes <= MinutesPerDay).Select(x => x.IntervalMinutes).Min();
             var meters =  keyChannels.Select(x=>x.MeterId).Distinct().Count();
             var channels = keyChannels.Count();
             var readings = keyChannels.Select(x => x.Readings.Length).Sum();
             var quality = quadrants.Select(x => x.Quality).Max();   
-            var totalActivePowerConsumption = quadrants.Select(x => x.ActivePowerConsumption_kWh).Sum();
-            var totalActivePowerGeneration = quadrants.Select(x => x.ActivePowerGeneration_kWh).Sum();
-            var totalReactivePowerConsumption = quadrants.Select(x => x.ReactivePowerConsumption_kVArh).Sum();
-            var totalReactivePowerGeneration = quadrants.Select(x => x.ReactivePowerGeneration_kVArh).Sum();
+            var totalActivePowerConsumption = quadrants.Select(x => x.ActiveEnergyConsumption_kWh).Sum();
+            var totalActivePowerGeneration = quadrants.Select(x => x.ActiveEnergyGeneration_kWh).Sum();
+            var totalReactiveEnergyConsumption = quadrants.Select(x => x.ReactiveEnergyConsumption_kVArh).Sum();
+            var totalReactivePowerGeneration = quadrants.Select(x => x.ReactiveEnergyGeneration_kVArh).Sum();
             decimal maxKw = quadrants.OrderByDescending(x => x.RealPowerConsumption_kW).First().RealPowerConsumption_kW;
             var maxQuad = quadrants.OrderByDescending(x => x.CalculateKva(setKvaToZeroWhenActiveGenerationExceedsConsumption: true)).ThenByDescending(x=>x.ReadingDateTime).First();
             var maxKva = maxQuad.ApparentPower_kVA;
             var maxKvaTime = maxQuad.ReadingDateTime;
             var pf  = maxQuad.PowerFactor;
             var result = new EnergyDailySummary(
-                    Date, meters, channels, readInterval, quality, totalActivePowerConsumption, totalActivePowerGeneration, totalReactivePowerConsumption, totalReactivePowerGeneration
+                    Date, meters, channels, readInterval, quality, totalActivePowerConsumption, totalActivePowerGeneration, totalReactiveEnergyConsumption, totalReactivePowerGeneration
                 , maxKw, maxKva, pf, maxKvaTime
                 );
             return result; 
@@ -274,15 +273,15 @@ namespace MeterDataLib
                 case GenerationHandlingOption.NetGeneration:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ActivePowerGeneration_kWh > 0 && result[i].ActivePowerConsumption_kWh > 0)
+                        if (result[i].ActiveEnergyGeneration_kWh > 0 && result[i].ActiveEnergyConsumption_kWh > 0)
                         {
-                            if (result[i].ActivePowerGeneration_kWh > result[i].ActivePowerConsumption_kWh)
+                            if (result[i].ActiveEnergyGeneration_kWh > result[i].ActiveEnergyConsumption_kWh)
                             {
-                                result[i] = result[i] with { ActivePowerGeneration_kWh = result[i].ActivePowerGeneration_kWh - result[i].ActivePowerConsumption_kWh, ActivePowerConsumption_kWh = 0 };
+                                result[i] = result[i] with { ActiveEnergyGeneration_kWh = result[i].ActiveEnergyGeneration_kWh - result[i].ActiveEnergyConsumption_kWh, ActiveEnergyConsumption_kWh = 0 };
                             }
                             else
                             {
-                                result[i] = result[i] with { ActivePowerConsumption_kWh = result[i].ActivePowerConsumption_kWh - result[i].ActivePowerGeneration_kWh, ActivePowerGeneration_kWh = 0 };
+                                result[i] = result[i] with { ActiveEnergyConsumption_kWh = result[i].ActiveEnergyConsumption_kWh - result[i].ActiveEnergyGeneration_kWh, ActiveEnergyGeneration_kWh = 0 };
                             }
                         }
                     }
@@ -290,9 +289,9 @@ namespace MeterDataLib
                 case GenerationHandlingOption.IgnoreGeneration:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ActivePowerGeneration_kWh > 0)
+                        if (result[i].ActiveEnergyGeneration_kWh > 0)
                         {
-                            result[i].ActivePowerGeneration_kWh = 0;
+                            result[i].ActiveEnergyGeneration_kWh = 0;
                         }
                     }
 
@@ -300,15 +299,15 @@ namespace MeterDataLib
                 case GenerationHandlingOption.NetAndIgnoreGeneration:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ActivePowerGeneration_kWh > 0 && result[i].ActivePowerConsumption_kWh > 0)
+                        if (result[i].ActiveEnergyGeneration_kWh > 0 && result[i].ActiveEnergyConsumption_kWh > 0)
                         {
-                            if (result[i].ActivePowerGeneration_kWh > result[i].ActivePowerConsumption_kWh)
+                            if (result[i].ActiveEnergyGeneration_kWh > result[i].ActiveEnergyConsumption_kWh)
                             {
-                                result[i] = result[i] with { ActivePowerGeneration_kWh = 0, ActivePowerConsumption_kWh = 0 };
+                                result[i] = result[i] with { ActiveEnergyGeneration_kWh = 0, ActiveEnergyConsumption_kWh = 0 };
                             }
                             else
                             {
-                                result[i] = result[i] with { ActivePowerConsumption_kWh = result[i].ActivePowerConsumption_kWh - result[i].ActivePowerGeneration_kWh, ActivePowerGeneration_kWh = 0 };
+                                result[i] = result[i] with { ActiveEnergyConsumption_kWh = result[i].ActiveEnergyConsumption_kWh - result[i].ActiveEnergyGeneration_kWh, ActiveEnergyGeneration_kWh = 0 };
                             }
                         }
 
@@ -320,24 +319,24 @@ namespace MeterDataLib
                 case GenerationHandlingOption.IgnoreConsumption:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ActivePowerConsumption_kWh > 0)
+                        if (result[i].ActiveEnergyConsumption_kWh > 0)
                         {
-                            result[i].ActivePowerConsumption_kWh = 0;
+                            result[i].ActiveEnergyConsumption_kWh = 0;
                         }
                     }
                     break;
                 case GenerationHandlingOption.NetAndIgnoreConsumption:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ActivePowerGeneration_kWh > 0 && result[i].ActivePowerConsumption_kWh > 0)
+                        if (result[i].ActiveEnergyGeneration_kWh > 0 && result[i].ActiveEnergyConsumption_kWh > 0)
                         {
-                            if (result[i].ActivePowerGeneration_kWh > result[i].ActivePowerConsumption_kWh)
+                            if (result[i].ActiveEnergyGeneration_kWh > result[i].ActiveEnergyConsumption_kWh)
                             {
-                                result[i] = result[i] with { ActivePowerGeneration_kWh = result[i].ActivePowerGeneration_kWh - result[i].ActivePowerConsumption_kWh, ActivePowerConsumption_kWh = 0 };
+                                result[i] = result[i] with { ActiveEnergyGeneration_kWh = result[i].ActiveEnergyGeneration_kWh - result[i].ActiveEnergyConsumption_kWh, ActiveEnergyConsumption_kWh = 0 };
                             }
                             else
                             {
-                                result[i] = result[i] with { ActivePowerConsumption_kWh = 0, ActivePowerGeneration_kWh = 0 };
+                                result[i] = result[i] with { ActiveEnergyConsumption_kWh = 0, ActiveEnergyGeneration_kWh = 0 };
                             }
                         }
                     }
@@ -345,9 +344,9 @@ namespace MeterDataLib
                 case GenerationHandlingOption.IgnoreBoth:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ActivePowerGeneration_kWh > 0 || result[i].ActivePowerConsumption_kWh > 0)
+                        if (result[i].ActiveEnergyGeneration_kWh > 0 || result[i].ActiveEnergyConsumption_kWh > 0)
                         {
-                                result[i] = result[i] with { ActivePowerConsumption_kWh = 0, ActivePowerGeneration_kWh = 0 };
+                                result[i] = result[i] with { ActiveEnergyConsumption_kWh = 0, ActiveEnergyGeneration_kWh = 0 };
                         }
                     }
                     break;
@@ -363,15 +362,15 @@ namespace MeterDataLib
                 case GenerationHandlingOption.NetGeneration:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ReactivePowerGeneration_kVArh > 0 && result[i].ReactivePowerConsumption_kVArh > 0)
+                        if (result[i].ReactiveEnergyGeneration_kVArh > 0 && result[i].ReactiveEnergyConsumption_kVArh > 0)
                         {
-                            if (result[i].ReactivePowerGeneration_kVArh > result[i].ActivePowerConsumption_kWh)
+                            if (result[i].ReactiveEnergyGeneration_kVArh > result[i].ActiveEnergyConsumption_kWh)
                             {
-                                result[i] = result[i] with { ReactivePowerGeneration_kVArh = result[i].ReactivePowerGeneration_kVArh - result[i].ReactivePowerConsumption_kVArh, ReactivePowerConsumption_kVArh = 0 };
+                                result[i] = result[i] with { ReactiveEnergyGeneration_kVArh = result[i].ReactiveEnergyGeneration_kVArh - result[i].ReactiveEnergyConsumption_kVArh, ReactiveEnergyConsumption_kVArh = 0 };
                             }
                             else
                             {
-                                result[i] = result[i] with { ReactivePowerConsumption_kVArh = result[i].ReactivePowerConsumption_kVArh - result[i].ReactivePowerGeneration_kVArh, ReactivePowerGeneration_kVArh = 0 };
+                                result[i] = result[i] with { ReactiveEnergyConsumption_kVArh = result[i].ReactiveEnergyConsumption_kVArh - result[i].ReactiveEnergyGeneration_kVArh, ReactiveEnergyGeneration_kVArh = 0 };
                             }
                         }
                     }
@@ -379,9 +378,9 @@ namespace MeterDataLib
                 case GenerationHandlingOption.IgnoreGeneration:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ReactivePowerGeneration_kVArh > 0)
+                        if (result[i].ReactiveEnergyGeneration_kVArh > 0)
                         {
-                            result[i].ReactivePowerGeneration_kVArh = 0;
+                            result[i].ReactiveEnergyGeneration_kVArh = 0;
                         }
                     }
 
@@ -389,15 +388,15 @@ namespace MeterDataLib
                 case GenerationHandlingOption.NetAndIgnoreGeneration:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ReactivePowerGeneration_kVArh > 0 && result[i].ReactivePowerConsumption_kVArh > 0)
+                        if (result[i].ReactiveEnergyGeneration_kVArh > 0 && result[i].ReactiveEnergyConsumption_kVArh > 0)
                         {
-                            if (result[i].ReactivePowerGeneration_kVArh > result[i].ReactivePowerConsumption_kVArh)
+                            if (result[i].ReactiveEnergyGeneration_kVArh > result[i].ReactiveEnergyConsumption_kVArh)
                             {
-                                result[i] = result[i] with { ReactivePowerGeneration_kVArh = 0, ReactivePowerConsumption_kVArh = 0 };
+                                result[i] = result[i] with { ReactiveEnergyGeneration_kVArh = 0, ReactiveEnergyConsumption_kVArh = 0 };
                             }
                             else
                             {
-                                result[i] = result[i] with { ReactivePowerConsumption_kVArh = result[i].ReactivePowerConsumption_kVArh - result[i].ReactivePowerGeneration_kVArh, ReactivePowerGeneration_kVArh = 0 };
+                                result[i] = result[i] with { ReactiveEnergyConsumption_kVArh = result[i].ReactiveEnergyConsumption_kVArh - result[i].ReactiveEnergyGeneration_kVArh, ReactiveEnergyGeneration_kVArh = 0 };
                             }
                         }
 
@@ -409,24 +408,24 @@ namespace MeterDataLib
                 case GenerationHandlingOption.IgnoreConsumption:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ReactivePowerConsumption_kVArh > 0)
+                        if (result[i].ReactiveEnergyConsumption_kVArh > 0)
                         {
-                            result[i].ReactivePowerConsumption_kVArh = 0;
+                            result[i].ReactiveEnergyConsumption_kVArh = 0;
                         }
                     }
                     break;
                 case GenerationHandlingOption.NetAndIgnoreConsumption:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ReactivePowerGeneration_kVArh > 0 && result[i].ReactivePowerConsumption_kVArh > 0)
+                        if (result[i].ReactiveEnergyGeneration_kVArh > 0 && result[i].ReactiveEnergyConsumption_kVArh > 0)
                         {
-                            if (result[i].ReactivePowerGeneration_kVArh > result[i].ReactivePowerConsumption_kVArh)
+                            if (result[i].ReactiveEnergyGeneration_kVArh > result[i].ReactiveEnergyConsumption_kVArh)
                             {
-                                result[i] = result[i] with { ReactivePowerConsumption_kVArh = result[i].ReactivePowerGeneration_kVArh - result[i].ActivePowerConsumption_kWh, ActivePowerConsumption_kWh = 0 };
+                                result[i] = result[i] with { ReactiveEnergyConsumption_kVArh = result[i].ReactiveEnergyGeneration_kVArh - result[i].ActiveEnergyConsumption_kWh, ActiveEnergyConsumption_kWh = 0 };
                             }
                             else
                             {
-                                result[i] = result[i] with { ReactivePowerConsumption_kVArh = 0, ReactivePowerGeneration_kVArh = 0 };
+                                result[i] = result[i] with { ReactiveEnergyConsumption_kVArh = 0, ReactiveEnergyGeneration_kVArh = 0 };
                             }
                         }
 
@@ -436,9 +435,9 @@ namespace MeterDataLib
                 case GenerationHandlingOption.IgnoreBoth:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i].ReactivePowerGeneration_kVArh > 0 || result[i].ReactivePowerConsumption_kVArh > 0)
+                        if (result[i].ReactiveEnergyGeneration_kVArh > 0 || result[i].ReactiveEnergyConsumption_kVArh > 0)
                         {
-                            result[i] = result[i] with { ReactivePowerConsumption_kVArh = 0, ReactivePowerGeneration_kVArh = 0 };
+                            result[i] = result[i] with { ReactiveEnergyConsumption_kVArh = 0, ReactiveEnergyGeneration_kVArh = 0 };
                         }
                     }
                     break;

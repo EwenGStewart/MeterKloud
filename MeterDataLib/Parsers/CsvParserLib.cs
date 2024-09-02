@@ -48,12 +48,11 @@ namespace MeterDataLib.Parsers
             switch(channel)
             {
                 case "KWH":
-                    channelDay.ChannelType = ChanelType.ActivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyConsumption;
                     channelDay.UnitOfMeasure = UnitOfMeasure.kWh;
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
-                    channelDay.Ignore = true;
                     return; 
                     
                 case "KW":
@@ -62,7 +61,6 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
-                    channelDay.Ignore = true;
                     return;
 
                 case "KVA":
@@ -71,7 +69,6 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
-                    channelDay.Ignore = true;
                     return;
 
                 case "KVAH":
@@ -80,16 +77,14 @@ namespace MeterDataLib.Parsers
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
-                    channelDay.Ignore = true;
                     return;
 
                 case "KVARH":
-                    channelDay.ChannelType = ChanelType.ReactivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyConsumption;
                     channelDay.UnitOfMeasure = UnitOfMeasure.kVArh;
                     channelDay.RegisterId = channelDay.Channel;
                     channelDay.MeterId = "ALL";
                     channelDay.IsNet = true;
-                    channelDay.Ignore = true;
                     return;
                 default:
                     break;
@@ -114,61 +109,61 @@ namespace MeterDataLib.Parsers
             switch (channelType)
             {
                 case "E":
-                    channelDay.ChannelType = ChanelType.ActivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyConsumption;
                     break;
                 case "Q":
-                    channelDay.ChannelType = ChanelType.ReactivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyConsumption;
                     break;
                 case "B":
-                    channelDay.ChannelType = ChanelType.ActivePowerGeneration;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyGeneration;
                     break;
                 case "K":
-                    channelDay.ChannelType = ChanelType.ReactivePowerGeneration;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyGeneration;
                     break;
 
                 case "D":
-                    channelDay.ChannelType = ChanelType.ActivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyConsumption;
                     channelDay.IsAvg = true;
                     break;
                 case "P":
-                    channelDay.ChannelType = ChanelType.ReactivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyConsumption;
                     channelDay.IsAvg = true;
                     break;
                 case "A":
-                    channelDay.ChannelType = ChanelType.ActivePowerGeneration;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyGeneration;
                     channelDay.IsAvg = true;
                     break;
                 case "J":
-                    channelDay.ChannelType = ChanelType.ReactivePowerGeneration;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyGeneration;
                     channelDay.IsAvg = true;
                     break;
 
 
                 case "F":
-                    channelDay.ChannelType = ChanelType.ActivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyConsumption;
                     channelDay.IsCheck = true;
                     break;
                 case "R":
-                    channelDay.ChannelType = ChanelType.ReactivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyConsumption;
                     channelDay.IsCheck = true;
                     break;
                 case "C":
-                    channelDay.ChannelType = ChanelType.ActivePowerGeneration;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyGeneration;
                     channelDay.IsCheck = true;
                     break;
 
                 case "L":
-                    channelDay.ChannelType = ChanelType.ReactivePowerGeneration;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyGeneration;
                     channelDay.IsCheck = true;
                     break;
 
                 case "N":
-                    channelDay.ChannelType = ChanelType.ActivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ActiveEnergyConsumption;
                     channelDay.IsNet = true;
                     break;
 
                 case "X":
-                    channelDay.ChannelType = ChanelType.ReactivePowerConsumption;
+                    channelDay.ChannelType = ChanelType.ReactiveEnergyConsumption;
                     channelDay.IsNet = true;
                     break;
 
@@ -250,12 +245,12 @@ namespace MeterDataLib.Parsers
             {
                 switch( channelDay.ChannelType)
                 {
-                    case ChanelType.ActivePowerConsumption:
-                    case ChanelType.ActivePowerGeneration:
+                    case ChanelType.ActiveEnergyConsumption:
+                    case ChanelType.ActiveEnergyGeneration:
                         channelDay.UnitOfMeasure = UnitOfMeasure.kWh;
                         break;
-                    case ChanelType.ReactivePowerConsumption:
-                    case ChanelType.ReactivePowerGeneration:
+                    case ChanelType.ReactiveEnergyConsumption:
+                    case ChanelType.ReactiveEnergyGeneration:
                         channelDay.UnitOfMeasure = UnitOfMeasure.kVArh;
                         break;
 

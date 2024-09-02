@@ -8,8 +8,10 @@ namespace TestMeterLib
 {
     public class ExportTests(ITestOutputHelper Output)
     {
+        private const string ExcelMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
         [Fact]
-        public async Task ExportToText()
+        public async Task ExportToNEM12()
         {
             var options = new ExportOptions
             {
@@ -34,6 +36,191 @@ namespace TestMeterLib
         }
 
 
+        [Fact]
+        public async Task ExportToQuads_SiteLevel()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.QuadrantCSV,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = "powerpal_data_0000f596 (2).csv";
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, "text/csv", null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.SiteDays = siteDays;
+            var exportFile = ExportData.Export(options);
+            exportFile.Should().NotBeNullOrEmpty();
+        }
+
+    
+        [Fact]
+        public async Task ExportToQuads_SiteLevel_30Min()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.QuadrantCSV,
+                IntervalInMinutes = 30,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = "powerpal_data_0000f596 (2).csv";
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, "text/csv", null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.SiteDays = siteDays;
+            var exportFile = ExportData.Export(options);
+            exportFile.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
+        public async Task ExportToQuads_MeterChanLevel_30Min()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.QuadrantCSV,
+                IntervalInMinutes = 30,
+                IncludeMeter = true,
+                IncludeChannel = true,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = "SampleNem12Excel.xlsx";
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, ExcelMimeType, null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.SiteDays = siteDays;
+            var exportFile = ExportData.Export(options);
+            exportFile.Should().NotBeNullOrEmpty();
+        }
+
+
+        [Fact]
+        public async Task ExportToCols_MeterChanLevel()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.ColumnarCSV,
+                IncludeMeter = true,
+                IncludeChannel = true,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = "SampleNem12Excel.xlsx";
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, ExcelMimeType, null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.SiteDays = siteDays;
+            var exportFile = ExportData.Export(options);
+            exportFile.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
+        public async Task ExportToCols()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.ColumnarCSV,
+                IncludeMeter = false,
+                IncludeChannel = true,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = "SampleNem12Excel.xlsx";
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, ExcelMimeType, null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.SiteDays = siteDays;
+            var exportFile = ExportData.Export(options);
+            exportFile.Should().NotBeNullOrEmpty();
+        }
+
+
+
+        [Fact]
+        public async Task ExportToCols_AllLevel()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.ColumnarCSV,
+                IncludeSite = false,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = "SampleNem12Excel.xlsx";
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, ExcelMimeType, null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.SiteDays = siteDays;
+            var exportFile = ExportData.Export(options);
+            exportFile.Should().NotBeNullOrEmpty();
+
+        }
+
+
+        [Fact]
+        public async Task ExportToRows_AllLevel()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.RowCSV,
+                IncludeSite = false,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = "SampleNem12Excel.xlsx";
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, ExcelMimeType, null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.SiteDays = siteDays;
+            var exportFile = ExportData.Export(options);
+            exportFile.Should().NotBeNullOrEmpty();
+
+        }
+
 
 
         [Theory]
@@ -52,11 +239,11 @@ namespace TestMeterLib
         [InlineData("SampleCsv5.csv", "text/csv", true)]
         [InlineData("SampleCsv8.csv", "text/csv", true)]
         [InlineData("SampleCsvFormat2.csv", "text/csv", true)]
-        [InlineData("SampleExcelByChanel.XLSX", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
         [InlineData("SampleMultiLineCsv7.csv", "text/csv", true)]
-        [InlineData("SampleNem12Excel.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
-        [InlineData("SampleNem12Excel2.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
-        [InlineData("SampleNem12Excel3.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleNem12Excel.xlsx", ExcelMimeType, true)]
+        [InlineData("SampleNem12Excel2.xlsx", ExcelMimeType, true)]
+        [InlineData("SampleNem12Excel3.xlsx", ExcelMimeType, true)]
         [InlineData("SampleNem12Zip.zip", "application/x-zip-compressed", true)]
         [InlineData("powerpal_data_0000f596 (1).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (2).csv", "text/csv", true)]
@@ -88,10 +275,10 @@ namespace TestMeterLib
             decimal totalReactiveGen = 0;
             foreach (var siteDay in siteDays)
             {
-                totalConsumption += siteDay.EnergyDailySummary.TotalActivePowerConsumption_kWh;
-                totalGen += siteDay.EnergyDailySummary.TotalActivePowerGeneration_kWh;
-                totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactivePowerConsumption_kVArh;
-                totalReactiveGen += siteDay.EnergyDailySummary.TotalReactivePowerGeneration_kVArh;
+                totalConsumption += siteDay.EnergyDailySummary.TotalActiveEnergyConsumption_kWh;
+                totalGen += siteDay.EnergyDailySummary.TotalActiveEnergyGeneration_kWh;
+                totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
+                totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
             var nem12 = ExportData.Export(options);
             nem12.Should().NotBeNullOrEmpty();
@@ -105,10 +292,10 @@ namespace TestMeterLib
             decimal totalReactiveGen2 = 0;
             foreach (var siteDay in parserResult2.SitesDays)
             {
-                totalConsumption2 += siteDay.EnergyDailySummary.TotalActivePowerConsumption_kWh;
-                totalGen2 += siteDay.EnergyDailySummary.TotalActivePowerGeneration_kWh;
-                totalReactiveConsumption2 += siteDay.EnergyDailySummary.TotalReactivePowerConsumption_kVArh;
-                totalReactiveGen2 += siteDay.EnergyDailySummary.TotalReactivePowerGeneration_kVArh;
+                totalConsumption2 += siteDay.EnergyDailySummary.TotalActiveEnergyConsumption_kWh;
+                totalGen2 += siteDay.EnergyDailySummary.TotalActiveEnergyGeneration_kWh;
+                totalReactiveConsumption2 += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
+                totalReactiveGen2 += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
             totalConsumption2.Should().Be(totalConsumption);
             totalGen2.Should().Be(totalGen);
@@ -139,11 +326,11 @@ namespace TestMeterLib
         [InlineData("SampleCsv5.csv", "text/csv", true)]
         [InlineData("SampleCsv8.csv", "text/csv", true)]
         [InlineData("SampleCsvFormat2.csv", "text/csv", true)]
-        [InlineData("SampleExcelByChanel.XLSX", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
         [InlineData("SampleMultiLineCsv7.csv", "text/csv", true)]
-        [InlineData("SampleNem12Excel.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
-        [InlineData("SampleNem12Excel2.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
-        [InlineData("SampleNem12Excel3.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleNem12Excel.xlsx", ExcelMimeType, true)]
+        [InlineData("SampleNem12Excel2.xlsx", ExcelMimeType, true)]
+        [InlineData("SampleNem12Excel3.xlsx", ExcelMimeType, true)]
         [InlineData("SampleNem12Zip.zip", "application/x-zip-compressed", true)]
         [InlineData("powerpal_data_0000f596 (1).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (2).csv", "text/csv", true)]
@@ -177,10 +364,10 @@ namespace TestMeterLib
             decimal totalReactiveGen = 0;
             foreach (var siteDay in siteDays)
             {
-                totalConsumption += siteDay.EnergyDailySummary.TotalActivePowerConsumption_kWh;
-                totalGen += siteDay.EnergyDailySummary.TotalActivePowerGeneration_kWh;
-                totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactivePowerConsumption_kVArh;
-                totalReactiveGen += siteDay.EnergyDailySummary.TotalReactivePowerGeneration_kVArh;
+                totalConsumption += siteDay.EnergyDailySummary.TotalActiveEnergyConsumption_kWh;
+                totalGen += siteDay.EnergyDailySummary.TotalActiveEnergyGeneration_kWh;
+                totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
+                totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
             var nem12 = ExportData.Export(options);
             nem12.Should().NotBeNullOrEmpty();
@@ -194,10 +381,10 @@ namespace TestMeterLib
             decimal totalReactiveGen2 = 0;
             foreach (var siteDay in parserResult2.SitesDays)
             {
-                totalConsumption2 += siteDay.EnergyDailySummary.TotalActivePowerConsumption_kWh;
-                totalGen2 += siteDay.EnergyDailySummary.TotalActivePowerGeneration_kWh;
-                totalReactiveConsumption2 += siteDay.EnergyDailySummary.TotalReactivePowerConsumption_kVArh;
-                totalReactiveGen2 += siteDay.EnergyDailySummary.TotalReactivePowerGeneration_kVArh;
+                totalConsumption2 += siteDay.EnergyDailySummary.TotalActiveEnergyConsumption_kWh;
+                totalGen2 += siteDay.EnergyDailySummary.TotalActiveEnergyGeneration_kWh;
+                totalReactiveConsumption2 += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
+                totalReactiveGen2 += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
             totalConsumption2.Should().Be(totalConsumption);
             totalGen2.Should().Be(totalGen);
@@ -224,11 +411,11 @@ namespace TestMeterLib
         [InlineData("SampleCsv5.csv", "text/csv", true)]
         [InlineData("SampleCsv8.csv", "text/csv", true)]
         [InlineData("SampleCsvFormat2.csv", "text/csv", true)]
-        [InlineData("SampleExcelByChanel.XLSX", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
         [InlineData("SampleMultiLineCsv7.csv", "text/csv", true)]
-        [InlineData("SampleNem12Excel.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
-        [InlineData("SampleNem12Excel2.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
-        [InlineData("SampleNem12Excel3.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true)]
+        [InlineData("SampleNem12Excel.xlsx", ExcelMimeType, true)]
+        [InlineData("SampleNem12Excel2.xlsx", ExcelMimeType, true)]
+        [InlineData("SampleNem12Excel3.xlsx", ExcelMimeType, true)]
         [InlineData("SampleNem12Zip.zip", "application/x-zip-compressed", true)]
         [InlineData("powerpal_data_0000f596 (1).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (2).csv", "text/csv", true)]
@@ -262,10 +449,10 @@ namespace TestMeterLib
             decimal totalReactiveGen = 0;
             foreach (var siteDay in siteDays)
             {
-                totalConsumption += siteDay.EnergyDailySummary.TotalActivePowerConsumption_kWh;
-                totalGen += siteDay.EnergyDailySummary.TotalActivePowerGeneration_kWh;
-                totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactivePowerConsumption_kVArh;
-                totalReactiveGen += siteDay.EnergyDailySummary.TotalReactivePowerGeneration_kVArh;
+                totalConsumption += siteDay.EnergyDailySummary.TotalActiveEnergyConsumption_kWh;
+                totalGen += siteDay.EnergyDailySummary.TotalActiveEnergyGeneration_kWh;
+                totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
+                totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
             var nem12 = ExportData.Export(options);
             nem12.Should().NotBeNullOrEmpty();
@@ -279,10 +466,10 @@ namespace TestMeterLib
             decimal totalReactiveGen2 = 0;
             foreach (var siteDay in parserResult2.SitesDays)
             {
-                totalConsumption2 += siteDay.EnergyDailySummary.TotalActivePowerConsumption_kWh;
-                totalGen2 += siteDay.EnergyDailySummary.TotalActivePowerGeneration_kWh;
-                totalReactiveConsumption2 += siteDay.EnergyDailySummary.TotalReactivePowerConsumption_kVArh;
-                totalReactiveGen2 += siteDay.EnergyDailySummary.TotalReactivePowerGeneration_kVArh;
+                totalConsumption2 += siteDay.EnergyDailySummary.TotalActiveEnergyConsumption_kWh;
+                totalGen2 += siteDay.EnergyDailySummary.TotalActiveEnergyGeneration_kWh;
+                totalReactiveConsumption2 += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
+                totalReactiveGen2 += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
             totalConsumption2.Should().Be(totalConsumption);
             totalGen2.Should().Be(totalGen);

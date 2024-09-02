@@ -107,7 +107,7 @@ namespace MeterKloud
                 
 
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException )
             {
                 result.AddException("Operation Cancelled");
 

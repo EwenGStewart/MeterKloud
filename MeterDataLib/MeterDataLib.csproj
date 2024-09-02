@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Remove="Parsers\GeneralCsv.cs" />
+    <Compile Remove="Query\MeterDataQuery - Copy.cs" />
   </ItemGroup>
 
   <ItemGroup>

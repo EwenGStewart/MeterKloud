@@ -3,10 +3,11 @@
     public enum ChanelType
     {
         Unknown = 0 , 
-        ActivePowerConsumption ,
-        ActivePowerGeneration,
-        ReactivePowerConsumption ,
-        ReactivePowerGeneration ,
+        ActiveEnergyConsumption ,
+        ActiveEnergyGeneration,
+        ReactiveEnergyConsumption ,
+        ReactiveEnergyGeneration ,
+
         Volts ,
         Current , 
         PowerFactor ,

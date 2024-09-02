@@ -39,6 +39,7 @@ namespace MeterDataLib.Export
 
         public bool IncludeHeader { get; set; } = true;
 
+        public bool IncludeSite { get; set; } = true;
         public bool IncludeMeter { get; set; } = false;
         public bool IncludeChannel { get; set; } = false;
         public bool IncludeQuality { get; set; } = false;

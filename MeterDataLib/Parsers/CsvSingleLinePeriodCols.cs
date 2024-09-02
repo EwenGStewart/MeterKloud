@@ -143,7 +143,7 @@ namespace MeterDataLib.Parsers
                             Channel = channel,
                             IntervalMinutes = interval,
                             ChannelNumber = channelNum.ToString(),
-                            ChannelType = (conGen == "CONSUMPTION" ? ChanelType.ActivePowerConsumption : ChanelType.ActivePowerGeneration),
+                            ChannelType = (conGen == "CONSUMPTION" ? ChanelType.ActiveEnergyConsumption : ChanelType.ActiveEnergyGeneration),
                             Ignore = false,
                             Readings = reads,
                             TimeStampUtc = DateTime.UtcNow,

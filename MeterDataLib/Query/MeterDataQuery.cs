@@ -709,7 +709,7 @@ namespace MeterDataLib.Query
             {
                 for (int i = 0; i < Quadrants.Length; i++)
                 {
-                    if ( Math.Round( Quadrants[i].NetReactivePower_kVArh,3)  !=0 )  
+                    if ( Math.Round( Quadrants[i].NetReactiveEnergy_kVArh,3)  !=0 )  
                     {
                         return true;
                     }
@@ -865,7 +865,7 @@ namespace MeterDataLib.Query
                             continue;
                         }
                         result.Profile[offset] ??= 0;
-                        result.Profile[offset] += quad.NetActivePower_kWh;
+                        result.Profile[offset] += quad.NetActiveEnergy_kWh;
                     }
 
                 }
@@ -962,7 +962,7 @@ namespace MeterDataLib.Query
                     {
                         continue;
                     }
-                    result.Profile[timeOffset, dayOffset] += quad.NetActivePower_kWh;
+                    result.Profile[timeOffset, dayOffset] += quad.NetActiveEnergy_kWh;
                 }
             }
             return result;

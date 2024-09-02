@@ -176,7 +176,7 @@ namespace MeterDataLib.Export
             public string Uom { get; set; } = string.Empty;
             public string NMIConfiguration { get; set; } = string.Empty;
             public DateTime Day { get; set; } = DateTime.MinValue;
-            public decimal[] Data { get; set; } = Array.Empty<decimal>();
+            public decimal[] Data { get; set; } = [];
 
             public int Interval { get; set; } = 0;
             public string QualityMethod { get; set; } = string.Empty;

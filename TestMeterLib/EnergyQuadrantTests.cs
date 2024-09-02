@@ -41,7 +41,7 @@ namespace TestMeterLib
                     Console.WriteLine(quad.ToCsvString());
                 }
 
-                quads.Select(x => x.NetActivePower_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
+                quads.Select(x => x.NetActiveEnergy_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
                 quads.Select(x => x.RealPowerConsumption_kW).Max().Should().BeApproximately(474.8m, 0.001m);
                 quads.Select(x => x.ApparentPower_kVA).Max().Should().BeApproximately(476.672m, 0.005m);
 
@@ -78,7 +78,7 @@ namespace TestMeterLib
                     Console.WriteLine(quad.ToCsvString());
                 }
 
-                quads.Select(x => x.NetActivePower_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
+                quads.Select(x => x.NetActiveEnergy_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
                 //quads.Select(x => x.RealPowerConsumption_Kw).Max().Should().BeApproximately(474.8m, 0.001m);
                 //quads.Select(x => x.ApparentPower_kVA).Max().Should().BeApproximately(476.672m, 0.005m);
 
@@ -116,7 +116,7 @@ namespace TestMeterLib
                     Console.WriteLine(quad.ToCsvString());
                 }
 
-                quads.Select(x => x.NetActivePower_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
+                quads.Select(x => x.NetActiveEnergy_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
                 quads.Select(x => x.RealPowerConsumption_kW).Max().Should().BeApproximately(474.8m, 0.001m);
                 quads.Select(x => x.ApparentPower_kVA).Max().Should().BeApproximately(474.8m, 0.005m);
 
@@ -153,7 +153,7 @@ namespace TestMeterLib
                     Console.WriteLine(quad.ToCsvString());
                 }
 
-                quads.Select(x => x.NetActivePower_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
+                quads.Select(x => x.NetActiveEnergy_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
                 quads.Select(x => x.RealPowerConsumption_kW).Max().Should().BeApproximately(474.8m, 0.001m);
                 quads.Select(x => x.ApparentPower_kVA).Max().Should().BeApproximately(474.8m, 0.005m);
 
@@ -190,7 +190,7 @@ namespace TestMeterLib
                     Console.WriteLine(quad.ToCsvString());
                 }
 
-                quads.Select(x => x.NetActivePower_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
+                quads.Select(x => x.NetActiveEnergy_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
                 quads.Select(x => x.RealPowerConsumption_kW).Max().Should().BeApproximately(474.8m, 0.001m);
                 quads.Select(x => x.ApparentPower_kVA).Max().Should().BeApproximately(474.8m, 0.005m);
 
@@ -228,7 +228,7 @@ namespace TestMeterLib
                     Console.WriteLine(quad.ToCsvString());
                 }
 
-                quads.Select(x => x.NetActivePower_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
+                quads.Select(x => x.NetActiveEnergy_kWh).Sum().Should().BeApproximately(8823.7m, 0.001m);
                 quads.Select(x => x.RealPowerConsumption_kW).Max().Should().BeApproximately(474.8m, 0.001m);
                 quads.Select(x => x.ApparentPower_kVA).Max().Should().BeApproximately(474.8m, 0.005m);
 

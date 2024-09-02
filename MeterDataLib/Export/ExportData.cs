@@ -5,7 +5,7 @@ namespace MeterDataLib.Export
     public static class ExportData
     {
         const int MaxDays = 366 * 4;
-        private static readonly ChanelType[] StandardChannelTypes = new ChanelType[] { ChanelType.ActivePowerConsumption, ChanelType.ActivePowerGeneration, ChanelType.ReactivePowerConsumption, ChanelType.ReactivePowerGeneration };
+        private static readonly ChanelType[] StandardChannelTypes = new ChanelType[] { ChanelType.ActiveEnergyConsumption, ChanelType.ActiveEnergyGeneration, ChanelType.ReactiveEnergyConsumption, ChanelType.ReactiveEnergyGeneration };
 
 
 
@@ -94,13 +94,13 @@ namespace MeterDataLib.Export
                     Nem12Exporter.ExportNem12(options, writer);
                     break;
                 case ExportFormat.QuadrantCSV:
-                    ExportQuadrantCSV(options, writer);
+                    QuadrantExporter.ExportQuadrantCSV(options, writer);
                     break;
                 case ExportFormat.ColumnarCSV:
-                    ExportColumnarCSV(options, writer);
+                     ColumnExporter.ExportColumnCSV(options, writer);
                     break;
                 case ExportFormat.RowCSV:
-                    ExportRowCSV(options, writer);
+                    RowExporter.ExportRowCSV(options, writer);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -111,26 +111,61 @@ namespace MeterDataLib.Export
             return result;
         }
 
-    
-      
-
-
-        static void ExportQuadrantCSV(ExportOptions options, StringBuilder writer)
+        public static string Site(SiteDay siteDay, ExportOptions options)
         {
-            throw new NotImplementedException();
+            if (options.IncludeSite)
+
+                if (string.IsNullOrEmpty(siteDay.SiteCode))
+                {
+                    return "UNKNOWN";
+                }
+                else
+                {
+                    return siteDay.SiteCode.Trim().ToUpperInvariant();
+                }
+            else
+            {
+                return "ALL";
+            }
         }
 
-        static void ExportColumnarCSV(ExportOptions options, StringBuilder writer)
+        public static string Serial(ChannelDay channelDay, ExportOptions options)
         {
-            throw new NotImplementedException();
+            if (options.IncludeMeter)
+
+                if (string.IsNullOrEmpty(channelDay.MeterId))
+                {
+                    return "UNKNOWN";
+                }
+                else
+                {
+                    return channelDay.MeterId.Trim().ToUpperInvariant();
+                }
+            else
+            {
+                return "ALL";
+            }
         }
 
-        static void ExportRowCSV(ExportOptions options, StringBuilder writer)
+        public static string ChannelNum(ChannelDay channelDay, ExportOptions options)
         {
+            if (options.IncludeChannel)
 
-            throw new NotImplementedException();
+                if (string.IsNullOrEmpty(channelDay.ChannelNumber))
+                {
+                    return "?";
+                }
+                else
+                {
+                    return channelDay.ChannelNumber.Trim().ToUpperInvariant();
+                }
+            else
+            {
+                return "*";
+            }
         }
 
+ 
 
 
       
