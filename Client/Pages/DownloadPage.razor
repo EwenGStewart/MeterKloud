@@ -1,6 +1,91 @@
 ﻿@page "/download"
-<h3>DownloadPage</h3>
+@using MeterDataLib.Export
+ 
+
+<MudContainer Fixed Class="px-6 py-4" MaxWidth="MaxWidth.ExtraExtraLarge">
+
+    <MudStack Spacing="0" Class="pb-4">
+        <MudStack Row>
+            <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Large"></MudIcon>
+            <MudText Typo="Typo.h1" Color="Color.Dark">Download Meter Data</MudText>
+        </MudStack>
+
+        <MudText Typo="Typo.h2" Class="mud-text-secondary">Download meter data in a variety of formats.</MudText>
+    </MudStack>
+
+    <MudPaper Outlined="false" Height="70vh" Elevation="0" Style="background-color:transparent">
+        <MudGrid>
+            <MudItem  sm="12"  md="4">
+                  <MudPaper Class="pa-3 ma-3" Elevation="25">
+                      <MudForm>
+                          <MudStack Spacing="2">
+                         <MudSelect   @bind-Value=@_site T="String" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Site">
+                            <MudSelectItem T="string">Sample1</MudSelectItem> 
+                          </MudSelect>
+
+                         <MudSelect @bind-Value=@_exportFormat T="ExportFormat" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Text=_exportFormatText Label="Format">
+                            <MudSelectItem T="ExportFormat" Value=@exportFormats[0]>@exportFormatNames[0]</MudSelectItem>
+                            <MudSelectItem T="ExportFormat" Value=@exportFormats[1]>@exportFormatNames[1]</MudSelectItem>
+                            <MudSelectItem T="ExportFormat" Value=@exportFormats[2]>@exportFormatNames[2]</MudSelectItem>
+                            <MudSelectItem T="ExportFormat" Value=@exportFormats[3]>@exportFormatNames[3]</MudSelectItem>
+
+                            @for( int i = 0; i <4; i++)
+                            {
+                                Console.WriteLine(i);
+                                Console.WriteLine(exportFormats[i]);
+                                Console.WriteLine(exportFormatNames[i]);
+                                    <MudSelectItem T="ExportFormat" Value=@exportFormats[i]>@exportFormatNames[i]</MudSelectItem>
+                            }
+                            </MudSelect>
+                        <MudDateRangePicker Variant="Variant.Outlined" PickerVariant="@PickerVariant.Dialog" @bind-DateRange="@_dateRange" Margin="Margin.Dense" />
+                        </MudStack>
+
+
+                      </MudForm>
+
+
+
+
+                  </MudPaper>  
+
+
+            </MudItem>
+            <MudItem sm=12 md="8">
+                <MudPaper></MudPaper>
+            </MudItem>
+
+
+
+
+        </MudGrid>
+
+
+
+
+    </MudPaper>
+
+
+
+
+</MudContainer>
+
 
 @code {
+
+
+    string _site = "Sample1";
+
+    ExportFormat _exportFormat =  ExportFormat.NEM12;
+    string _exportFormatText = "NEM12";
+
+
+    ExportFormat[] exportFormats = new ExportFormat[] { ExportFormat.NEM12, ExportFormat.QuadrantCSV, ExportFormat.ColumnarCSV, ExportFormat.RowCSV };
+    string[] exportFormatNames = new string[] { "NEM12", "Quadrant CSV", "Columnar CSV", "Row CSV" };
+
+    DateRange _dateRange = new DateRange(DateTime.Today.AddDays(-7), DateTime.Today);
+
+
+
+
 
 }
