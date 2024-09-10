@@ -6,7 +6,7 @@ namespace MeterDataLib.Parsers
     static internal class CsvParserLib  
     {
   
-        internal static readonly string[] allowedMimeTypes = new string[] { "text/plain", "text/csv"  };
+        internal static readonly string[] allowedMimeTypes = ["text/plain", "text/csv"];
         internal static bool ValidateMime(string? mimeType)
         {
             mimeType ??= "";
@@ -39,7 +39,7 @@ namespace MeterDataLib.Parsers
         //    return lines;
         //}
 
-        static string[] NonIgnoredChannels = new string[] { "E", "Q", "B", "K" };
+        static readonly string[] NonIgnoredChannels = ["E", "Q", "B", "K"];
         internal static void UpdateFromAemoChannel( ChannelDay channelDay)
         {
 

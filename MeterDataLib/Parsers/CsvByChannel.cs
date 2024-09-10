@@ -124,7 +124,7 @@ namespace MeterDataLib.Parsers
                     }
                 }
  
-                int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
+                int[] allowedIntervals = [1, 5, 15, 30, 60];
                 int counter = 0;
                 var list = records
                     .GroupBy(x => new { x.Nmi, ReadDate = x.ReadDate.Date })

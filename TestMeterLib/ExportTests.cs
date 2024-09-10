@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using MeterDataLib;
 using MeterDataLib.Export;
 using MeterDataLib.Parsers;
 using System.Text;
@@ -9,6 +10,36 @@ namespace TestMeterLib
     public class ExportTests(ITestOutputHelper Output)
     {
         private const string ExcelMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        private const string TestNEM12FileNAme = "61029293722_meter_usage_data_cipc1_05_2015.csv";
+
+        [Fact]
+        public async Task OptionsDontChange()
+        {
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.NEM12,
+            };
+            Console.SetOut(new RedirectOutput(Output));
+            var filename = TestNEM12FileNAme;
+            ParserResult? parserResult = null;
+            using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+            {
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, "text/csv", null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+            }
+            var siteDays = parserResult.SitesDays;
+            options.Site = new Site() { Code = siteDays.First().SiteCode };
+            options.SiteDays = siteDays;
+            var nem12 = ExportData.Export(options);
+            nem12.Should().NotBeNullOrEmpty();
+            options.Site.Should().NotBeNull();
+            options.Site.Code.Should().Be(siteDays.First().SiteCode);
+        }
+
+
 
         [Fact]
         public async Task ExportToNEM12()

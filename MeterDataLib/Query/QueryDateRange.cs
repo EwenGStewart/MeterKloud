@@ -19,8 +19,8 @@
         }
 
 
-        public static QueryDateRange Empty => new QueryDateRange(DateTime.MinValue.Date, DateTime.MaxValue.Date);
-        public static QueryDateRange FromText(string fromdate , string todate ) => new QueryDateRange( DateTime.Parse(fromdate), DateTime.Parse(todate));
+        public static QueryDateRange Empty => new(DateTime.MinValue.Date, DateTime.MaxValue.Date);
+        public static QueryDateRange FromText(string fromdate , string todate ) => new( DateTime.Parse(fromdate), DateTime.Parse(todate));
 
         public static QueryDateRange RelativeRange( RelativeDateRanges relativeDateRange)
         {
@@ -188,7 +188,7 @@
 
 
 
-        static TimeInterval[] defaultIntervals =
+        static readonly TimeInterval[] defaultIntervals =
         [
             
             new TimeInterval(TimeIntervalSize.Minute, 5),

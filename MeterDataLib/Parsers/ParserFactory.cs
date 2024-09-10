@@ -19,7 +19,7 @@ namespace MeterDataLib.Parsers
         //    , new CsvSingleLineSimpleEBKvaPF()
         //};
 
-        static List<IParser> Parsers = [ new Nem12(),new CsvByChannel()
+        static readonly List<IParser> Parsers = [ new Nem12(),new CsvByChannel()
         , new CsvSingleLine7() ,new CsvPowerPal() ,new CsvPowerPal() , new CsvMultiLine1()
             , new CsvSingleLineMultiColPeriod() , new CsvSingleLineMultiColPeriod2()
             , new CsvSingleLinePeakOffPeakDateNumber(), new CsvSingleLineSimpleEBKvaPF()
@@ -29,23 +29,23 @@ namespace MeterDataLib.Parsers
 
 
 
-        static string[] ExcelMimeTypes = new string[]
-        {
+        static readonly string[] ExcelMimeTypes =
+        [
             "application/vnd.ms-excel",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "application/msexcel",
             "application/vnd.ms-excel"
-        };
+        ];
 
-        static string[] ExcelExtensions = new string[]
-        {
+        static readonly string[] ExcelExtensions =
+        [
             ".xls" , ".xlsx"
-        };
+        ];
 
 
         public static async Task<ParserResult> ParseAsync(Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? CallBack = null, CancellationToken? cancellationToken = null  , ParserResult? parserResult = null  )
         {
-            cancellationToken = cancellationToken ?? new CancellationToken();
+            cancellationToken ??= new CancellationToken();
             cancellationToken.Value.ThrowIfCancellationRequested();
             ParserResult result = parserResult ??  new ParserResult() { FileName = filename};
             result.InProgress = true;
@@ -102,7 +102,7 @@ namespace MeterDataLib.Parsers
 
             result.Progress = "load excel to memory";
             if (callBack != null) { await callBack(result); }
-            using MemoryStream ms = new MemoryStream();
+            using MemoryStream ms = new();
             await stream.CopyToAsync(ms , cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             result.Progress = "process excel files";
@@ -113,7 +113,7 @@ namespace MeterDataLib.Parsers
             using (var edr = ExcelReaderFactory.CreateReader(ms))
             {
                 int sheet = 0;
-                StringWriter stringWriter = new StringWriter();
+                StringWriter stringWriter = new();
                 do
                 {
                     sheet++;
@@ -198,7 +198,7 @@ namespace MeterDataLib.Parsers
 
             result.Progress = "Unzip to memory";
             if (callBack != null) { await callBack(result); }
-            using MemoryStream ms = new MemoryStream();
+            using MemoryStream ms = new();
             await stream.CopyToAsync(ms, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -290,15 +290,15 @@ namespace MeterDataLib.Parsers
             }
         }
 
-        static readonly string[] ZipMimeTypes = new string[]
-        {
+        static readonly string[] ZipMimeTypes =
+        [
             "application/x-zip-compressed"
-        };
+        ];
 
-        static readonly string[] ZipExtensions = new string[]
-        {
+        static readonly string[] ZipExtensions =
+        [
             ".zip"
-        };
+        ];
 
         private static bool IsZipFile(string filename, string mimeType)
         {

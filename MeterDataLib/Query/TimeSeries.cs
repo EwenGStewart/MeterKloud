@@ -5,7 +5,7 @@
         private QueryDateRange dateRange = new(DateTime.MinValue, DateTime.MaxValue);
         private TimeInterval interval = new(TimeIntervalSize.Day, 1);
         private DateTime[]? dateTimes = null;
-        private List<QueryColumn> columns = [];
+        private readonly List<QueryColumn> columns = [];
 
 
 

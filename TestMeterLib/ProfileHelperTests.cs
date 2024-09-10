@@ -80,7 +80,7 @@ namespace TestMeterLib
         public void TestDemoSineWithRandom()
         {
             var input = GenSineWave(48, 3, 10, 10);
-            Random random = new Random();
+            Random random = new();
             for (int i = 0; i < 48; i++)
             {
                 input[i] += (decimal)(random.NextDouble()  );

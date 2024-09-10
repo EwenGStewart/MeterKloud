@@ -4,10 +4,11 @@ namespace MeterDataLib.Export
 {
     static class Nem12Exporter
     {
-        static int[] ValidNem12Intervals = new int[] { 5, 15, 30 };
-        static readonly string[] BannedChannels = new string[] { "KWH", "KVARH", "KVA", "PF", "KW", "DOLLARS" };
-        public static void ExportNem12(ExportOptions options, StringBuilder writer)
+        static readonly int[] ValidNem12Intervals = [5, 15, 30];
+        static readonly string[] BannedChannels = ["KWH", "KVARH", "KVA", "PF", "KW", "DOLLARS"];
+        public static async Task ExportNem12(ExportOptions options, StringBuilder writer, CancellationToken? cancellationToken)
         {
+            cancellationToken?.ThrowIfCancellationRequested();
             if (options.IntervalInMinutes.HasValue)
             {
                 if (ValidNem12Intervals.Contains(options.IntervalInMinutes.Value) == false)
@@ -29,19 +30,21 @@ namespace MeterDataLib.Export
                 .Where(x => x.cd.Ignore == false)
                 .Select(x => new Nem12_Record(x.sd, x.cd))
                 .ToArray();
-
-            FixAnyBadNMIs(records);
-            FixAnyBadChannels(records);
+            
+            await FixAnyBadNMIs(records, cancellationToken);   cancellationToken?.ThrowIfCancellationRequested();
+            await FixAnyBadChannels(records,cancellationToken);  cancellationToken?.ThrowIfCancellationRequested();
             // fix any missing serial or register ids
             foreach (var record in records.Where(x => x.IsValidRegisterOrSerial() == false))
             {
                 record.FixRegAndSerial();
+                await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
             }
 
             // fix any intervals that are invalid or which dont match the requested interval 
             foreach (var record in records)
             {
                 record.FixInterval(options.IntervalInMinutes);
+                await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
             }
 
             // fix the configurations 
@@ -52,6 +55,7 @@ namespace MeterDataLib.Export
                 {
                     record.NMIConfiguration = configString;
                 }
+                await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
             }
             // write out the records 
             foreach (var recordGroup in
@@ -64,6 +68,7 @@ namespace MeterDataLib.Export
                 foreach (var data in recordGroup)
                 {
                     data.Write300Line(writer);
+                    await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
                 }
 
             }
@@ -76,12 +81,15 @@ namespace MeterDataLib.Export
 
 
         }
-        private static void FixAnyBadNMIs(Nem12_Record[] records)
+        private static async Task FixAnyBadNMIs(Nem12_Record[] records , CancellationToken? cancellationToken)
         {
             int loopProtection = 1000;
             // Fix up the NMIs 
             while (records.Any(x => !x.IsValidNemNmi()) && loopProtection > 0)
             {
+                await Task.Yield();
+                cancellationToken?.ThrowIfCancellationRequested();
+
                 // get the NMI 
                 var firstBadNMi = records.First(x => !x.IsValidNemNmi()).NMI;
                 var fixedValue = firstBadNMi;
@@ -108,12 +116,15 @@ namespace MeterDataLib.Export
             }
         }
 
-        private static void FixAnyBadChannels(Nem12_Record[] records)
+        private static async Task FixAnyBadChannels(Nem12_Record[] records,  CancellationToken? cancellationToken)
         {
             int loopProtection = 1000;
             // Fix up the NMIs 
             while (records.Any(x => !x.IsValidChannel()) && loopProtection > 0)
             {
+                await Task.Yield();
+                cancellationToken?.ThrowIfCancellationRequested();
+
                 // get the NMI 
                 var firstBadChannel = records.First(x => !x.IsValidChannel());
                 var oldChannel = firstBadChannel.Channel;
@@ -144,12 +155,12 @@ namespace MeterDataLib.Export
 
         class Nem12_Record
         {
-            readonly SiteDay _siteDay;
+            
             readonly ChannelDay _channelDay;
 
             public Nem12_Record(SiteDay siteDay, ChannelDay channelDay)
             {
-                _siteDay = siteDay;
+                
                 _channelDay = channelDay;
                 NMI = siteDay.SiteCode.Trim().ToUpperInvariant();
                 Channel = channelDay.Channel.Trim().ToUpperInvariant();
@@ -481,7 +492,7 @@ namespace MeterDataLib.Export
                     string qualityMethod = qualities[startIndex].ToShortString();
                     if (!"AN".Contains(qualityMethod))
                     {
-                        qualityMethod = qualityMethod + method[startIndex];
+                        qualityMethod += method[startIndex];
                     }
                     string strReasonCode = reasonCode[startIndex].ToString();
                     if (strReasonCode == "0" && string.IsNullOrEmpty(reasonDescription[startIndex]) && "ANE".Contains(qualityMethod[0]))

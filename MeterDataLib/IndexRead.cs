@@ -80,8 +80,8 @@
 
         public override string ToString()
         {
-            string left = new string('0', LeftDials());
-            string right = new string('0', RightDials());
+            string left = new('0', LeftDials());
+            string right = new('0', RightDials());
             return Value.ToString(left + "." + right);
         }
     }

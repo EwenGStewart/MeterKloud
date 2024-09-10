@@ -167,7 +167,7 @@ namespace MeterDataLib.Parsers
 
                             int expectedPeriods = 60 * 24 / interval;
 
-                            ChannelDay eChannel = new ChannelDay()
+                            ChannelDay eChannel = new()
                             {
                                 Channel = $"E{channelStrNum}",
                                 IntervalMinutes = interval,
@@ -189,7 +189,7 @@ namespace MeterDataLib.Parsers
                             siteDay.Channels.Add(eChannel.Channel, eChannel);
 
                             ChannelDay bChannel =
-                            new ChannelDay()
+                            new()
                             {
                                 Channel = $"B{channelStrNum}",
                                 IntervalMinutes = interval,
@@ -211,7 +211,7 @@ namespace MeterDataLib.Parsers
                             siteDay.Channels.Add(bChannel.Channel, bChannel);
 
                             ChannelDay kw =
-                           new ChannelDay()
+                           new()
                            {
                                Channel = $"KW{channelStrNum}",
                                IntervalMinutes = interval,
@@ -233,7 +233,7 @@ namespace MeterDataLib.Parsers
                             siteDay.Channels.Add(kw.Channel, kw);
 
                             ChannelDay kva =
-                            new ChannelDay()
+                            new()
                             {
                                 Channel = $"KVA{channelStrNum}",
                                 IntervalMinutes = interval,
@@ -255,7 +255,7 @@ namespace MeterDataLib.Parsers
                             siteDay.Channels.Add(kva.Channel, kva);
 
                             ChannelDay pf =
-                            new ChannelDay()
+                            new()
                             {
                                 Channel = $"PF{channelStrNum}",
                                 IntervalMinutes = interval,

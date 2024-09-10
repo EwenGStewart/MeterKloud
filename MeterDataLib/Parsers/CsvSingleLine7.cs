@@ -39,7 +39,7 @@ namespace MeterDataLib.Parsers
                 && lines[3].GetStringUpper(8) == "READING END TIME"
                 && lines[3].GetStringUpper(9) == "UNITS"
                 && lines[3].GetStringUpper(10) == "READ TYPE"
-                && lines[4].GetDate(6, new string[] { "d/M/yyyy", "dd/MM/yyyy" }) != null
+                && lines[4].GetDate(6, ["d/M/yyyy", "dd/MM/yyyy"]) != null
                 && lines[4].GetTime(7, "HH:mm") != null
                 && lines[4].GetTime(8, "HH:mm") != null
                 )
@@ -84,7 +84,7 @@ namespace MeterDataLib.Parsers
                             string suffix = line.GetStringUpper(3);
                             string registerDescription = line.GetStringUpper(4);
                             string uom = line.GetStringUpper(5);
-                            var readDate = line.GetDate(6, new string[] { "d/M/yyyy", "dd/MM/yyyy" });
+                            var readDate = line.GetDate(6, ["d/M/yyyy", "dd/MM/yyyy"]);
                             var startReadTime = line.GetTime(7, "HH:mm");
                             var endReadTime = line.GetTime(8, "HH:mm");
                             decimal Units = line.GetDecimalCol(9) ?? 0;
@@ -123,7 +123,7 @@ namespace MeterDataLib.Parsers
                     }
                 }
 
-                int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
+                int[] allowedIntervals = [1, 5, 15, 30, 60];
                 var list = records
                                             .GroupBy(x => new { Nmi = x.Nmi, ReadDate = x.ReadDate.Date })
                                             .Where(x => x.Count() > 1)
@@ -162,7 +162,7 @@ namespace MeterDataLib.Parsers
                         var readInterval = firstRead.Interval;
                         var readExpectedPeriods = 60 * 24 / readInterval;
                         var channel = channelGroup.Key;
-                        ChannelDay channelDay = new ChannelDay()
+                        ChannelDay channelDay = new()
                         {
                             Channel = channel,
                             IntervalMinutes = readInterval,

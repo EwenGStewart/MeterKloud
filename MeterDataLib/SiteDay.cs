@@ -40,7 +40,7 @@ namespace MeterDataLib
 
         public const int MinutesPerDay = 24 * 60;
 
-        static ChanelType[] QuadrantTypes = new ChanelType[] { ChanelType.ActiveEnergyConsumption, ChanelType.ActiveEnergyGeneration, ChanelType.ReactiveEnergyConsumption, ChanelType.ReactiveEnergyGeneration };
+        static readonly ChanelType[] QuadrantTypes = [ChanelType.ActiveEnergyConsumption, ChanelType.ActiveEnergyGeneration, ChanelType.ReactiveEnergyConsumption, ChanelType.ReactiveEnergyGeneration];
 
         EnergyQuadrant[] EmptyQuadrant(int? interval)
         {
@@ -54,7 +54,7 @@ namespace MeterDataLib
 
             }
             var periods = MinutesPerDay / interval.Value;
-            List<EnergyQuadrant> quadrants = new List<EnergyQuadrant>();
+            List<EnergyQuadrant> quadrants = [];
             for (int i = 0; i < periods; i++)
             {
                 quadrants.Add(new EnergyQuadrant(Date.AddMinutes(i * interval.Value), null, null, null, interval.Value, Quality.Unknown, 0, 0, 0, 0));
@@ -129,7 +129,7 @@ namespace MeterDataLib
                 return EmptyQuadrant(quadrantOptions.Interval);
             }
 
-            List<EnergyQuadrant> quadrants = new List<EnergyQuadrant>();
+            List<EnergyQuadrant> quadrants = [];
             foreach (var channelDay in keyChannels)
             {
 
@@ -173,7 +173,7 @@ namespace MeterDataLib
                     }
 
 
-                    EnergyQuadrant energyQuadrant = new EnergyQuadrant(Date.AddMinutes(i * targetInterval), meter, channelNumber, channelList, targetInterval, quality,
+                    EnergyQuadrant energyQuadrant = new(Date.AddMinutes(i * targetInterval), meter, channelNumber, channelList, targetInterval, quality,
                         activeEnergyConsumption, activeEnergyGeneration, reactiveEnergyConsumption, reactivePowerGeneration);
                     quadrants.Add(energyQuadrant);
                 }

@@ -10,7 +10,7 @@ namespace MeterDataLib.Export
     internal static class QuadrantExporter
     {
 
-        public static void ExportQuadrantCSV(ExportOptions options, StringBuilder writer)
+        public static async Task ExportQuadrantCSV(ExportOptions options, StringBuilder writer, CancellationToken? cancellationToken)
         {
 
             var grouped = options.SiteDays
@@ -21,8 +21,10 @@ namespace MeterDataLib.Export
                 .ThenBy(x => x.Key.ChannelNum)
                 .ThenBy(x => x.Key.Serial)
                 .Where(x => x.Key.Date >= options.FromDate && x.Key.Date <= options.ToDate)
-                .Where(x => x.Any(y => y.cd.Ignore == false && options.ChannelTypes.Contains(y.cd.ChannelType) && y.cd.IntervalMinutes > 0 && y.cd.Readings.Any()))
+                .Where(x => x.Any(y => y.cd.Ignore == false && options.ChannelTypes.Contains(y.cd.ChannelType) && y.cd.IntervalMinutes > 0 && y.cd.Readings.Length != 0))
                 .ToList();
+
+            await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
 
             if (options.IncludeHeader)
             {
@@ -111,6 +113,7 @@ namespace MeterDataLib.Export
                     var quad = quadrants[i];
                     //Site,Date,Channel,Serial,Interval, Consumed kWh,Generated kWh, Consumed kVArh,Generated kVArh,kW,kVA,pf,Quality; 
                     writer.AppendLine($"{item.Key.SiteCode},{quad.ReadingDateTime:yyyy-MM-dd HH:mm:ss},{item.Key.ChannelNum},{item.Key.Serial},{quad.IntervalMinutes},{quad.ActiveEnergyConsumption_kWh:0.000},{quad.ActiveEnergyGeneration_kWh:0.000},{quad.ReactiveEnergyConsumption_kVArh:0.000},{quad.ReactiveEnergyGeneration_kVArh:0.000},{quad.RealPowerConsumption_kW:0.000},{quad.ApparentPower_kVA:0.000},{quad.PowerFactor:0.000},{quad.Quality.ToShortString()}");
+                    await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
                 }
             }
         }

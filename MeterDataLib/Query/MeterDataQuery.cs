@@ -107,7 +107,7 @@ namespace MeterDataLib.Query
                 {
                     if (_z == null)
                     {
-                        _z = new List<object>();
+                        _z = [];
                         decimal[][] zValues = new decimal[Dates.Length][];
 
                         for (int dayIndex = Dates.Length - 1; dayIndex >= 0; dayIndex--)

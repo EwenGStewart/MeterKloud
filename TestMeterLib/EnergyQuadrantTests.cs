@@ -104,7 +104,7 @@ namespace TestMeterLib
                 var firstDay = result.SitesDays.First();
                 var interval = firstDay.Channels.Values.First().IntervalMinutes;
                 Assert.True(interval == 30);
-                var quads = firstDay.GetEnergyQuadrants(new MeterDataLib.QuadrantOptions() { OnlyIncludeChannelFilter=new string[] { "E1" } });
+                var quads = firstDay.GetEnergyQuadrants(new MeterDataLib.QuadrantOptions() { OnlyIncludeChannelFilter=["E1"] });
                 quads.Length.Should().Be(48);
                 foreach (var quad in quads)
                 {
@@ -141,7 +141,7 @@ namespace TestMeterLib
                 var firstDay = result.SitesDays.First();
                 var interval = firstDay.Channels.Values.First().IntervalMinutes;
                 Assert.True(interval == 30);
-                var quads = firstDay.GetEnergyQuadrants(new MeterDataLib.QuadrantOptions() { AlwaysExcludeChannelFilter = new string[] { "Q1" } });
+                var quads = firstDay.GetEnergyQuadrants(new MeterDataLib.QuadrantOptions() { AlwaysExcludeChannelFilter = ["Q1"] });
                 quads.Length.Should().Be(48);
                 foreach (var quad in quads)
                 {

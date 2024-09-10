@@ -14,6 +14,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.JSInterop;
 using static MeterDataLib.Query.MeterDataQuery;
 using System.Security.Policy;
+using MeterDataLib.Export;
 
 
 
@@ -27,7 +28,7 @@ namespace MeterKloud
         readonly IMemoryCache _memCache;
         bool _initialized = false;
         bool _inInit = false;
-        private static object LockingVar = new object();
+        private static readonly object LockingVar = new();
         private readonly IndexedDbAccessor _indexedDb ;
         private IndexDbMeterDataStore? indexDbMeterDataStore = null; 
         private MeterDataStorageManager? meterDataStorageManager = null;
@@ -265,7 +266,7 @@ namespace MeterKloud
 
 
 
-        public async Task<QuadrantResult> GetQuadrants(string siteId, DateTime? fromDate, DateTime? toDate , int demandIntervalMinutes = 30)
+        public async Task<QuadrantResult> GetQuadrants(string siteId, DateTime? fromDate, DateTime? toDate  )
         {
             if (meterDataStorageManager == null)
             {
@@ -299,8 +300,32 @@ namespace MeterKloud
         }
 
 
+        public async Task<string> Export(ExportOptions options, CancellationToken? cancellationToken)
+        {
+            if (!options.SiteDays.Any() && options.Site != null )
+            {
+                // get the site data 
+                if (meterDataStorageManager == null)
+                {
+                    throw new Exception("Storage Manager not initialized");
+                }
+                if ( options.FromDate != null || options.ToDate != null)
+                {
+                    cancellationToken?.ThrowIfCancellationRequested();
+                    options.SiteDays = await GetSiteDays(options.Site.Id, options.FromDate!.Value, options.ToDate!.Value);
+                    cancellationToken?.ThrowIfCancellationRequested();
+                }
+                else
+                {
+                    options.SiteDays = await GetSiteDays(options.Site.Id);
+                }
+            }
+            cancellationToken?.ThrowIfCancellationRequested();
+            
+            var result = await  MeterDataLib.Export.ExportData.ExportAsync(options, cancellationToken);
+            return result;
+        }
 
-        
 
 
 

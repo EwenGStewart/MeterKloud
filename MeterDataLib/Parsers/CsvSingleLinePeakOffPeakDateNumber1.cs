@@ -37,7 +37,7 @@ namespace MeterDataLib.Parsers
                 && lines[0].GetStringUpper(8) == "PEAK_KWH"
                 && lines[0].GetStringUpper(9) == "OFF_PEAK_KWH"
                 && lines[0].GetStringUpper(10) == "DATENUMBER"
-                && lines[1].GetDate(1, new string[] { "d/M/yyyy", "d/MM/yyyy" }) != null
+                && lines[1].GetDate(1, ["d/M/yyyy", "d/MM/yyyy"]) != null
                 && lines[1].GetTime(2, "h:mm:ss tt") != null
                 )
                 return true;
@@ -75,7 +75,7 @@ namespace MeterDataLib.Parsers
                             }
 
                             string nmi = line.GetStringUpperMandatory(0, 10, 11);
-                            DateTime readDate = line.GetDateMandatory(1, new string[] { "d/M/yyyy", "d/MM/yyyy" });
+                            DateTime readDate = line.GetDateMandatory(1, ["d/M/yyyy", "d/MM/yyyy"]);
                             var readTime = line.GetTimeMandatory(2, "h:mm:ss tt");
                             decimal kwh = line.GetDecimalMandatory(3);
                             decimal kvarh = line.GetDecimalMandatory(4);
@@ -108,7 +108,7 @@ namespace MeterDataLib.Parsers
                     }
                 }
 
-                int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
+                int[] allowedIntervals = [1, 5, 15, 30, 60];
                 var list = records.GroupBy(x => new { Nmi = x.Nmi, ReadDate = x.EndDateTimeInclusive.Date })
                                             .Where(x => x.Count() > 1)
                                             .OrderBy(x => x.Key.Nmi)
@@ -151,7 +151,7 @@ namespace MeterDataLib.Parsers
 
                     int expectedPeriods = 60 * 24 / interval;
 
-                    ChannelDay eChannel = new ChannelDay()
+                    ChannelDay eChannel = new()
                     {
                         Channel = $"E1",
                         IntervalMinutes = interval,
@@ -173,7 +173,7 @@ namespace MeterDataLib.Parsers
                     };
                     siteDay.Channels.Add(eChannel.Channel, eChannel);
 
-                    ChannelDay qChannel = new ChannelDay()
+                    ChannelDay qChannel = new()
                     {
                         Channel = $"Q1",
                         IntervalMinutes = interval,
@@ -195,7 +195,7 @@ namespace MeterDataLib.Parsers
                     };
                     siteDay.Channels.Add(qChannel.Channel, qChannel);
 
-                    ChannelDay power = new ChannelDay()
+                    ChannelDay power = new()
                     {
                         Channel = $"KW",
                         IntervalMinutes = interval,
@@ -217,7 +217,7 @@ namespace MeterDataLib.Parsers
                     };
                     siteDay.Channels.Add(power.Channel, power);
 
-                    ChannelDay kva = new ChannelDay()
+                    ChannelDay kva = new()
                     {
                         Channel = $"KVA",
                         IntervalMinutes = interval,
@@ -239,7 +239,7 @@ namespace MeterDataLib.Parsers
                     };
                     siteDay.Channels.Add(kva.Channel, kva);
 
-                    ChannelDay pf = new ChannelDay()
+                    ChannelDay pf = new()
                     {
                         Channel = $"PF",
                         IntervalMinutes = interval,

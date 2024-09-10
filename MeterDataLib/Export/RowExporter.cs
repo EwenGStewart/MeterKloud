@@ -6,7 +6,7 @@ namespace MeterDataLib.Export
     internal static class RowExporter
     {
 
-        public static void ExportRowCSV(ExportOptions options, StringBuilder writer)
+        public static async Task ExportRowCSV(ExportOptions options, StringBuilder writer, CancellationToken? cancellationToken)
         {
 
             var grouped = options.SiteDays
@@ -17,8 +17,9 @@ namespace MeterDataLib.Export
                 .ThenBy(x => x.Key.ChannelNumber)
                 .ThenBy(x => x.Key.Channel)
                 .Where(x => x.Key.Date >= options.FromDate && x.Key.Date <= options.ToDate)
-
                 .ToList();
+
+            await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
 
             if (options.IncludeHeader)
             {
@@ -96,6 +97,7 @@ namespace MeterDataLib.Export
                     writer.Append($",{value}");
                 }
                 writer.AppendLine();
+                await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();
             }
 
         }

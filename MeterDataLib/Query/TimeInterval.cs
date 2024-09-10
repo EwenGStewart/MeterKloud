@@ -4,7 +4,7 @@
     {
         public const int DayMinutes = 60 * 24;
         // important must be a Sunday 
-        static readonly DateTime BaseMinuteDate = new DateTime(2017, 1, 1, 0, 0, 0);
+        static readonly DateTime BaseMinuteDate = new(2017, 1, 1, 0, 0, 0);
         static readonly int BaseYearMth = BaseMinuteDate.Year * 12;
         static readonly int BaseYear = BaseMinuteDate.Year;
 

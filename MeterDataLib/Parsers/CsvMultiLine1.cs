@@ -136,7 +136,7 @@ namespace MeterDataLib.Parsers
                             }
 
 
-                            ChannelDay channelDay = new ChannelDay()
+                            ChannelDay channelDay = new()
                             {
                                 Channel = channel,
                                 IntervalMinutes = interval,

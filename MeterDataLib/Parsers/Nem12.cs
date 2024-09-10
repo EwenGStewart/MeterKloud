@@ -442,7 +442,7 @@ namespace MeterDataLib.Parsers
             UnitOfMeasure? OriginalUnitOfMeasure = null;
             decimal uomConversionFactor = 1;
             bool skip300 = false;
-            int[] validIntervalLengths = new int[] { 5, 15, 30, 60 };
+            int[] validIntervalLengths = [5, 15, 30, 60];
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
             while (true)

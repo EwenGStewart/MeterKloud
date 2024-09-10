@@ -24,13 +24,16 @@ namespace MeterDataLib.Export
 
 
 
-    public class ExportOptions
+    public record  struct ExportOptions
     {
+        public ExportOptions()
+        {
+        }
 
         public Site? Site { get; set; }
-        public List<Site> Sites { get; set; } = new List<Site>();
+        public List<Site> Sites { get; set; } = [];
 
-        public IEnumerable<SiteDay> SiteDays { get; set; } = new List<SiteDay>();
+        public IEnumerable<SiteDay> SiteDays { get; set; } = [];
 
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
@@ -46,9 +49,7 @@ namespace MeterDataLib.Export
         public bool IncludeSite { get; set; } = true;
         public bool IncludeMeter { get; set; } = false;
         public bool IncludeChannel { get; set; } = false;
-        public bool IncludeQuality { get; set; } = false;
-
-        public List<ChanelType> ChannelTypes { get; set; } = new List<ChanelType>();
+        public List<ChanelType> ChannelTypes { get; set; } = [];
 
 
     }

@@ -7,9 +7,9 @@ namespace MeterDataLib.Parsers
     {
         readonly StreamReader _streamReader;
         readonly CancellationToken _cancellationToken;
-        bool _eof = false; 
-        string _filename;
-        private List<CsvLine> _buffer = [];
+        bool _eof = false;
+        readonly string _filename;
+        private readonly List<CsvLine> _buffer = [];
 
         public int LineNumber { get; private set; } = 0;
         public int ColNumber { get; private set; } = 0;

@@ -66,8 +66,8 @@ namespace MeterDataLib.Parsers
                             }
 
 
-                            var readDateTimeUtc = line.GetDate(0, new string[] { "yyyy-MM-dd HH:mm:ss", "yyyy-M-d h:mm:ss", "yyyy-MM-dd HH:mm" });
-                            var readDateTimeLocal = line.GetDate(1, new string[] { "yyyy-MM-dd HH:mm:ss", "yyyy-M-d h:mm:ss", "yyyy-MM-dd HH:mm" });
+                            var readDateTimeUtc = line.GetDate(0, ["yyyy-MM-dd HH:mm:ss", "yyyy-M-d h:mm:ss", "yyyy-MM-dd HH:mm"]);
+                            var readDateTimeLocal = line.GetDate(1, ["yyyy-MM-dd HH:mm:ss", "yyyy-M-d h:mm:ss", "yyyy-MM-dd HH:mm"]);
                             var readValue = line.GetDecimalCol(2);
                             var costDollars = line.GetDecimalCol(3);
                             var isPeak = line.GetStringUpper(4);
@@ -104,7 +104,7 @@ namespace MeterDataLib.Parsers
                     }
                 }
 
-                int[] allowedIntervals = new int[] { 1, 5, 15, 30, 60 };
+                int[] allowedIntervals = [1, 5, 15, 30, 60];
                 var list = records.GroupBy(x => x.ReadDateLocal.Date).Where(x => x.Count() > 1).OrderBy(x => x.Key).ToList();
                 int counterTotal = list.Count;
                 int counter = 0;
@@ -212,7 +212,7 @@ namespace MeterDataLib.Parsers
         {
            
             string pattern = @"powerpal_data_\w{8}";
-            Regex regex = new Regex(pattern);
+            Regex regex = new(pattern);
             Match match = regex.Match(filename);
             if (match.Success)
             {

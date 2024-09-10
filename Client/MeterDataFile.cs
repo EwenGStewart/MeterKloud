@@ -6,7 +6,7 @@ namespace MeterKloud
 {
     internal class MeterDataFile
     {
-        private IBrowserFile _browserFile;
+        private readonly IBrowserFile _browserFile;
         const long MAXALLOWEDSIZE = 1000 * 1000 * 1024;
         public MeterDataFile(IBrowserFile file)
         {
@@ -90,13 +90,13 @@ namespace MeterKloud
 
         static string GetFileSize(long length)
         {
-            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+            string[] sizes = ["B", "KB", "MB", "GB", "TB"];
             double len = (double)length;
             int order = 0;
             while (len >= 1024 && order < sizes.Length - 1)
             {
                 order++;
-                len = len / 1024;
+                len /= 1024;
             }
 
             // Adjust the format string to your preferences. For example "{0:0.#}{1}" would
