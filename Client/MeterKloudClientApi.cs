@@ -149,6 +149,20 @@ namespace MeterKloud
             return site;
         }
 
+
+        public async Task<Site> PutSite(Site site)
+        {
+            if (meterDataStorageManager == null)
+            {
+                throw new Exception("Storage Manager not initialized");
+            }
+            await meterDataStorageManager.PutSite(site);
+            return site;
+        }
+
+
+
+
         public async Task<Site?> GetSiteByCode(string id)
         {
             if (meterDataStorageManager == null)

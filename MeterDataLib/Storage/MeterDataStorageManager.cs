@@ -76,6 +76,12 @@ namespace MeterDataLib.Storage
             return await _storage.GetSiteAsync(id);
         }
 
+        public async Task<Site> PutSite(Site site)
+        {
+            return await _storage.PutSiteAsync(site);
+        }
+
+
         public async Task<Site?> GetSiteByCode(string code)
         {
             return await _storage.GetSiteByCodeAsync(code);

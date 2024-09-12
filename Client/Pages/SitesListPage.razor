@@ -2,26 +2,54 @@
 @inject MeterKloudClientApi API
 @using MeterDataLib
 
-<MudContainer>
+<MudContainer Fixed="true">
 
     <MudText Typo="Typo.h1">Sites</MudText>
     <MudText Typo="Typo.h2">@FolderCount folder  @SiteCount sites </MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/Upload">Upload Date</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/Upload">Upload Data</MudButton>
 
     @foreach (var directory in Folders)
     {
+        <MudStack Row Spacing="1">
+            @if (_editFolderMode && _editFolderOldName == directory.Key)
+            {
 
-        <MudText Typo="Typo.h3">@directory.Key</MudText>
-
+                <MudPaper Outlined Style="width:30rem" class="ma-3 pa-3">
+                    <MudTextField Label="Folder Name" @bind-Value="_editFolderNewName"  Class="" Style="" Variant="Variant.Outlined"  ShrinkLabel 
+                         MaxLength="120" Required="true"
+                    />
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick=@( e => EditFolderSave() )>Save</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick=@( e => EditFolderCancel() )>Cancel</MudButton>
+                </MudPaper>
+            }
+            else
+            {
+                <MudText Typo="Typo.h3">@directory.Key</MudText>
+                if ( ! _editFolderMode)
+                {
+                    <MudIconButton class="pa-0 ma-0  ml-1 align-self-start" Icon="@Icons.Material.Filled.Edit" aria-label="edit" Color="Color.Primary"
+                               OnClick=@( e => EditFolderSet(directory.Key) ) />
+                }
+            }
+        </MudStack>
         <div class=" d-flex flex-row flex-wrap gap-4 flex-grow-0 justify-start align-content-start ">
 
 
             @foreach (var site in directory.OrderByDescending(zz => zz.LastAccessTimeUtc))
             {
                 <MudButton Href="@($"/graphDailyConsumption/{site.Id}")">
-                <MudPaper Elevation="25" Width="10rem" Height="10rem" Outlined>
-                    <MudText Typo="Typo.h4">@site.Code</MudText>
-                </MudPaper>
+                    <MudPaper Elevation="25" Width="20rem" Height="10rem" Outlined Class="pa-3 rounded-xl" Square=false>
+
+
+                        <MudStack Row Spacing="0" Justify="Justify.SpaceBetween">
+                            <MudText Typo="Typo.h5" style="width:80%; overflow:hidden; text-overflow: ellipsis;"
+                                 
+                                >@site.Code</MudText>
+                            <MudIconButton class="pa-0 ma-0  " Icon="@Icons.Material.Filled.Edit" aria-label="edit" Color="Color.Primary"
+                                           Href="@($"/siteDetails/{site.Id}")" />
+                        </MudStack>
+
+                    </MudPaper>
                 </MudButton>
             }
 
@@ -51,6 +79,66 @@
     int FolderCount => Folders.Count();
 
     int SiteCount => SiteList.Count();
+
+
+    bool _editFolderMode = false;
+    string _editFolderOldName = "";
+    string _editFolderNewName = "";
+
+
+
+    void EditFolderSet(string name)
+    {
+        Console.WriteLine($"Edit Folder Set {name} ");
+        _editFolderMode = true;
+        _editFolderOldName = name;
+        _editFolderNewName = name;
+    }
+
+    void EditFolderCancel()
+    {
+        _editFolderMode = false;
+        _editFolderOldName = string.Empty;
+        _editFolderNewName = string.Empty;
+
+    }
+
+
+    async Task EditFolderSave()
+    {
+        if ( _editFolderMode == false )         
+        {
+            return;
+        }
+        if ( _editFolderOldName == _editFolderNewName)
+        {
+            EditFolderCancel();
+            return;
+        }
+
+        if ( string.IsNullOrWhiteSpace(_editFolderNewName) || _editFolderNewName.Length>120)
+        {
+            return;
+        }
+
+        _editFolderNewName = _editFolderNewName.Trim();
+
+
+        var listCopy = SiteList.Where(x => x.Folder == _editFolderOldName).ToArray();
+        foreach (var site in  listCopy)
+        {
+            site.Folder = _editFolderNewName;
+            await API.PutSite(site);
+        }
+
+        EditFolderCancel();
+
+
+
+
+    }
+
+
 
     protected override async Task OnInitializedAsync()
     {
