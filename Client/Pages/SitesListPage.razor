@@ -1,53 +1,84 @@
 ﻿@page "/sites"
 @inject MeterKloudClientApi API
 @using MeterDataLib
+@using System.Text
 
 <MudContainer Fixed="true">
 
-    <MudText Typo="Typo.h1">Sites</MudText>
-    <MudText Typo="Typo.h2">@FolderCount folder  @SiteCount sites </MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/Upload">Upload Data</MudButton>
+
+    <MudStack Row AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween">
+
+        <MudStack Row="false" AlignItems="AlignItems.Start" Justify="Justify.FlexStart" Class="mt-3">
+            <MudText Typo="Typo.h1">Sites</MudText>
+            <MudText Typo="Typo.h2">@FolderCount folder(s)  @SiteCount sites </MudText>
+        </MudStack>
+        <MudButton Class="ma-3" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+        StartIcon="@Icons.Material.Filled.Upload" 
+        Href="/Upload">Upload Data</MudButton>
+    </MudStack>
 
     @foreach (var directory in Folders)
     {
-        <MudStack Row Spacing="1">
+        <MudStack Row Spacing="1" Class="mt-3">
             @if (_editFolderMode && _editFolderOldName == directory.Key)
             {
 
                 <MudPaper Outlined Style="width:30rem" class="ma-3 pa-3">
-                    <MudTextField Label="Folder Name" @bind-Value="_editFolderNewName"  Class="" Style="" Variant="Variant.Outlined"  ShrinkLabel 
-                         MaxLength="120" Required="true"
-                    />
+                    <MudTextField Label="Folder Name" @bind-Value="_editFolderNewName" Class="" Style="" Variant="Variant.Outlined" ShrinkLabel
+                                  MaxLength="120" Required="true" />
                     <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick=@( e => EditFolderSave() )>Save</MudButton>
                     <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick=@( e => EditFolderCancel() )>Cancel</MudButton>
                 </MudPaper>
             }
             else
             {
-                <MudText Typo="Typo.h3">@directory.Key</MudText>
-                if ( ! _editFolderMode)
+                <MudText Typo="Typo.h4">Folder: @directory.Key</MudText>
+                if (!_editFolderMode)
                 {
                     <MudIconButton class="pa-0 ma-0  ml-1 align-self-start" Icon="@Icons.Material.Filled.Edit" aria-label="edit" Color="Color.Primary"
-                               OnClick=@( e => EditFolderSet(directory.Key) ) />
+                                   OnClick=@( e => EditFolderSet(directory.Key) ) />
                 }
             }
         </MudStack>
-        <div class=" d-flex flex-row flex-wrap gap-4 flex-grow-0 justify-start align-content-start ">
+        <div class=" d-flex flex-row flex-wrap gap-4 flex-grow-0 justify-start align-content-start ml-3 ">
 
 
             @foreach (var site in directory.OrderByDescending(zz => zz.LastAccessTimeUtc))
             {
+                var address = FullAddress(site);
+
                 <MudButton Href="@($"/graphDailyConsumption/{site.Id}")">
                     <MudPaper Elevation="25" Width="20rem" Height="10rem" Outlined Class="pa-3 rounded-xl" Square=false>
 
 
                         <MudStack Row Spacing="0" Justify="Justify.SpaceBetween">
-                            <MudText Typo="Typo.h5" style="width:80%; overflow:hidden; text-overflow: ellipsis;"
-                                 
-                                >@site.Code</MudText>
-                            <MudIconButton class="pa-0 ma-0  " Icon="@Icons.Material.Filled.Edit" aria-label="edit" Color="Color.Primary"
-                                           Href="@($"/siteDetails/{site.Id}")" />
+                            <MudText Typo="Typo.h5" style="width:80%; overflow:hidden; text-overflow: ellipsis;">@site.Code</MudText>
+
+                            <MudIconButton class="pa-0 ma-0  " Icon="@Icons.Material.Filled.Edit"
+                                           aria-label="edit" Color="Color.Primary"
+                                           Href="@($"/Site/{site.Id}")" />
                         </MudStack>
+
+                        @if (!string.IsNullOrWhiteSpace(site.Name)
+                       && !site.Name.Equals(site.Code, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <MudText Typo="Typo.h6" style="width:80%; overflow:hidden; text-overflow: ellipsis;">@site.Name</MudText>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(address))
+                        {
+                            <MudText Typo="Typo.body1" style="width:80%; overflow:hidden; text-overflow: ellipsis;">
+                                <pre>@address</pre>
+                            </MudText>
+                        }
+
+
+                        <MudText Typo="Typo.body1"
+                        style="width:99%; overflow:hidden; text-overflow: ellipsis; font-weight:bold;
+                                font-style:italic;
+                                font-variant:small-caps">
+                            @($"Data: {site.FirstDay:dd-MMM-yyyy} to {site.LastDay:dd-MMM-yyyy}")
+                        </MudText>
+
 
                     </MudPaper>
                 </MudButton>
@@ -85,7 +116,44 @@
     string _editFolderOldName = "";
     string _editFolderNewName = "";
 
+    string FullAddress(Site site)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(site.Address))
+        {
+            sb.Append(site.Address);
+        }
+        if (
+         !(string.IsNullOrWhiteSpace(site.City)
+            && string.IsNullOrWhiteSpace(site.Postcode)
+            && string.IsNullOrWhiteSpace(site.State)
+            )
+        )
+        {
+            if (sb.Length > 0)
+            {
+                sb.AppendLine();
+            }
+            if (!string.IsNullOrWhiteSpace(site.City))
+            {
+                sb.Append(site.City);
+                sb.Append(" ");
+            }
 
+            if (!string.IsNullOrWhiteSpace(site.State))
+            {
+                sb.Append(site.State);
+                sb.Append(" ");
+            }
+
+            if (!string.IsNullOrWhiteSpace(site.Postcode))
+            {
+                sb.Append(site.Postcode);
+            }
+        }
+        return sb.ToString().Trim();
+
+    }
 
     void EditFolderSet(string name)
     {
@@ -106,17 +174,17 @@
 
     async Task EditFolderSave()
     {
-        if ( _editFolderMode == false )         
+        if (_editFolderMode == false)
         {
             return;
         }
-        if ( _editFolderOldName == _editFolderNewName)
+        if (_editFolderOldName == _editFolderNewName)
         {
             EditFolderCancel();
             return;
         }
 
-        if ( string.IsNullOrWhiteSpace(_editFolderNewName) || _editFolderNewName.Length>120)
+        if (string.IsNullOrWhiteSpace(_editFolderNewName) || _editFolderNewName.Length > 120)
         {
             return;
         }
@@ -125,7 +193,7 @@
 
 
         var listCopy = SiteList.Where(x => x.Folder == _editFolderOldName).ToArray();
-        foreach (var site in  listCopy)
+        foreach (var site in listCopy)
         {
             site.Folder = _editFolderNewName;
             await API.PutSite(site);

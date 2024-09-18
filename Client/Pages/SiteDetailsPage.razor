@@ -1,0 +1,213 @@
+﻿@page "/Site"
+@page "/Site/{SiteId}"
+@inject NavigationManager NavigationManager
+
+@inject MeterKloudClientApi API
+@using MeterDataLib
+
+
+<MudContainer Fixed="true" Class="pa-3">
+
+
+    <MudText Typo="Typo.h1" >@SiteTitle()</MudText>
+
+    <MudPaper Class="pa-4 mt-4" Style="" Width="50EM">
+        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField T=String Label="Id" Value="Data.Id" 
+                            ReadOnly="true"
+                            Margin="Margin.Dense" Class="" Style=""
+                          Variant="Variant.Outlined" ShrinkLabel MaxLength="1200" Required="false" 
+                          Lines="1" > </MudTextField>
+
+            <MudStack Row AlignItems="AlignItems.Start" Spacing="3" Justify="Justify.FlexStart" Wrap="Wrap.Wrap"
+                      StretchItems="StretchItems.End" >
+
+                <MudTextField T=String Label="Code" @bind-Value="Data.Code" Margin="Margin.Dense" Class="flex-grow-0" Style="max-width:10em" Variant="Variant.Outlined" ShrinkLabel MaxLength="50" Required="true"> </MudTextField>
+                <MudTextField T=String Label="Name" @bind-Value="Data.Name" Margin="Margin.Dense" Class="flex-grow-1" Style="" Variant="Variant.Outlined" ShrinkLabel MaxLength="120"
+                Required="true" > </MudTextField>
+            </MudStack>
+
+            <MudTextField T=String Label="Folder" @bind-Value="Data.Folder" Margin="Margin.Dense" Class="" Style=""
+                          Variant="Variant.Outlined" ShrinkLabel MaxLength="50" Required="true"> </MudTextField>
+
+            <MudTextField T=String Label="Address" @bind-Value="Data.Address" Margin="Margin.Dense" Class="" Style=""
+                          Variant="Variant.Outlined" ShrinkLabel MaxLength="1200" Required="false" MaxLines="3" Lines="1" AutoGrow
+            
+            > </MudTextField>
+            <MudStack Row StretchItems="StretchItems.Start" 
+                    Spacing="3" 
+                    Justify="Justify.FlexStart" 
+                    Wrap="Wrap.Wrap">
+                <MudTextField T=String Label="Suburb" @bind-Value="Data.Suburb" Class="flex-grow-1" 
+                            Style="width:20em" Variant="Variant.Outlined" ShrinkLabel MaxLength="50" Required="false"
+                              Margin="Margin.Dense"> </MudTextField>
+                <MudSelect T="string" @bind-Value="Data.State" Variant="Variant.Outlined" Dense
+                           MaxLength="5" Style="Width:10em"
+                           Margin="Margin.Dense" Label="State" ShrinkLabel
+                           Class="flex-grow-0">
+                    @foreach (var state in states)
+                    {
+                        <MudSelectItem T="String" Value=state>@state</MudSelectItem>
+                    }
+                    <MudSelectItem T="String" Value=@string.Empty>~none~</MudSelectItem>
+
+                </MudSelect>
+
+                <MudTextField T=String Label="Postcode" @bind-Value="Data.PostCode"
+                              Class="flex-grow-0" Style="width:10em" Variant="Variant.Outlined" ShrinkLabel MaxLength="5" Required="false"
+                              Margin="Margin.Dense"> </MudTextField>
+            </MudStack>
+        </MudForm>
+        <MudDivider Vertical="false" Class="my-3"></MudDivider>
+        <MudButton  Variant="Variant.Filled" Color="Color.Primary" OnClick=@( e => Save() )>Save</MudButton>
+        <MudDivider Vertical="false" Class="my-3"></MudDivider>
+        @if (_site != null)
+        {
+            <MudText>@($"Data is available from ={_site.FirstDay:dd-MMM-yyyy} to {_site.LastDay:dd-MMM-yyyy}")</MudText>
+            <MudText>
+                View: <MudLink Href=@($"/graphDailyConsumption/{_site.Id}")>Daily Totals</MudLink>
+                &nbsp;&int;&nbsp;
+                <MudLink Href=@($"/GraphDetailedConsumption/{_site.Id}")>Detailed Consumption</MudLink>
+                &nbsp;&int;&nbsp;
+                <MudLink Href=@($"/GraphDemand/{_site.Id}")>Demand</MudLink>
+                &nbsp;&int;&nbsp;
+                <MudLink Href=@($"/GraphProfileConsumption/{_site.Id}")>Profile</MudLink>
+            </MudText>
+        }
+ 
+
+
+    </MudPaper>
+
+
+</MudContainer>
+
+
+@code {
+
+    [Parameter]
+    public string? SiteId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "Code")]
+    public string? SiteCode { get; set; }
+
+    Site? _site;
+
+    string[] states = { "ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA", "Other" };
+
+    public string SiteTitle()
+    {
+        if (_site != null)
+        {
+            return $"Site Details:  {_site.Code}";
+        }
+        return "Site Details - No Site!";
+    }
+
+
+    MudForm form = default!;
+    bool success;
+    string[] errors = { };
+
+    SiteEditForm Data = new SiteEditForm();
+
+    private enum PageStateValue
+    {
+        Loading,
+        Loaded,
+        Error
+    }
+
+    private PageStateValue _pageState = PageStateValue.Loading;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _site = null;
+        _pageState = PageStateValue.Loading;
+        if (SiteId != null)
+        {
+            var site = await API.GetSite(SiteId);
+            _site = site;
+        }
+        else if (SiteCode != null)
+        {
+            var site = await API.GetSiteByCode(SiteCode);
+            if (site != null)
+            {
+                NavigationManager.NavigateTo($"/Site/{site.Id}");
+            }
+        }
+        else if (_site == null && SiteId == null)
+        {
+            var site = await API.GetLastSiteAccessed();
+            if (site != null)
+            {
+                NavigationManager.NavigateTo($"/Site/{site.Id}");
+            }
+        }
+
+        if (_site != null)
+        {
+            _pageState = PageStateValue.Loaded;
+            Data = new SiteEditForm(_site);
+
+        }
+        else
+        {
+            _pageState = PageStateValue.Error;
+        }
+
+    }
+
+    public async void Save()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            if (_site != null)
+            {
+                _site.Code = Data.Code;
+                _site.Name = Data.Name;
+                _site.Address = Data.Address;
+                _site.City = Data.Suburb;
+                _site.State = Data.State;
+                _site.Postcode = Data.PostCode;
+                _site = await API.PutSite(_site);
+                _site.Folder = Data.Folder;
+
+                NavigationManager.NavigateTo($"/Sites");
+            }
+        }
+    }
+
+
+    class SiteEditForm
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string Suburb { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string PostCode { get; set; } = string.Empty;
+        public string Folder { get; set; } = string.Empty;
+
+        public SiteEditForm()
+        {
+        }
+
+        public SiteEditForm(Site site)
+        {
+            Id = site.Id;
+            Code = site.Code;
+            Name = site.Name;
+            Address = site.Address;
+            Suburb = site.City;
+            State = site.State;
+            PostCode = site.Postcode;
+            Folder = site.Folder;
+        }
+
+    }
+
+}

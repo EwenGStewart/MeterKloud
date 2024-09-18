@@ -203,7 +203,8 @@ namespace MeterKloud
             }
             var fromDate = site.FirstDay.Date;
             var toDate = site.LastDay.Date;
-            var minFromDate =  new DateTime(toDate.Year - 2, toDate.Month, 1);
+            var minFromDate = toDate.Year >= 2000 ? new DateTime(toDate.Year - 2, toDate.Month, 1) : new DateTime(2000, 1, 1);
+
             if ( fromDate < minFromDate)
             {
                 fromDate = minFromDate;
