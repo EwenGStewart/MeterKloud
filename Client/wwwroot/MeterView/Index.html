@@ -3,17 +3,7 @@
 <head>
     <title></title>
     <meta charset="utf-8" />
-
-
-    <!-- Latest compiled and minified CSS -->
-    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> -->
-    <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-
-
-    <!-- Optional theme -->
-
-
     <style>
         #tabrates td {
             text-align: right;
@@ -32,50 +22,8 @@
         }
 
 
-        /*#logo img {
-            width: 110px;
-            height: auto;
-            padding-left: 3px;
-        }
-
-        #logo-group *, .login-info, .login-info *, .minified .menu-item-parent {
-            -webkit-box-sizing: content-box;
-            -moz-box-sizing: content-box;
-            box-sizing: content-box;
-        }
-
-
-        #logo-group > span {
-            display: inline-block;
-            height: 39px;
-            float: left;
-        }
-
-        #logo {
-            display: inline-block;
-            width: 175px;
-            margin-top: 5px;
-            margin-left: 9px;
-        }
-
-        #header {
-            display: block;
-            height: 33px;
-            margin: 0;
-            margin-bottom: 10px;
-            padding: 0 13px 0 0;
-            background-color: #f3f3f3;
-            background-image: -moz-linear-gradient(top,#f3f3f3,#e2e2e2);
-            background-image: -webkit-gradient(linear,0 0,0 100%,from(#f3f3f3),to(#e2e2e2));
-            background-image: -webkit-linear-gradient(top,#f3f3f3,#e2e2e2);
-            background-image: -o-linear-gradient(top,#f3f3f3,#e2e2e2);
-            background-image: linear-gradient(to bottom,#f3f3f3,#e2e2e2);
-            background-repeat: repeat-x;
-            position: relative;
-            z-index: 905;
-        }*/
     </style>
-    <link href="~/Content/Site.css" rel="stylesheet" />
+    <link href="Site.css" rel="stylesheet" />
 
 
     <!-- jquery -->
@@ -109,51 +57,27 @@
 
     <!-- my stuff -->
     
-    <script src="~/Scripts/Globals.js"></script>
-    <script src="~/Scripts/FileParser.js"></script>
-    <script src="~/Scripts/MeterData.js"></script>
-    <script src="~/Scripts/NEMParser.js"></script>
-    <script src="~/Scripts/agl.js"></script>
-    <script src="~/Scripts/PowerShop.js"></script>
+    <script src="Globals.js"></script>
+    <script src="FileParser.js"></script>
+    <script src="MeterData.js"></script>
+    <script src="NEMParser.js"></script>
+    <script src="agl.js"></script>
+    <script src="PowerShop.js"></script>
 
-    <script src="~/Scripts/Tabs.js"></script>
-    <script src="~/Scripts/TabDailyTotals.js"></script>
-    <script src="~/Scripts/TabMinuteTotals.js"></script>
-    <script src="~/Scripts/TabHeatMap.js"></script>
-    <script src="~/Scripts/Tab3D.js"></script>
+    <script src="Tabs.js"></script>
+    <script src="TabDailyTotals.js"></script>
+    <script src="TabMinuteTotals.js"></script>
+    <script src="TabHeatMap.js"></script>
+    <script src="Tab3D.js"></script>
 
-    <script src="~/Scripts/TabProfile.js"></script>
-    <script src="~/Scripts/TabAnalysis.js"></script>
-    <script src="~/Scripts/TabDemandMinuteTotals.js"></script>
-    <script src="~/Scripts/TabExport.js"></script>
-    <script src="~/Scripts/General.js"></script>
+    <script src="TabProfile.js"></script>
+    <script src="TabAnalysis.js"></script>
+    <script src="TabDemandMinuteTotals.js"></script>
+    <script src="TabExport.js"></script>
+    <script src="General.js"></script>
 
 </head>
 <body>
-
-    @*<!-- HEADER -->
-        <header id="header">
-            <div id="logo-group">
-
-                <!-- PLACE YOUR LOGO HERE -->
-                <span id="logo">
-                    <a href="http://meterKloud.com">
-
-                        <img src="logo.png" alt="MeterKloud">
-                    </a>
-                </span>
-                <!-- END LOGO PLACEHOLDER -->
-
-            </div>
-
-
-
-        </header>*@
-
-
-
-
-
     <div class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -162,29 +86,11 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-
                 <a class="navbar-brand" href="/"><span class="glyphicon glyphicon-cloud">  </span>  MeterKloud</a>
-
-
-
-
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Products <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Meter File Viewer", "Index", "MeterView") </li>
-                        </ul>
-                    </li>
-
-
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
-
-
+                    <li><a Href="/" style="color:blue">Try the new MeterKloud !</a></li>
                 </ul>
 
             </div>
@@ -448,17 +354,7 @@
 
 
 
-
-                                @*<div id="GenerationInfo" style="display:none">
-
-                                        <p>
-                                            You are generating power back into the grid.
-                                            The average output from @Model.WeekDayAvgProfile.AverageGeneration.TimeRange was @Model.WeekDayAvgProfile.AverageGeneration.AvgEnergy kW. And the total generated was @Model.WeekDayAvgProfile.AverageGeneration.TotEnergy kWh.
-                                            This includes power consumed by the base load. Note the real figure will be probably higher as some of the power would have been consumed inernally in addition to the base load.
-                                        </p>
-
-                                    </div>*@
-
+ 
 
 
                                 <h3>Saving Energy</h3>
@@ -854,7 +750,7 @@
 
     <footer>
         <hr />
-        <p>&copy; @DateTime.Now.Year - MeterKloud</p>
+        <p>&copy; 2024 - MeterKloud</p>
     </footer>
 
 
