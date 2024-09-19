@@ -44,7 +44,7 @@
     <Content Update="wwwroot\MeterView\Globals.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\MeterView\Index.html">
+    <Content Update="wwwroot\MeterView\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\MeterView\MeterData.js">

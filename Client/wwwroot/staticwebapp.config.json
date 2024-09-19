@@ -23,11 +23,6 @@
       "allowedRoles": [ "anonymous" ]
     },
     {
-      "route": "/MeterView/index.htm",
-      "rewrite": "/MeterView/index.html",
-      "allowedRoles": [ "anonymous" ]
-    },
-    {
       "route": "/MeterView/*",
       "allowedRoles": [ "anonymous" ]
     }
