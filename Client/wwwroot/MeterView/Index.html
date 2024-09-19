@@ -1,0 +1,913 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+
+
+    <!-- Latest compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+
+    <!-- Optional theme -->
+
+
+    <style>
+        #tabrates td {
+            text-align: right;
+            padding-right: 5px;
+        }
+
+        #resultqtyhdr th {
+            text-align: right;
+            padding-right: 5px;
+        }
+
+        #CalcTotal td {
+            text-align: right;
+            padding-right: 5px;
+            font-weight: bold;
+        }
+
+
+        /*#logo img {
+            width: 110px;
+            height: auto;
+            padding-left: 3px;
+        }
+
+        #logo-group *, .login-info, .login-info *, .minified .menu-item-parent {
+            -webkit-box-sizing: content-box;
+            -moz-box-sizing: content-box;
+            box-sizing: content-box;
+        }
+
+
+        #logo-group > span {
+            display: inline-block;
+            height: 39px;
+            float: left;
+        }
+
+        #logo {
+            display: inline-block;
+            width: 175px;
+            margin-top: 5px;
+            margin-left: 9px;
+        }
+
+        #header {
+            display: block;
+            height: 33px;
+            margin: 0;
+            margin-bottom: 10px;
+            padding: 0 13px 0 0;
+            background-color: #f3f3f3;
+            background-image: -moz-linear-gradient(top,#f3f3f3,#e2e2e2);
+            background-image: -webkit-gradient(linear,0 0,0 100%,from(#f3f3f3),to(#e2e2e2));
+            background-image: -webkit-linear-gradient(top,#f3f3f3,#e2e2e2);
+            background-image: -o-linear-gradient(top,#f3f3f3,#e2e2e2);
+            background-image: linear-gradient(to bottom,#f3f3f3,#e2e2e2);
+            background-repeat: repeat-x;
+            position: relative;
+            z-index: 905;
+        }*/
+    </style>
+    <link href="~/Content/Site.css" rel="stylesheet" />
+
+
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+
+
+    <!-- Latest compiled and minified bootstrap  -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- font awesome -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+
+
+    <!-- plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- modernizr -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+    <!-- Papa parse -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
+
+    <!-- stats -->
+
+    <script type="text/javascript" src="https://npmcdn.com/simple-statistics@2.0.0/dist/simple-statistics.min.js"></script>
+
+    <!--moment js -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/locale/en-au.js"></script>
+
+    <!-- my stuff -->
+    
+    <script src="~/Scripts/Globals.js"></script>
+    <script src="~/Scripts/FileParser.js"></script>
+    <script src="~/Scripts/MeterData.js"></script>
+    <script src="~/Scripts/NEMParser.js"></script>
+    <script src="~/Scripts/agl.js"></script>
+    <script src="~/Scripts/PowerShop.js"></script>
+
+    <script src="~/Scripts/Tabs.js"></script>
+    <script src="~/Scripts/TabDailyTotals.js"></script>
+    <script src="~/Scripts/TabMinuteTotals.js"></script>
+    <script src="~/Scripts/TabHeatMap.js"></script>
+    <script src="~/Scripts/Tab3D.js"></script>
+
+    <script src="~/Scripts/TabProfile.js"></script>
+    <script src="~/Scripts/TabAnalysis.js"></script>
+    <script src="~/Scripts/TabDemandMinuteTotals.js"></script>
+    <script src="~/Scripts/TabExport.js"></script>
+    <script src="~/Scripts/General.js"></script>
+
+</head>
+<body>
+
+    @*<!-- HEADER -->
+        <header id="header">
+            <div id="logo-group">
+
+                <!-- PLACE YOUR LOGO HERE -->
+                <span id="logo">
+                    <a href="http://meterKloud.com">
+
+                        <img src="logo.png" alt="MeterKloud">
+                    </a>
+                </span>
+                <!-- END LOGO PLACEHOLDER -->
+
+            </div>
+
+
+
+        </header>*@
+
+
+
+
+
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+                <a class="navbar-brand" href="/"><span class="glyphicon glyphicon-cloud">  </span>  MeterKloud</a>
+
+
+
+
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Products <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li>@Html.ActionLink("Meter File Viewer", "Index", "MeterView") </li>
+                        </ul>
+                    </li>
+
+
+                    <li>@Html.ActionLink("About", "About", "Home")</li>
+                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+
+
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <div class="container-fluid body-content">
+
+
+
+        <br />
+
+
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-12">
+
+                    <ul class="nav nav-tabs" role="tablist" id='myTabs'>
+                        <li role="presentation" class="active" id="fileTab"><a data-target="#File" data-toggle="tab">&nbsp;&nbsp;File&nbsp;&nbsp;</a></li>
+                        <li role="presentation" id="analysisTab"><a data-target="#Analysis" data-toggle="tab">Analysis</a></li>
+                        <li role="presentation" id="dailyTotalsTab"><a data-target="#DailyTotals" data-toggle="tab">Daily Totals</a></li>
+                        <li role="presentation" id="detailedGraphTab"><a data-target="#Detail" data-toggle="tab">Detailed Graph</a></li>
+                        <li role="presentation" id="dailyAveragedTab"><a data-target="#DayProfile" data-toggle="tab">Daily Averages</a></li>
+                        <li role="presentation" id="heatMapTab"><a data-target="#HeatMap" data-toggle="tab">Heat map</a></li>
+                        <li role="presentation" id="3DProfileTab"><a data-target="#3DProfile" data-toggle="tab">3D profile</a></li>
+                        <li role="presentation" id="maxDemandTab"><a data-target="#MaxDemand" data-toggle="tab">Max Demand</a></li>
+                        <li role="presentation" id="exportTab"><a data-target="#Export" data-toggle="tab">Export</a></li>
+                    </ul>
+
+                    <!-- Tab panes -->
+                    <div class="tab-content" id="myTabPanels">
+
+                        <div role="tabpanel" class="tab-pane" id="File">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-sm-12">
+
+                                        <h1>Meter data file viewer</h1>
+                                        This software analyses your meter data usage patterns, and provides a set of visualisations of that data.
+                                        <h2>Instructions for use</h2>
+                                        <ol>
+                                            <li>Obtain your meter data in 'NEM12' or one of the other supported formats - see <a href="#getfiles">below</a> for details on how to do this. You can also load sample data by clicking one of the sample buttons below.</li>
+                                            <li>Load the data by clicking the 'choose file or browse button'  below and selecting the meter data file from step 1 </li>
+                                            <li>The system will open the analysis tab and you will see the results. The other tabs will show various graphs.</li>
+
+                                        </ol>
+                                    </div>
+                                </div>
+
+
+                                <h2>Input</h2>
+
+                                <div class="row">
+                                    <div class="col-sm-12 col-sm-6">
+                                        <form>
+                                            <div class="form-group">
+
+                                                <label for="InputFile">File input</label>
+                                                <input type="file" id="InputFile" style="width:100%">
+                                                <p class="help-block">Load NEM12 or other compatible meter data files - see notes below for details</p>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <div class="col-sm-12 col-sm-6">
+                                        <div>
+                                            <b>Sample files</b>
+                                            <p>You can click on the following to download and process sample file data</p>
+                                            <button type="button" id="buttonDownload1" class="btn btn-primary">Sample #1</button>
+
+                                            <button type="button" id="buttonDownload2" class="btn btn-success">Sample #2</button>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <br />
+                                <div class="row">
+                                    <div class="col-sm-12">
+
+                                        <div id="FileDetailResults">
+                                            <b>File Details</b><br />
+                                            <span id="FileInfoName"></span>   <br />
+                                            Type:<span id="FileInfoType"></span>  <br />
+                                            Size: <span id="FileBytes"></span><br />
+                                            Lines: <span id="FileLines"></span><br />
+                                            Format: <span id="FileFormat"></span><br />
+
+                                        </div>
+
+
+
+                                        <br />
+                                        <br />
+
+                                    </div>
+                                </div>
+
+                                <hr />
+                                <div class="row">
+                                    <div class="col-sm-12">
+
+
+                                        <h2>Notes and FAQ</h2>
+
+                                        <br />
+                                        <h3>Feedback and enhancements</h3>
+                                        <p>
+                                            MeterKloud provides meter data and energy software services - including meter data management, data analytics, DB design, billing, market transactions and CRM consulting.  <br />
+
+                                            If you want to pass on feedback or suggestions, or you would like MeterKloud to assist you with commercial software then please email us at  <a href='mailto:Contact@meterkloud.com'>Contact@meterkloud.com</a>
+
+                                        </p>
+                                        <br />
+                                        <br />
+
+
+                                        <h3>What formats are accepted</h3>
+                                        <ul>
+                                            <li>NEM12 format</li>
+                                            <li>Powershop   </li>
+                                        </ul>
+                                        <p>
+                                            We are adding new formats as required, so if you have a file that won't load then please email a copy to us at <a href='mailto:Support@meterkloud.com'>Support@meterkloud.com</a> . We will try and get your format supported.
+
+                                        </p>
+
+
+
+                                        <p>Note - ZIP files are not allowed.</p>
+                                        <br /><br />
+                                        <a name="getfiles"></a>
+                                        <h3>
+                                            How do I get the meter data files
+                                        </h3>
+                                        <p>
+                                            Under 'power of choice' your retailer and network MUST provide you detailed interval data in NEM12 format.
+                                            To obtain meter data see here
+                                            <a href="http://switchon.vic.gov.au/get-the-best-deal/compare-offers-with-victorian-energy-compare/how-to-download-an-electricity-usage-file-from-your-provider">
+                                                http://switchon.vic.gov.au/get-the-best-deal/compare-offers-with-victorian-energy-compare/how-to-download-an-electricity-usage-file-from-your-provider
+                                            </a>
+
+                                        </p>
+
+
+                                        <br /><br />
+                                        <h3>Browser</h3>
+                                        <p>
+                                            We use local storage and a few other nifty browser features - You will need a modern browser to use this site - eg Edge , IE11, Chrome
+                                        </p>
+
+
+
+                                        <br /><br />
+                                        <h3>Privacy</h3>
+                                        <p>
+                                            Meter data is NOT sent to MeterKloud.  All processing is done locally in your browser.  Use of the site is anonymous!
+                                        </p>
+
+                                        <br /><br />
+                                        <h3>Conditions of use</h3>
+                                        <p>
+                                            This site is for demonstration purposes only - Please only use as a guide. MeterKloud is not responsible for any action you take based on information from this site. We may remove this site at any time without notice.
+                                            We do not upload your meter data to our servers.  Use of the site is anonymous!
+                                            <br />
+                                            Not intended for commercial use
+                                        </p>
+
+                                        <br /><br />
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane" id="Analysis">
+
+
+                            <div class="container">
+                                <h2>Time of Use (TOU) analysis for site <span id="xModelSite"></span></h2>
+
+                                <p>
+                                    The graph below shows the average consumption per hour. The consumption per hour is shown as a red line. The various blocks show the average usage during different parts of the day. Hours are in the time zone thats the file uses. Normally this is EST for states on the east, and WST for WA. Note - this is not local time - eg no daylight savings.
+                                </p>
+                                <div style="height:400px" id="graphTouWeekDay">
+                                    <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span>Loading graph ...</span>
+                                </div>
+
+
+                                <!-- Week Day stats -->
+                                <p>
+                                    Your average consumption is <b><span id="xAverageConsumption"></span> kW</b>. Your average total energy consumed per day is <b><span id="xAverageWeekly"></span> kWh.</b>
+
+                                    The peak consumption is <b><span id="xAvgProfileTopkW"></span> kW</b>, and occurs at <b><span id="xAvgProfileTopHour"></span></b>.
+                                    The top 4 hours of consumption occur at <b><span id="xTopNHours"></span></b>. These 4 hours consume on average <b>
+                                        <span id="xAvgProfileTopNkW"></span>
+                                        kWh
+                                    </b> or <b><span id="xAvgProfileTopNpc"></span>%</b> of the total daily consumption.
+
+                                </p>
+
+
+
+                                <p>
+                                    Base energy represent the power used by appliances that are always on - eg Fridges, Freezers and appliances in standby mode. Base energy is on 24 hours a day.
+                                    Your average base consumption is <b><span id="xWeekDayAvgProfileBase"></span> kW</b>, and the total consumed is <b><span id="xWeekDayAvgProfileBaseTotal"></span> kWh</b>. This is <b><span id="xWeekDayAvgProfileBasePC"></span>%</b> of your total usage.
+
+
+
+                                </p>
+
+
+
+
+                                <p>
+                                    Nightly consumption is energy used in addition to the base from <span id="xBlock_Night_TimeRange"> </span><span>.</span>
+                                    This period will represent energy mainly used for cooking, lighting, heating and general at home appliances.
+                                    Your average nightly energy use is <b><span id="xBlock_Night_kW"> </span> kW</b> and the total consumption per day is <b><span id="xBlock_Night_kWh"> </span> kWh</b>.
+                                    This is <b><span id="xBlock_Night_PC"> </span></b>% of your total usage.
+                                </p>
+
+
+
+                                <p>
+                                    Day consumption is energy used in addition to the base from <span id="xBlock_Day_TimeRange"></span><span>.</span>
+                                    This period will represent energy mainly used during work hours. The value will depend on whether or not someone is home during the day, but will generally represent consumption by air conditioning, general appliances, pool pumps, and some heating.
+                                    Your average day energy use is <b><span id="xBlock_Day_kW"></span> kW</b> and the total consumption per day is <b><span id="xBlock_Day_kWh"></span> kWh</b>.
+                                    This is <b><span id="xBlock_Day_PC"></span></b>% of your total usage.
+                                </p>
+
+
+
+                                <p>
+                                    Morning consumption is energy used in addition to the base from <span id="xBlock_Morning_TimeRange"></span><span>.</span>
+                                    This period will represent energy mainly used during breakfast time. This generally represent consumption by lighting and general appliances.
+                                    Your average morning energy use is <b><span id="xBlock_Morning_kW"></span> kW</b> and the total consumption per day is <b><span id="xBlock_Morning_kWh"></span> kWh</b>.
+                                    This is <b><span id="xBlock_Morning_PC"></span></b>% of your total usage.
+                                </p>
+
+
+                                <p>
+                                    Overnight  consumption is energy used in addition to the base from <span id="xBlock_ONight_TimeRange"></span>
+                                    <span>.</span>
+                                    Normally this value is very low. A high value probably indicates that you have electric hot water heating.
+                                    Your average overnight energy use is <b><span id="xBlock_ONight_kW"></span> kW</b> and the total consumption per day is <b><span id="xBlock_ONight_kWh"></span> kWh</b>.
+
+                                    This is <b><span id="xBlock_ONight_PC"></span></b>% of your total usage.
+                                </p>
+
+
+
+
+
+
+
+
+                                @*<div id="GenerationInfo" style="display:none">
+
+                                        <p>
+                                            You are generating power back into the grid.
+                                            The average output from @Model.WeekDayAvgProfile.AverageGeneration.TimeRange was @Model.WeekDayAvgProfile.AverageGeneration.AvgEnergy kW. And the total generated was @Model.WeekDayAvgProfile.AverageGeneration.TotEnergy kWh.
+                                            This includes power consumed by the base load. Note the real figure will be probably higher as some of the power would have been consumed inernally in addition to the base load.
+                                        </p>
+
+                                    </div>*@
+
+
+
+                                <h3>Saving Energy</h3>
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
+                                        <div id="PieChart">
+
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-xs-12 col-sm-6 col-md-8 col-lg-8">
+                                        <ul>
+                                            <li id="reduceBase">
+                                                <h4>Reduce your base consumption</h4>
+
+                                                <div style="float:right"><img src="energyStars.jpg" /></div>
+                                                <div>
+                                                    <p>
+                                                        Your base consumption will depend on devices which are always on -eg Fridges , Freezers. If you are considering replacing these - then make sure you look for devices with a high number of energy stars.
+                                                        Make sure the door seals on your fridge are clean and the fridge door closes properly. Turn any second fridges off if posible.
+                                                        You should also consider turning off appliances you don't need - rather than put them into standby mode.
+                                                    </p>
+                                                </div>
+                                            </li>
+
+                                            <li id="reduceNight">
+                                                <h4>Lighting</h4>
+                                                <p>
+                                                    If you currently have halogen or incandescent lighting - then you should consider switching to LED or Compact fluorescent lighting.
+                                                    Moving to more efficient lighting can cut up to 50% off your overall lighting energy.
+
+                                                </p>
+                                            </li>
+
+                                            <li id="Reduceday">
+                                                <h4>Heating and cooling</h4>
+                                                <p>
+                                                    Heating and cooling can be big consumers of energy.  If your day time energy is high, consider changing thermostat settings. Close the doors to unused rooms to reduce the area you need to cool or heat. Keep curtains and outside window shades closed to reduce the amount of energy needed to maintain a consistent temperature inside.
+                                                </p>
+                                            </li>
+
+
+                                        </ul>
+
+
+
+
+
+                                    </div>
+
+
+
+
+                                </div>
+
+
+
+
+
+                                <h3>Saving Money - Tariff Optimisation</h3>
+                                <div class="row">
+                                    <p>
+                                        Most people understand that they can change retailers and that each retailer has different rates and discounts.
+                                        However you can also change your 'tariff' or 'price plan' without changing retailer.
+                                        Your bill is made up of two key charges: The retail charge which covers the cost of the electricity, and the network charge which covers the cost of the poles and wires used to deliver the power to your home or business.
+                                        You can change retailer, but you cannot change network.
+                                        New smart meters can measure when exactly you use your power - this allows the networks to have different rates for different parts of the day.
+                                        Most networks have 2 or 3 different tariffs - which you can choose from.
+                                        Each tariff will suit a different load pattern - and choosing the right one is important - since the saving will generally apply no matter what retailer you choose.
+                                    </p>
+
+                                    <p>
+                                        To choose the correct plan - you should  load the file you used on this site into the Victorian government "switch on" site at <a href="http://switchon.vic.gov.au">http://switchon.vic.gov.au</a>. This provides a totally independent and commission free analysis of all retail plans.
+                                    </p>
+
+                                    <p class="text-warning">
+                                        <b>Important notes</b>
+                                        <br />
+                                        <ol>
+                                            <li>
+                                                If you have electric hot water, then these calculations may not be valid as the hot water consumption will be based on a different rate.
+                                            </li>
+                                            <li>If you are currently on a peak/off-peak tariff then consider carefully before changing - these tariffs are now closed and you will not be able to change back to your old tariff.</li>
+
+                                            <li>Solar - Normally solar generation is calculated independently of consumption. You should check the solar rates that will apply separately.</li>
+
+                                        </ol>
+                                    </p>
+
+                                    <div class="row">
+                                        <h4>Options</h4>
+                                    </div>
+
+                                    <div class="row">
+
+                                        <div class="col-xs-12  col-sm-12  col-md-4 col-lg-4">
+                                            <div class="well well-sm">
+                                                <h5><b>Option 1 : Flat rate</b></h5>
+                                                <p>Single rate all times</p>
+                                                <p>
+
+                                                    Daily Charge 73.7000 cents/Day<br />
+                                                    Peak - 17.6880 cents/kWh <br />
+                                                </p>
+                                            </div>
+                                        </div>
+
+
+
+                                        <div class="col-xs-12  col-sm-12  col-md-4 col-lg-4">
+                                            <div class="well well-sm">
+                                                <h5><b>Option 2 : Flexible TOD</b></h5>
+                                                <p>Peak times are generally between 3pm and 11pm Monday to Friday, Off peak are weekends and weekdays between 11pm and 7am, and all other times are shoulder</p>
+
+
+                                                <p>
+
+                                                    Daily Charge 81.07 cents/Day<br />
+                                                    Peak - 25.06 cents/kWh <br />
+                                                    Shoulder - 15.11 cents/kWh <br />
+                                                    Offpeak - 10.17 cents/kWh <br />
+                                                </p>
+
+                                            </div>
+                                        </div>
+
+
+
+                                        <div class="col-xs-12  col-sm-12  col-md-4 col-lg-4">
+                                            <div class="well well-sm">
+                                                <h5><b>Option 3 : Flexible TODflex </b></h5>
+                                                <p>
+                                                    Peak times are generally between 3pm and 9pm Monday to Friday, Off peak are generally between 10pm and 7am all
+                                                    week, and all other times are shoulder
+                                                </p>
+
+
+                                                <p>
+
+                                                    Daily Charge 81.07 cents/Day<br />
+                                                    Peak - 27.27 cents/kWh <br />
+                                                    Shoulder - 15.48 cents/kWh <br />
+                                                    Offpeak - 11.64 cents/kWh <br />
+                                                </p>
+
+
+
+
+                                            </div>
+
+
+                                        </div>
+
+
+
+
+                                    </div>
+
+
+                                    <div class="row">
+                                        <h4>Comparison</h4>
+                                    </div>
+
+
+                                    <div class="row">
+
+
+                                        <div class="col-xs-12 ">
+                                            <div class="table-responsive">
+
+                                                <table id="tabrates" class="table table-condensed table-bordered table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Component</th>
+                                                            <th colspan=2>Option 1 Flat</th>
+                                                            <th colspan=2>Option 2 TOD</th>
+                                                            <th colspan=2>Option 3 TODflex</th>
+                                                        </tr>
+
+                                                        <tr id="resultqtyhdr">
+                                                            <th> </th>
+                                                            <th align="center">Qty</th>
+                                                            <th align="center">Dollars</th>
+                                                            <th align="center">Qty</th>
+                                                            <th align="center">Dollars</th>
+                                                            <th align="center">Qty</th>
+                                                            <th align="center">Dollars</th>
+
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+
+                                                        <tr id='CalcDaily'>
+                                                            <td>Daily charge</td>
+                                                            <td style="text-align:right">365</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>365</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>365</td>
+                                                            <td>9999.99999</td>
+                                                        </tr>
+
+
+                                                        <tr id='CalcPeak'>
+                                                            <td>Peak Energy</td>
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+                                                        </tr>
+
+
+
+                                                        <tr id='CalcShoulder'>
+                                                            <td>Shoulder Energy</td>
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+                                                        </tr>
+
+
+
+                                                        <tr id='CalcOffpeak'>
+                                                            <td>Offpeak Energy</td>
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+
+                                                            <td>9999.99999</td>
+                                                            <td>9999.99999</td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot>
+
+
+                                                        <tr id="CalcTotal">
+                                                            <th>Total</th>
+                                                            <th></th>
+                                                            <td>9999.99999</td>
+
+                                                            <th></th>
+                                                            <td>9999.99999</td>
+
+                                                            <th></th>
+                                                            <td>9999.99999</td>
+                                                        </tr>
+
+
+                                                    </tfoot>
+
+
+
+                                                </table>
+
+
+
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
+
+
+
+                                </div>
+
+
+                            </div>
+
+
+
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="DailyTotals">
+
+                            <div style="min-height:500px;" id="DailyTotalsContainer">
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span>Loading graph ...</span>
+
+
+
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="Detail">
+
+                            <div style="min-height:500px;" id="MinuteTotalsContainer">
+
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span>Loading graph ...</span>
+
+
+
+                            </div>
+
+
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="DayProfile">
+
+                            <div style="min-height:500px;" id="ProfileContainer">
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span>Loading graph ...</span>
+                            </div>
+
+
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="HeatMap">
+
+                            <div style="min-height:500px;" id="HeatMapContainer">
+
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span>Loading graph ...</span>
+
+
+
+                            </div>
+
+
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="3DProfile">
+
+
+                            <div style="min-height:500px;" id="ThreeDContainer">
+
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span>Loading graph ...</span>
+
+
+                            </div>
+
+
+
+                        </div>
+
+
+                        <div role="tabpanel" class="tab-pane" id="MaxDemand">
+
+                            <div style="min-height:500px;" id="DemandMinuteTotalsContainer">
+
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span>Loading graph ...</span>
+
+
+
+                            </div>
+
+
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane" id="Export">
+
+                            <div style="min-height:500px;" id="ExportFileContainer">
+
+                                
+
+
+                                <a href='#' onclick='downloadCSV();'>Download CSV</a>
+
+
+
+                            </div>
+
+
+                        </div>
+
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <br />
+    <br />
+    <br />
+    <br />
+
+    <footer>
+        <hr />
+        <p>&copy; @DateTime.Now.Year - MeterKloud</p>
+    </footer>
+
+
+    <script>
+
+
+ 
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-78892006-1', 'auto');
+  ga('send', 'pageview');
+
+ 
+
+
+
+
+        const DISABLED = "disabled";
+
+
+
+        $(document).ready(function () {
+            Setup();
+            console.log("ready!");
+
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>

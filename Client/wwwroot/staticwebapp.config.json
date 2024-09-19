@@ -1,13 +1,25 @@
 {
+
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": [ "/_framework/*", "/css/*" , "/js/*" , "/images/*" ]
+    "exclude": [ "/_framework/*", "/css/*", "/js/*", "/images/*" ]
   },
+
+
+
 
   "responseOverrides": {
     "401": {
       "redirect": "/.auth/login/github?post_login_redirect_uri=.referrer",
       "statusCode": 302
     }
-  }
+  },
+
+
+  "routes": [
+    {
+      "route": "/MeterView/*",
+      "allowedRoles": [ "anonymous" ]
+    }
+  ]
 }
