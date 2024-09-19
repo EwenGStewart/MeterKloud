@@ -19,9 +19,20 @@
   "routes": [
     {
       "route": "/MeterView",
+      "redirect": "/MeterView/index.html",
+      "allowedRoles": [ "anonymous" ]
+    },
+    {
+      "route": "/meterview",
+      "redirect": "/MeterView/index.html",
+      "allowedRoles": [ "anonymous" ]
+    },
+    {
+      "route": "/MeterView/Index.html",
       "rewrite": "/MeterView/index.html",
       "allowedRoles": [ "anonymous" ]
     },
+
     {
       "route": "/MeterView/*",
       "allowedRoles": [ "anonymous" ]
