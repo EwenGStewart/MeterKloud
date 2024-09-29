@@ -11,11 +11,11 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
 
-    
+
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    
+
     <link href="css/app.css" rel="stylesheet" />
 
     <link href="MeterKloud.styles.css" rel="stylesheet" />
@@ -25,12 +25,11 @@
 <body>
     <div id="app">
 
+        <div style="background-color: black; position: fixed; top: 0; left: 0; bottom: 0; right: 0; border: 0; z-index: -1; font-family: Roboto, Helvetica, Arial, sans-serif">
 
-        <div style="background-color:black;position:fixed;top:0;left:0;bottom:0;right:0;border:0;  z-index:-1; font-family:Roboto, Helvetica, Arial, sans-serif" >
 
-
-            <div class="" style="position:absolute; top:50px; left:20vw; right:20vw;
-    height:300px; background-color:inherit; ">
+            <div class="" style="position:absolute; top:10vh; left:20vw; right:20vw;
+    height:300px; background-color:inherit;text-align:center ">
 
 
                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -38,7 +37,7 @@
                      version="1.1"
                      viewBox="0 0 1280 300" xml:space="preserve" width="100%" height="100%">
 
-             
+
                 <g transform="matrix(1.9211538461538462 0 0 1.9211538461538462 799.6432335802667 150)" id="text-logo-path-group">
                 <g style="" paint-order="stroke">
                 <g transform="matrix(1 0 0 1 0 0)" id="text-logo-path-0">
@@ -85,65 +84,68 @@
                     </g>
                 </g>
             </g>
-
                 <g transform="scale(1, 1)">
                 <text style="fill: rgb(43, 164, 198); font-family: Arial, sans-serif; font-size: 61.17px; paint-order: fill markers; stroke: rgb(38, 142, 172); stroke-linecap: round; stroke-miterlimit: 1; stroke-width: 0px; white-space: pre;"
                       transform="matrix(1, 0, 0, 1, 0, 0)">
                 <tspan x="460" y="270">Loading...<animate attributeName="opacity" values="0; 1" begin="0s" dur="2s" fill="freeze" repeatCount="indefinite"></animate></tspan></text>
             </g>
 
+
         </svg>
 
-            </div>
 
-            <div class="" style="position: absolute; top: 350px; left: 20vw; right: 20vw; height: 10vh; text-align: center; margin-top: 10px;   ">
-                <p style="color:white; font-size:xx-large; font-weight:bold">Welcome to MeterKloud</p>
-                <p style="color:white; font-size:large; ">MeterKloud is a free tool for visualising and analysing data from smart electricity meters.</p>
-                <div style="display: flex; flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:start; gap:40px; background-color:inherit; margin-top:30px; ">
-
-                    <div style="width:282px; height:193px; background-color:#27272F; color:white; border-radius:10%; border:0px solid white; padding-top:8px">
-                        <div style="font-weight:600; font-size:1.5rem">Guides</div>
-                        <svg style="width:80px;height:80px; display:inline-block; fill:white" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="img">
-                            <!--!-->
-                            <path d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"></path>
-                        </svg>
+                <p style="margin-top:20px;color:white; font-size:xx-large; font-weight:bold">Welcome to MeterKloud</p>
+                <p style="margin-top:8px;color:white; font-size:large; ">MeterKloud is a free tool for visualising and analysing data from smart electricity meters.</p>
 
 
+                <div style="margin-top:50px;display: flex; flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:start; gap:40px; background-color:inherit;  ">
 
-                    </div>
-                    <div style="width:282px; height:193px; background-color:#27272F; color:white; border-radius:10%; border:0px solid white; padding-top:8px">
-                        <div style="font-weight:600; font-size:1.5rem">Source Code</div>
-                        <svg style="width:70px;height:70px; display:inline-block;   fill:white" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="img">
-                            <!--!-->
-                            <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2 0 1.9 1.2 1.9 1.2 1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.4 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8 0 3.2.9.8 1.3 1.9 1.3 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1 .9 2.2v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3"></path>
-                        </svg>
+                    <a href="https://github.com/EwenGStewart/MeterKloud/wiki" target="_blank">
+                        <div style="width:282px; height:193px; background-color:#27272F; color:white; border-radius:10%; border:0px solid white; padding-top:8px">
+                            <div style="font-weight:600; font-size:1.5rem">Guides</div>
+                            <svg style="width:80px;height:80px; display:inline-block; fill:white" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="img">
+                                <!--!-->
+                                <path d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"></path>
+                            </svg>
+                            <div style="font-weight:normal; font-size:1rem; color:lightgray">Wiki/ FAQ / How to guides </div>
 
+                        </div>
+                    </a>
+                    <a href="https://github.com/EwenGStewart/MeterKloud" target="_blank">
+                        <div style="width:282px; height:193px; background-color:#27272F; color:white; border-radius:10%; border:0px solid white; padding-top:8px">
+                            <div style="font-weight:600; font-size:1.5rem">Source Code</div>
+                            <svg style="width:70px;height:70px; display:inline-block;   fill:white" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="img">
+                                <!--!-->
+                                <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2 0 1.9 1.2 1.9 1.2 1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.4 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8 0 3.2.9.8 1.3 1.9 1.3 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1 .9 2.2v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3"></path>
+                            </svg>
+                            <div style="font-weight:normal; font-size:1rem; color:lightgray">All the source code for this site is available in our public repository</div>
+                        </div>
+                    </a>
+                    <a href="https://discord.gg/pbzaZthV" target="_blank">
+                        <div style="width:282px; height:193px; background-color:#27272F; color:white; border-radius:10%; border:0px solid white; padding-top:8px">
 
-                    </div>
-                    <div style="width:282px; height:193px; background-color:#27272F; color:white; border-radius:10%; border:0px solid white; padding-top:8px">
+                            <div style="font-weight:600; font-size:1.5rem">Community</div>
+                            <svg style="width:80px;height:80px; display:inline-block;   fill:white" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="img">
+                                <!--!-->
+                                <path d="M19,6.75A9.2017,9.2017,0,0,0,14.625,5l-.2135.4274a8.4519,8.4519,0,0,1,4.151,2.1976A12.87,12.87,0,0,0,12,5.875a12.87,12.87,0,0,0-6.5625,1.75,8.6339,8.6339,0,0,1,4.151-2.1976L9.375,5A9.1429,9.1429,0,0,0,5,6.75S2.76,9.9989,2.375,16.375A8.2659,8.2659,0,0,0,8.0625,19l.7175-.9555A8.7654,8.7654,0,0,1,5,15.5a11.032,11.032,0,0,0,7,2.1875A11.032,11.032,0,0,0,19,15.5a8.7609,8.7609,0,0,1-3.78,2.5445L15.9375,19a8.2659,8.2659,0,0,0,5.6875-2.625C21.24,9.9989,19,6.75,19,6.75ZM9.1562,14.625a1.6511,1.6511,0,0,1-1.5312-1.75,1.6511,1.6511,0,0,1,1.5312-1.75,1.6511,1.6511,0,0,1,1.5313,1.75A1.6511,1.6511,0,0,1,9.1562,14.625Zm5.6876,0a1.6511,1.6511,0,0,1-1.5313-1.75,1.6511,1.6511,0,0,1,1.5313-1.75,1.6511,1.6511,0,0,1,1.5312,1.75A1.6511,1.6511,0,0,1,14.8438,14.625Z"></path>
+                            </svg>
+                            <div style="font-weight:normal; font-size:1rem; color:lightgray">Join our community Discord server to receive updates and notifications</div>
 
-                        <div style="font-weight:600; font-size:1.5rem">Community</div>
-                        <svg style="width:80px;height:80px; display:inline-block;   fill:white" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="img">
-                            <!--!-->
-                            <path d="M19,6.75A9.2017,9.2017,0,0,0,14.625,5l-.2135.4274a8.4519,8.4519,0,0,1,4.151,2.1976A12.87,12.87,0,0,0,12,5.875a12.87,12.87,0,0,0-6.5625,1.75,8.6339,8.6339,0,0,1,4.151-2.1976L9.375,5A9.1429,9.1429,0,0,0,5,6.75S2.76,9.9989,2.375,16.375A8.2659,8.2659,0,0,0,8.0625,19l.7175-.9555A8.7654,8.7654,0,0,1,5,15.5a11.032,11.032,0,0,0,7,2.1875A11.032,11.032,0,0,0,19,15.5a8.7609,8.7609,0,0,1-3.78,2.5445L15.9375,19a8.2659,8.2659,0,0,0,5.6875-2.625C21.24,9.9989,19,6.75,19,6.75ZM9.1562,14.625a1.6511,1.6511,0,0,1-1.5312-1.75,1.6511,1.6511,0,0,1,1.5312-1.75,1.6511,1.6511,0,0,1,1.5313,1.75A1.6511,1.6511,0,0,1,9.1562,14.625Zm5.6876,0a1.6511,1.6511,0,0,1-1.5313-1.75,1.6511,1.6511,0,0,1,1.5313-1.75,1.6511,1.6511,0,0,1,1.5312,1.75A1.6511,1.6511,0,0,1,14.8438,14.625Z"></path>
-                        </svg>
-
-                    </div>
-
-
+                        </div>
+                    </a>
                 </div>
+
+
+
+                <p style="Margin-top: 20px; color:white; font-size:large; ">Looking for the old version of the data viewer? - You can access it via this <a href="/MeterView/index.html">link.</a></p>
+
+                <p style="Margin-top: 20px; color:white; font-size:large; ">Contact - Email questions via this <a href="mailto:contact@meterkloud.com?subject=MeterKloud">link.</a></p>
+
 
             </div>
 
         </div>
-
-
-
-
-
-
-
 
     </div>
 
@@ -155,7 +157,7 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    <script lang="javascript"> 
+    <script lang="javascript">
 
         window.downloadFileFromStream = async (fileName, contentStreamReference) => {
             const arrayBuffer = await contentStreamReference.arrayBuffer();
