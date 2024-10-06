@@ -14,27 +14,14 @@
     <MudAppBar Elevation="1" Dense Class="px-4 TopAppBar" Gutters="false">
         
         <MudIconButton  Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudImage Src="/images/MeterKloudDrawTitleClear.png" ObjectFit="ObjectFit.ScaleDown" Height="36"></MudImage>
+        <MudImage Src="/images/MeterKloudDrawTitleClear.png" ObjectFit="ObjectFit.Fill" Height="30" Class="mt-1"></MudImage>
         <MudSpacer />
-        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode" />
+       
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Docked">
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always">
 
-        @if (_drawerOpen)
-        {
-
-      
-        }
-        else
-        {
-            <style>
-                .LeftMenuNavItem .mud-nav-link 
-                {
-                    padding-left:8px;
-                }
-            </style>
-        }
+ 
         <MudNavMenu Bordered="@_drawerOpen" Rounded="@_drawerOpen" Class="mx-2" >
             <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.Home" Href="/" Match="NavLinkMatch.All">Welcome</MudNavLink>
             <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.CloudUpload" Href="/upload">Upload</MudNavLink>
