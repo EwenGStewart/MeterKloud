@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@inject Blazored.LocalStorage.ISyncLocalStorageService localStorage
+@inherits LayoutComponentBase
 <MudThemeProvider IsDarkMode="@_isDarkMode" Theme="_mudTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -16,14 +17,23 @@
         <MudIconButton  Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudImage Src="/images/MeterKloudDrawTitleClear.png" ObjectFit="ObjectFit.Fill" Height="30" Class="mt-1"></MudImage>
         <MudSpacer />
-       
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        @if( this.DarkMode )
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.WbSunny" Color="Color.Inherit" Edge="Edge.End" OnClick=@((e)=>SetDarkMode(false) ) aria-label="Turn off Dark Mode"  />                
+        }
+        else
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.DarkMode" Color="Color.Inherit" Edge="Edge.End" OnClick=@((e)=>SetDarkMode(true) ) aria-label="Turn on Dark Mode"  />
+        }
+
+        
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always">
 
  
         <MudNavMenu Bordered="@_drawerOpen" Rounded="@_drawerOpen" Class="mx-2" >
             <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.Home" Href="/" Match="NavLinkMatch.All">Welcome</MudNavLink>
+            <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.Home" Href="/gettingStarted" >Getting Started</MudNavLink>
             <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.CloudUpload" Href="/upload">Upload</MudNavLink>
             <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.CloudDownload" Href="/download">Download</MudNavLink>
             <MudNavLink Class="LeftMenuNavItem" Icon="@Icons.Material.Filled.Warehouse" Href="/sites">Sites</MudNavLink>
@@ -49,6 +59,7 @@
     MudTheme _mudTheme = new MudTheme();
     bool _drawerOpen = true;
     bool _isDarkMode = false; 
+    bool _localSettingsLoaded = false;
 
     protected override void OnInitialized()
     {
@@ -63,17 +74,42 @@
         _mudTheme.PaletteLight.HoverOpacity = .1;
         _mudTheme.PaletteLight.AppbarBackground = "#27272F";
         _mudTheme.PaletteLight.AppbarText = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.99);
+        _mudTheme.PaletteLight.Background = "f1f5f9";
+
+
+
         _mudTheme.PaletteDark.ActionDefault = new MudBlazor.Utilities.MudColor(255, 255, 255, 0.8);
         _mudTheme.PaletteDark.HoverOpacity = .1;
-        _mudTheme.PaletteLight.Background = "f1f5f9";
-        _mudTheme.Typography.H1.FontSize = "2.3em";
-        _mudTheme.Typography.H1.FontWeight = 800;
-        _mudTheme.Typography.H2.FontSize = "1.5em";
-        _mudTheme.Typography.H2.FontWeight = 400;
+        _mudTheme.PaletteDark.Background = "#0f172a";
+        _mudTheme.PaletteDark.DrawerBackground = "#182134";
+        _mudTheme.PaletteDark.AppbarBackground = "#182134";
+        _mudTheme.PaletteDark.TextPrimary = "#ffffff";
+        _mudTheme.PaletteDark.BackgroundGray = "#1e293b";
+
 
 
         
+        _mudTheme.Typography.H1.FontSize = "3rem";
+        _mudTheme.Typography.H1.FontWeight = 800;
+        _mudTheme.Typography.H2.FontSize = "1.5em";
+        _mudTheme.Typography.H2.FontWeight = 400;
+        if (! _localSettingsLoaded)
+        {
+            LoadLocalSettings();
+
+        }
+
+
     }
+
+    void LoadLocalSettings()
+    {
+        _isDarkMode = localStorage.GetItem<bool>("DarkMode");
+        _localSettingsLoaded = true;
+    }
+
+
+
 
     void DrawerToggle()
     {
@@ -81,6 +117,35 @@
     }
 
 
+    void DarkModeOn(MouseEvent e)
+    {
+        SetDarkMode(true);
+    }
 
+    void DarkModeOff(MouseEvent e)
+    {
+        SetDarkMode(false);
+    }
+
+
+    void SetDarkMode( bool mode)
+    {
+        DarkMode = mode;
+    }
+    
+    public bool DarkMode
+    {
+        get
+        {
+            return _isDarkMode; 
+        }
+        set 
+        {
+            _isDarkMode = value; 
+            localStorage.SetItem("DarkMode", value);
+        }
+    }
+
+    
 
 }

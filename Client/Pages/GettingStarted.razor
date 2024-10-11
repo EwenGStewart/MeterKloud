@@ -1,0 +1,89 @@
+﻿@page "/gettingstarted"
+
+
+<style>
+    .list-container {
+        padding: 10px !important;
+        background-color:  inherit;
+        font-size: var(--mud-typography-h2-size);
+        font-family: var(--mud-typography-h2-family);
+        font-weight: var(--mud-typography-h2-weight);
+        line-height: var(--mud-typography-h2-lineheight);
+        letter-spacing: var(--mud-typography-h2-letterspacing);
+        text-transform: var(--mud-typography-h2-text-transform);
+        flex-direction: row;
+        display: flex;
+        color: var( --mud-palette-text-primary);
+
+    }
+
+    .list-number 
+    {
+        border-color: var(--mud-palette-primary-main);
+        border-width: 2px;
+        border-radius: 50%;
+        height: 36px;
+        width: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        max-height: 36px;
+        max-width: 36px;
+
+        text-align:center;
+        vertical-align:middle;
+        padding-top:5px;
+        display:inline-block;
+        margin-right:10px;
+       
+    }
+
+    .list-text {
+        padding-top: 5px;
+        display: inline-block
+    }
+</style>
+<MudContainer MaxWidth="MaxWidth.Medium">
+        
+    <div class="d-flex flex-row gap-4 justify-center" style="">
+        <div class="mt-4" style="padding-top:60px; padding-bottom:40px;" >
+        <MudText  Typo="Typo.h1" >Getting Started</MudText>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column gap-6 justify-start" style="">
+
+        <MudLink Href="https://github.com/EwenGStewart/MeterKloud/wiki/How-to-obtain-your-meter-data" Target="_blank">
+         <div class="list-container" >
+             <div class="list-number">1</div>
+             <div class="list-text">Obtain your meter data - Click here for the instructions</div>
+         </div>
+         </MudLink>
+
+        <MudLink Href="/upload" >
+        <div class="list-container">
+            <div class="list-number">2</div>
+            <div class="list-text">Upload the data - Click here </div>
+        </div>
+        </MudLink>
+
+        <MudLink Href="/graphDailyConsumption">
+        <div class="list-container">
+            <div class="list-number">3</div>
+            <div class="list-text">Use the graphs in the menu on the left to explore and analyse your data  </div>
+        </div>
+        </MudLink>
+
+
+    </div>
+
+
+
+</MudContainer>
+
+
+@code {
+
+    
+
+
+}

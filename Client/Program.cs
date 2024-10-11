@@ -1,4 +1,5 @@
 using AzureStaticWebApps.Blazor.Authentication;
+using Blazored.LocalStorage;
 using MeterDataLib.Storage;
 using MeterKloud;
 using Microsoft.AspNetCore.Components.Web;
@@ -25,6 +26,7 @@ builder.Services.AddSingleton<IndexedDbAccessor>();
 builder.Services.AddSingleton<IMeterDataStore,IndexDbMeterDataStore>();
 builder.Services.AddSingleton<MeterDataStorageManager>();
 builder.Services.AddSingleton<MeterKloudClientApi>();
+builder.Services.AddBlazoredLocalStorageAsSingleton();
 
 var host = builder.Build();
 await using  (var scope = host.Services.CreateAsyncScope())
