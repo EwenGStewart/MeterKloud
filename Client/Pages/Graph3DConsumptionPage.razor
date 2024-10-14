@@ -97,6 +97,7 @@ else if (_pageState == PageStateValue.Loading)
 
     protected override async Task OnParametersSetAsync()
     {
+        bool pendingNavToSite = false;
         _site = null;
         _pageState = PageStateValue.Loading;
         if (SiteId != null)
@@ -109,6 +110,7 @@ else if (_pageState == PageStateValue.Loading)
             var site = await API.GetSiteByCode(SiteCode);
             if (site != null)
             {
+                pendingNavToSite = true;
                 NavigationManager.NavigateTo($"/Graph3DConsumption/{site.Id}");
             }
         }
@@ -117,6 +119,7 @@ else if (_pageState == PageStateValue.Loading)
             var site = await API.GetLastSiteAccessed();
             if (site != null)
             {
+                 pendingNavToSite = true;
                 NavigationManager.NavigateTo($"/Graph3DConsumption/{site.Id}");
             }
         }
@@ -152,10 +155,12 @@ else if (_pageState == PageStateValue.Loading)
             _pageState = PageStateValue.Loaded;
 
         }
-        else
+        else if (!pendingNavToSite)
         {
+            NavigationManager.NavigateTo("/GettingStarted");
             _pageState = PageStateValue.Error;
         }
+   
 
     }
 

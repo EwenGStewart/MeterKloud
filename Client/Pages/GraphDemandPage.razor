@@ -268,7 +268,7 @@ else if (_pageState == PageStateValue.Loading)
 
     protected override async Task OnParametersSetAsync()
     {
-
+        bool pendingNavToSite = false;
         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> OnParametersSetAsync {SiteId} {SiteCode} {_site?.Id ?? "null"}    {SelectedMonth} {SelectedDay} {SelectedPeriod}");
         _site = null;
         _pageState = PageStateValue.Loading;
@@ -282,6 +282,7 @@ else if (_pageState == PageStateValue.Loading)
             var site = await API.GetSiteByCode(SiteCode);
             if (site != null)
             {
+                pendingNavToSite = true;
                 NavigationManager.NavigateTo($"/GraphDemand/{site.Id}");
             }
         }
@@ -290,6 +291,7 @@ else if (_pageState == PageStateValue.Loading)
             var site = await API.GetLastSiteAccessed();
             if (site != null)
             {
+                pendingNavToSite = true;
                 NavigationManager.NavigateTo($"/GraphDemand/{site.Id}");
             }
         }
@@ -336,7 +338,7 @@ else if (_pageState == PageStateValue.Loading)
 
 
         }
-        else
+        else if (!pendingNavToSite)
         {
             NavigationManager.NavigateTo("/GettingStarted");
             _pageState = PageStateValue.Error;

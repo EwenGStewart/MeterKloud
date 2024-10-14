@@ -100,6 +100,7 @@ else if (_pageState == PageStateValue.Loading)
     {
         _site = null;
         _pageState = PageStateValue.Loading;
+        bool pendingNavToSite = false;
         if (SiteId != null)
         {
             var site = await API.GetSite(SiteId);
@@ -110,6 +111,7 @@ else if (_pageState == PageStateValue.Loading)
             var site = await API.GetSiteByCode(SiteCode);
             if (site != null)
             {
+                pendingNavToSite = true;
                 NavigationManager.NavigateTo($"/GraphProfileConsumption/{site.Id}");
             }
         }
@@ -118,6 +120,7 @@ else if (_pageState == PageStateValue.Loading)
             var site = await API.GetLastSiteAccessed();
             if (site != null)
             {
+                pendingNavToSite = true;
                 NavigationManager.NavigateTo($"/GraphProfileConsumption/{site.Id}");
             }
         }
@@ -149,7 +152,7 @@ else if (_pageState == PageStateValue.Loading)
             _pageState = PageStateValue.Loaded;
 
         }
-        else
+        else if(!pendingNavToSite)
         {
             NavigationManager.NavigateTo("/GettingStarted");
             _pageState = PageStateValue.Error;
