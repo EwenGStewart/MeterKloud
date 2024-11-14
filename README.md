@@ -6,12 +6,12 @@ In the age of data-driven decisions, [MeterKload](https://orange-glacier-058c9a9
 
 Key Features:
 
-Intuitive Graphing Tools: Create clear and customizable graphs that highlight consumption patterns, peak usage times, and other critical metrics.
-
-Comprehensive Analysis: Perform in-depth analysis to identify trends, optimize energy usage, and reduce costs.
-
-User-Friendly Interface: Navigate through your data with ease using our straightforward and interactive interface, suitable for users of all technical levels.
-
-Versatile Data Integration: Seamlessly integrate data from various electricity meters and sources for a holistic view of your energy consumption.
-
+- Intuitive Graphing Tools: Create clear and customizable graphs that highlight consumption patterns, peak usage times, and other critical metrics.
+  
+- Comprehensive Analysis: Perform in-depth analysis to identify trends, optimize energy usage, and reduce costs.
+  
+- User-Friendly Interface: Navigate through your data with ease using our straightforward and interactive interface, suitable for users of all technical levels.
+  
+- Versatile Data Integration: Seamlessly integrate data from various electricity meters and sources for a holistic view of your energy consumption.
+  
 [MeterKload](https://orange-glacier-058c9a900.1.azurestaticapps.net) is here to simplify the complexity of electricity data, offering you the insights needed to make informed decisions and promote energy efficiency. Harness the power of your electricity meter data with [MeterKload](https://orange-glacier-058c9a900.1.azurestaticapps.net), and take control of your energy future today.
