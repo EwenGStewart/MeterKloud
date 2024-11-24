@@ -117,13 +117,12 @@
         Loaded,
         Error
     }
-
-    private PageStateValue _pageState = PageStateValue.Loading;
+ 
 
     protected override async Task OnParametersSetAsync()
     {
         _site = null;
-        _pageState = PageStateValue.Loading;
+ 
         if (SiteId != null)
         {
             var site = await API.GetSite(SiteId);
@@ -148,14 +147,11 @@
 
         if (_site != null)
         {
-            _pageState = PageStateValue.Loaded;
+           
             Data = new SiteEditForm(_site);
 
         }
-        else
-        {
-            _pageState = PageStateValue.Error;
-        }
+ 
 
     }
 
