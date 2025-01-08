@@ -18,7 +18,7 @@
 
 
 
-    <div style="display:@( ( _state == internalState.GetFiles ? "block" : "none") )">
+    <div style="display:@( ( _state == InternalState.GetFiles ? "block" : "none") )">
 
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" >
             <UploadPageGetFiles OnFilesSelected="OnFilesSelected" @ref=UploadPageGetFiles />
@@ -26,7 +26,7 @@
 
     </div>
 
-    @if (_state == internalState.UploadFiles || _state == internalState.Completed)
+    @if (_state == InternalState.UploadFiles || _state == InternalState.Completed)
     {
         <MudContainer MaxWidth="MaxWidth.ExtraLarge">
 

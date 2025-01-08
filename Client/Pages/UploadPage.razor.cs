@@ -11,13 +11,13 @@ namespace MeterKloud.Pages
     public partial class UploadPage
     {
 
-        private enum internalState
+        private enum InternalState
         {
             GetFiles,
             UploadFiles,
             Completed
         }
-        internalState _state = internalState.GetFiles;
+        InternalState _state = InternalState.GetFiles;
 
 
         ObservableCollection<MeterDataFile> _items = [];
@@ -31,14 +31,14 @@ namespace MeterKloud.Pages
 
 
 
-        bool IsParsing => _state == internalState.UploadFiles;
+        bool IsParsing => _state == InternalState.UploadFiles;
         bool CancelButtonDisabled => !IsParsing || (_cancellationToken?.IsCancellationRequested ?? false);
-        bool CanViewSites => ! ( _cancellationToken?.IsCancellationRequested ?? false ) && ( _state == internalState.Completed ) && ( _items.Any(x=>x.Days > 0 ));
+        bool CanViewSites => ! ( _cancellationToken?.IsCancellationRequested ?? false ) && ( _state == InternalState.Completed ) && ( _items.Any(x=>x.Days > 0 ));
 
         bool NoErrorsAutoView => CanViewSites && (_items.All(x => x.Success));
 
 
-        bool UploadMOreDisabled => !(_state == internalState.Completed);
+        bool UploadMOreDisabled => !(_state == InternalState.Completed);
         bool ViewDataDisabled => !(CanViewSites) ; 
 
 
@@ -50,7 +50,7 @@ namespace MeterKloud.Pages
 
         async Task UploadMoreFiles(MouseEventArgs mouseEventArgs)
         {
-            _state = internalState.GetFiles;
+            _state = InternalState.GetFiles;
             await UploadPageGetFiles.ClearAsync();
         }
 
@@ -59,7 +59,7 @@ namespace MeterKloud.Pages
         async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
         {
             _items = new ObservableCollection<MeterDataFile>(files.Select(f => new MeterDataFile(f)));
-            _state = internalState.UploadFiles;
+            _state = InternalState.UploadFiles;
             _tokenSource = new CancellationTokenSource();
             _cancellationToken = _tokenSource.Token;
             try
@@ -113,7 +113,7 @@ namespace MeterKloud.Pages
             }
             finally
             {
-                _state = internalState.Completed;
+                _state = InternalState.Completed;
                 _tokenSource.Dispose();
                 _tokenSource = null;
             }
@@ -124,7 +124,7 @@ namespace MeterKloud.Pages
 
         void CancelUpload( MouseEventArgs mouseEventArgs)
         {
-                _state = internalState.Completed;
+                _state = InternalState.Completed;
                 _tokenSource?.Cancel();
         }
 
@@ -159,7 +159,7 @@ namespace MeterKloud.Pages
             }
             catch (Exception ex)
             {
-                file.ParserResult.AddException(ex);
+                file.ParserResult?.AddException(ex);
             }
         }
 
