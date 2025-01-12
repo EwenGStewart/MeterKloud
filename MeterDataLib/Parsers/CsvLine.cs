@@ -25,6 +25,25 @@ namespace MeterDataLib.Parsers
             return null;
         }
 
+        public int GetIntMandatory(int col , int minValue = int.MinValue , int maxValue = int.MaxValue)
+        {
+            var v = GetIntCol(col );
+            if (v is null)
+            {
+                if (col > Columns.Length)
+                    throw new ParserException($"Missing column {col} on Line {LineNumber}", string.Empty, LineNumber, col);
+                else
+                    throw new ParserException($"Invalid integer value {Columns[col]} at line {LineNumber}, col {col + 1}", Columns[col], LineNumber, col);
+
+            }
+            if (v.Value < minValue || v.Value > maxValue)
+            {
+                throw new ParserException($"Invalid integer value {Columns[col]} at line {LineNumber}, col {col + 1} - expected value between {minValue} and {maxValue}", Columns[col], LineNumber, col);
+            }
+            return v.Value;
+        }
+
+
         public decimal? GetDecimalCol(int col)
         {
             if (Columns.Length > col)

@@ -24,6 +24,7 @@ namespace MeterDataLib.Parsers
             , new CsvSingleLineMultiColPeriod() , new CsvSingleLineMultiColPeriod2()
             , new CsvSingleLinePeakOffPeakDateNumber(), new CsvSingleLineSimpleEBKvaPF()
             , new CsvSingleLineSimpleEBQK()
+            , new CsvRedEnergyFormat()
         ];
 
 
