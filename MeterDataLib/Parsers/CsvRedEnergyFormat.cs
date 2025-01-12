@@ -1,14 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using MeterDataLib;
+
 
 namespace MeterDataLib.Parsers
 {
@@ -31,7 +23,7 @@ namespace MeterDataLib.Parsers
             if (lines[0].ColCount != hdrArray.Length) return false;
             for (int i = 0; i < hdrArray.Length; i++)
             {
-                if (lines[i].GetStringUpper(0) != hdrArray[i]) return false;
+                if (lines[0].GetStringUpper(i) != hdrArray[i]) return false;
             }
             return true;
         }
@@ -69,8 +61,8 @@ namespace MeterDataLib.Parsers
                             //NMI        ,MM   ,INTERVAL ,INTERVAL_LENGTH ,SERIAL  ,QUALITY_METHOD ,SUFFIX_E ,VALUE_E ,UOM_E ,SUFFIX_K ,VALUE_K ,UOM_K ,SUFFIX_Q ,VALUE_Q ,UOM_Q ,SUFFIX_B ,VALUE_B ,UOM_B
                             string nmi = line.GetStringUpperMandatory(0);
                             DateTime localTime = line.GetDateMandatory(1, ["dd/MM/yyyy HH:mm:ss"]);
-                            int interval = line.GetIntMandatory(2, 1, 24 * 60);  // period can be 1 to 1440 minutes
-                            int intervalLength = line.GetIntMandatory(3, 1, 60);  // interval length can be 1 to 60 minutes
+                            int period = line.GetIntMandatory(2, 1, 24 * 60);  // period can be 1 to 1440 minutes
+                            int intervalDurationInMinutes = line.GetIntMandatory(3, 1, 60);  // interval length can be 1 to 60 minutes
                             string serial = line.GetStringUpperMandatory(4);
                             string qualityMethod = line.GetStringUpperMandatory(5);
                             string suffixE = line.GetString(6);
@@ -86,9 +78,9 @@ namespace MeterDataLib.Parsers
                             decimal b = line.GetDecimalCol(16) ?? 0;
                             string uomB = line.GetString(17);
 
-                            if (!AllowedIntervals.Contains(interval))
+                            if (!AllowedIntervals.Contains(intervalDurationInMinutes))
                             {
-                                result.LogMessages.Add(new FileLogMessage($"Invalid interval [{interval}] between reads found ", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 2));
+                                result.LogMessages.Add(new FileLogMessage($"Invalid interval length [{intervalDurationInMinutes}] between reads found ", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 2));
                                 continue;
                             }
 
@@ -98,9 +90,9 @@ namespace MeterDataLib.Parsers
                                 var record = new CsvRedEnergyFormat.DataLine
                                (
                                Nmi: nmi,
-                               LocalTime: localTime,
-                               Interval: interval,
-                               IntervalLength: intervalLength,
+                               IntervalEndTime: localTime,
+                               Period: period,
+                               IntervalDurationInMinutes: intervalDurationInMinutes,
                                Serial: serial,
                                QualityMethod: qualityMethod,
                                Suffix: suffixE,
@@ -115,9 +107,9 @@ namespace MeterDataLib.Parsers
                                 var record = new CsvRedEnergyFormat.DataLine
                                (
                                Nmi: nmi,
-                               LocalTime: localTime,
-                               Interval: interval,
-                               IntervalLength: intervalLength,
+                               IntervalEndTime: localTime,
+                               Period: period,
+                               IntervalDurationInMinutes: intervalDurationInMinutes,
                                Serial: serial,
                                QualityMethod: qualityMethod,
                                Suffix: suffixK,
@@ -132,9 +124,9 @@ namespace MeterDataLib.Parsers
                                 var record = new CsvRedEnergyFormat.DataLine
                                (
                                Nmi: nmi,
-                               LocalTime: localTime,
-                               Interval: interval,
-                               IntervalLength: intervalLength,
+                               IntervalEndTime: localTime,
+                               Period: period,
+                               IntervalDurationInMinutes: intervalDurationInMinutes,
                                Serial: serial,
                                QualityMethod: qualityMethod,
                                Suffix: suffixQ,
@@ -150,9 +142,9 @@ namespace MeterDataLib.Parsers
                                 var record = new CsvRedEnergyFormat.DataLine
                                (
                                Nmi: nmi,
-                               LocalTime: localTime,
-                               Interval: interval,
-                               IntervalLength: intervalLength,
+                               IntervalEndTime: localTime,
+                               Period: period,
+                               IntervalDurationInMinutes: intervalDurationInMinutes,
                                Serial: serial,
                                QualityMethod: qualityMethod,
                                Suffix: suffixB,
@@ -172,7 +164,7 @@ namespace MeterDataLib.Parsers
                     }
                 }
 
-               
+
                 var list = records.GroupBy(x => new { x.Nmi, x.ReadDate })
                                   .Where(x => x.Count() > 1)
                                   .OrderBy(x => x.Key.Nmi)
@@ -206,136 +198,92 @@ namespace MeterDataLib.Parsers
                     result.SitesDays.Add(siteDay);
 
                     // Transform the data into a dictionary of channels 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    int interval = siteDayGroup.First().Interval;
-                    if (!allowedIntervals.Contains(interval))
+                    var byChannel = siteDayGroup.GroupBy(x => x.Suffix);
+                    foreach (var channelSet in byChannel)
                     {
-                        result.LogMessages.Add(new FileLogMessage($"Invalid interval [{interval}] between reads found ", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 2));
-                        continue;
-                    }
 
-                    int expectedPeriods = 60 * 24 / interval;
-
-                    ChannelDay eChannel = new()
-                    {
-                        Channel = $"E1",
-                        IntervalMinutes = interval,
-                        ChannelNumber = "1",
-                        ChannelType = ChanelType.ActiveEnergyConsumption,
-                        Ignore = false,
-                        Readings = new decimal[expectedPeriods],
-                        TimeStampUtc = DateTime.UtcNow,
-                        MeterId = "all",
-                        RegisterId = $"E1",
-                        SourceFile = filename,
-                        UnitOfMeasure = UnitOfMeasure.kWh,
-                        OverallQuality = Quality.Actual,
-                        Total = 0,
-                        IsAvg = false,
-                        IsNet = false,
-                        IsCheck = false
-                    };
-                    siteDay.Channels.Add(eChannel.Channel, eChannel);
-
-                    ChannelDay bChannel = new()
-                    {
-                        Channel = $"B1",
-                        IntervalMinutes = interval,
-                        ChannelNumber = "1",
-                        ChannelType = ChanelType.ActiveEnergyGeneration,
-                        Ignore = false,
-                        Readings = new decimal[expectedPeriods],
-                        TimeStampUtc = DateTime.UtcNow,
-                        MeterId = "all",
-                        RegisterId = $"B1",
-                        SourceFile = filename,
-                        UnitOfMeasure = UnitOfMeasure.kWh,
-                        OverallQuality = Quality.Actual,
-                        Total = 0,
-                        IsAvg = false,
-                        IsNet = false,
-                        IsCheck = false
-                    };
-                    siteDay.Channels.Add(bChannel.Channel, bChannel);
-
-                    ChannelDay qChannel = new()
-                    {
-                        Channel = $"Q1",
-                        IntervalMinutes = interval,
-                        ChannelNumber = "1",
-                        ChannelType = ChanelType.ReactiveEnergyConsumption,
-                        Ignore = false,
-                        Readings = new decimal[expectedPeriods],
-                        TimeStampUtc = DateTime.UtcNow,
-                        MeterId = "all",
-                        RegisterId = $"Q1",
-                        SourceFile = filename,
-                        UnitOfMeasure = UnitOfMeasure.kVArh,
-                        OverallQuality = Quality.Actual,
-                        Total = 0,
-                        IsAvg = false,
-                        IsNet = false,
-                        IsCheck = false
-                    };
-                    siteDay.Channels.Add(qChannel.Channel, qChannel);
-
-                    ChannelDay kChannel = new()
-                    {
-                        Channel = $"K1",
-                        IntervalMinutes = interval,
-                        ChannelNumber = "1",
-                        ChannelType = ChanelType.ApparentPower,
-                        Ignore = false,
-                        Readings = new decimal[expectedPeriods],
-                        TimeStampUtc = DateTime.UtcNow,
-                        MeterId = "all",
-                        RegisterId = $"K1",
-                        SourceFile = filename,
-                        UnitOfMeasure = UnitOfMeasure.kVArh,
-                        OverallQuality = Quality.Actual,
-                        Total = 0,
-                        IsAvg = false,
-                        IsNet = false,
-                        IsCheck = false
-                    };
-                    siteDay.Channels.Add(kChannel.Channel, kChannel);
+                        int intervalDuration = channelSet.First().IntervalDurationInMinutes;
+                        string serial = channelSet.First().Serial;
+                        int expectedPeriods = 60 * 24 / intervalDuration;
 
 
-
-                    foreach (var record in siteDayGroup)
-                    {
-                        int index = (record.LocalTime.Hour * 60 + record.LocalTime.Minute) / interval;
-                        if (index < 0 || index >= eChannel.Readings.Length)
+                        ChannelDay chlDy = new()
                         {
-                            result.LogMessages.Add(new FileLogMessage($"Invalid index period found  {index} ", LogLevel.Error, filename, record.LineNumber));
-                            continue;
+                            Channel = channelSet.Key,
+                            IntervalMinutes = intervalDuration,
+                            Readings = new decimal[expectedPeriods],
+                            TimeStampUtc = DateTime.UtcNow,
+                            MeterId = serial,
+                            RegisterId = channelSet.Key,
+                            SourceFile = filename,
+                            Total = 0,
+                            IsAvg = false,
+                            IsNet = false,
+                            IsCheck = false
+                        };
+                        siteDay.Channels.Add(chlDy.Channel, chlDy);
+                        UnitOfMeasure uom = channelSet.First().Uom.ToUom();
+                        (UnitOfMeasure stdUom, decimal mult) = uom.ToStandardUnit();
+                        chlDy.UnitOfMeasure = stdUom;
+                        chlDy.OriginalUnitOfMeasure = uom;
+                        chlDy.OriginalUnitOfMeasureSymbol = channelSet.First().Uom;
+                        chlDy.Ignore = false;
+                        CsvParserLib.UpdateFromAemoChannel(chlDy);
+
+                        var qualityCodes = channelSet.Select(x => x.QualityMethod).Distinct().ToList();
+                        if (qualityCodes.Count == 1)
+                        {
+                            var qualityCode = qualityCodes.First();
+                            CsvParserLib.UpdateQuality(chlDy, qualityCode);
+                            chlDy.ReadQualities = null;
+                        }
+                        else
+                        {
+                            chlDy.OverallQuality = Quality.Variable;
+                            chlDy.ReadQualities = new Quality[expectedPeriods];
                         }
 
-                        eChannel.Readings[index] = record.E;
-                        bChannel.Readings[index] = record.B;
-                        qChannel.Readings[index] = record.Q;
-                        kChannel.Readings[index] = record.K;
-                    }
-                    eChannel.Total = eChannel.Readings.Sum();
-                    bChannel.Total = bChannel.Readings.Sum();
-                    kChannel.Total = kChannel.Readings.Sum();
-                    qChannel.Total = qChannel.Readings.Sum();
-                }
+                        foreach (var dataPoint in channelSet)
+                        {
+                            int index = dataPoint.Period - 1;
+                            DateTime expectedStartTime = siteDay.Date.AddMinutes(index * intervalDuration);
+                            DateTime recordedStartTime = dataPoint.StartTime;
+                            if (expectedStartTime != recordedStartTime)
+                            {
+                                result.LogMessages.Add(new FileLogMessage($"The interval period {dataPoint.Period} indicates a start time {expectedStartTime:HH:mm:ss} but found {recordedStartTime:HH:mm:ss} ", LogLevel.Error, filename, dataPoint.LineNumber));
+                                continue;
+                            }
+                            if (index < 0 || index >= chlDy.Readings.Length)
+                            {
+                                result.LogMessages.Add(new FileLogMessage($"Invalid index period found  {index} ", LogLevel.Error, filename, dataPoint.LineNumber));
+                                continue;
+                            }
+                            chlDy.Readings[index] = dataPoint.Value * mult;
+                            if (chlDy.OverallQuality == Quality.Variable && chlDy.ReadQualities != null)
+                            {
+                                string qualityMethod = dataPoint.QualityMethod.Trim();
+                                if (qualityMethod.Length == 0) { qualityMethod = "A"; }
+                                string quality = qualityMethod[0].ToString().ToUpper();
+                                chlDy.ReadQualities[index] = quality.ToQuality();
+                                if (qualityMethod.Length > 1)
+                                {
+                                    string estimationType = qualityMethod.Substring(1);
+                                    //lastChannelDay.Metadata.Add("EstimationType", estimationType);
+                                    chlDy.Metadata.Add(new MeterDataInfo(MetaDataName.EstimationType, index, index, estimationType));
+                                }
+                            }
 
+                        }
+                        chlDy.Total = chlDy.Readings.Sum();
+                    }
+
+
+
+
+
+
+
+                }
             }
             catch (Exception ex)
             {
@@ -345,14 +293,13 @@ namespace MeterDataLib.Parsers
             return;
         }
 
-        //NMI        ,INTERVAL_DATETIME   ,INTERVAL ,INTERVAL_LENGTH ,SERIAL  ,QUALITY_METHOD ,SUFFIX_E ,VALUE_E ,UOM_E ,SUFFIX_K ,VALUE_K ,UOM_K ,SUFFIX_Q ,VALUE_Q ,UOM_Q ,SUFFIX_B ,VALUE_B ,UOM_B
-        record DataLine(string Nmi, DateTime LocalTime, int Interval, int IntervalLength,
-                        string Serial,
-                        string QualityMethod,
-                        string Suffix, decimal Value, string Uom
-                        int LineNumber)
+        record DataLine(string Nmi, DateTime IntervalEndTime, int Period, int IntervalDurationInMinutes,
+                      string Serial,
+                      string QualityMethod,
+                      string Suffix, decimal Value, string Uom,
+                      int LineNumber)
         {
-            public DateTime StartTime => LocalTime.AddMinutes(-1 * IntervalLength);
+            public DateTime StartTime => IntervalEndTime.AddMinutes(-1 * IntervalDurationInMinutes);
             public DateTime ReadDate => StartTime.Date;
         }
 
