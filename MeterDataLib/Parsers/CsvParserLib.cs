@@ -93,7 +93,7 @@ namespace MeterDataLib.Parsers
 
 
             if ( channel.Length != 2 ) return;
-            string channelType = channel.Substring(0, 1);
+            string channelType = channel[..1];
             string channelNumber = channel.Substring(1, 1);
             
             if (NonIgnoredChannels.Contains(channelType) == false)
@@ -317,13 +317,13 @@ namespace MeterDataLib.Parsers
         internal static void UpdateQuality(ChannelDay channelDay, string qualityMethod)
         {
             qualityMethod = qualityMethod?.ToUpper()?.Trim() ?? string.Empty;
-            string quality = qualityMethod.Length > 0 ? qualityMethod.Substring(0, 1) : string.Empty;
+            string quality = qualityMethod.Length > 0 ? qualityMethod[..1] : string.Empty;
             var qualityCode = QualityExtensions.ToQuality(quality);
             channelDay.OverallQuality = qualityCode;
             if (qualityMethod.Length > 1)
             {
 
-                string estimationType = qualityMethod.Substring(1);
+                string estimationType = qualityMethod[1..];
                 channelDay.Metadata.Add(new MeterDataInfo(MetaDataName.EstimationType, estimationType));
             }
 

@@ -18,19 +18,17 @@ namespace TestMeterLib
         public async Task Nem12(string resource, string mimeType)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-               
-                var result  = await  ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                Assert.True(result.Success);
-                Assert.True(result.ParserName == "NEM12");
-                Assert.True(result.Sites > 0);
-                Assert.True(result.Errors == 0);
-                Assert.True(result.TotalSiteDays > 0);
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            Assert.True(result.Success);
+            Assert.True(result.ParserName == "NEM12");
+            Assert.True(result.Sites > 0);
+            Assert.True(result.Errors == 0);
+            Assert.True(result.TotalSiteDays > 0);
         }
     }
 

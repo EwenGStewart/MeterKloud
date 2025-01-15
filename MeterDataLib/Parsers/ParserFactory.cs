@@ -25,6 +25,7 @@ namespace MeterDataLib.Parsers
             , new CsvSingleLinePeakOffPeakDateNumber(), new CsvSingleLineSimpleEBKvaPF()
             , new CsvSingleLineSimpleEBQK()
             , new CsvRedEnergyFormat()
+            , new CsvEnosiFormat()
         ];
 
 
@@ -111,86 +112,82 @@ namespace MeterDataLib.Parsers
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
 
-            using (var edr = ExcelReaderFactory.CreateReader(ms))
+            using var edr = ExcelReaderFactory.CreateReader(ms);
+            int sheet = 0;
+            StringWriter stringWriter = new();
+            do
             {
-                int sheet = 0;
-                StringWriter stringWriter = new();
-                do
+                sheet++;
+                int line = 0;
+                while (edr.Read() && !cancellationToken.IsCancellationRequested)
                 {
-                    sheet++;
-                    int line = 0;
-                    while (edr.Read() && !cancellationToken.IsCancellationRequested)
+                    line++;
+
+                    if (timer.ElapsedMilliseconds > 100)
                     {
-                        line++;
-
-                        if (timer.ElapsedMilliseconds > 100)
+                        result.Progress = $"reading excel row {line}";
+                        timer.Restart();
+                        if (callBack != null)
                         {
-                            result.Progress = $"reading excel row {line}";
-                            timer.Restart();
-                            if (callBack != null)
-                            {
-                                await callBack(result);
-                            }
+                            await callBack(result);
                         }
+                    }
 
-                        int prevCol = 0;
-                        for (int i = 0; i < edr.FieldCount; i++)
+                    int prevCol = 0;
+                    for (int i = 0; i < edr.FieldCount; i++)
+                    {
+                        var value = edr.GetValue(i);
+                        if (value != null)
                         {
-                            var value = edr.GetValue(i);
-                            if (value != null)
+                            string strValue = value?.ToString() ?? string.Empty;
+                            if (!string.IsNullOrEmpty(strValue))
                             {
-                                string strValue = value?.ToString() ?? string.Empty;
-                                if (!string.IsNullOrEmpty(strValue))
+                                strValue.Replace(",", "|");
+                                if (i > 0)
                                 {
-                                    strValue.Replace(",", "|");
-                                    if (i > 0)
+                                    while (prevCol < i)
                                     {
-                                        while (prevCol < i)
-                                        {
-                                            stringWriter.Write(",");
-                                            prevCol++;
-                                        }
+                                        stringWriter.Write(",");
+                                        prevCol++;
                                     }
-                                    stringWriter.Write(strValue);
                                 }
-                            }
-                        }
-                        stringWriter.WriteLine();
-                    }
-
-
-                    result.Progress = $"reading csv";
-                    timer.Restart();
-                    if (callBack != null)
-                    {
-                        await callBack(result);
-                    }
-
-                    var data = stringWriter.ToString();
-                    if (!string.IsNullOrEmpty(data))
-                    {
-                        result.LogMessages.Add(new FileLogMessage($"Processing Sheet {sheet}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
-                        using (Stream strStream = StringToStream.GenerateStreamFromString(data))
-                        {
-                            try
-                            {
-                                cancellationToken.ThrowIfCancellationRequested();
-                                await ParseCsvAsync(result, strStream, filename, mimeType, callBack,cancellationToken);
-                            }
-
-                            catch (OperationCanceledException)
-                            {
-                                return;
-                            }
-
-                            catch (Exception ex)
-                            {
-                                result.LogMessages.Add(new FileLogMessage($"[Y6TKZ4] Error processing sheet {sheet} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                                stringWriter.Write(strValue);
                             }
                         }
                     }
-                } while (edr.NextResult());
-            }
+                    stringWriter.WriteLine();
+                }
+
+
+                result.Progress = $"reading csv";
+                timer.Restart();
+                if (callBack != null)
+                {
+                    await callBack(result);
+                }
+
+                var data = stringWriter.ToString();
+                if (!string.IsNullOrEmpty(data))
+                {
+                    result.LogMessages.Add(new FileLogMessage($"Processing Sheet {sheet}", Microsoft.Extensions.Logging.LogLevel.Information, filename, 0, 0));
+                    using Stream strStream = StringToStream.GenerateStreamFromString(data);
+                    try
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        await ParseCsvAsync(result, strStream, filename, mimeType, callBack, cancellationToken);
+                    }
+
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+
+                    catch (Exception ex)
+                    {
+                        result.LogMessages.Add(new FileLogMessage($"[Y6TKZ4] Error processing sheet {sheet} - {ex.Message}", Microsoft.Extensions.Logging.LogLevel.Error, filename, 0, 0));
+                    }
+                }
+            } while (edr.NextResult());
         }
 
         private static async Task ParseZipAsync(ParserResult result, Stream stream, string filename, string? mimeType, Func<ParserResult, Task>? callBack  , CancellationToken cancellationToken  )

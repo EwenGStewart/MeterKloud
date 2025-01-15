@@ -88,7 +88,7 @@ namespace MeterDataLib.Parsers
                 {
                     siteDay.SiteCode = UNKNOWN;
                 }
-                if (siteDay.SiteCode.Trim().ToUpperInvariant() != siteDay.SiteCode ) 
+                if (!siteDay.SiteCode.Trim().Equals(siteDay.SiteCode, StringComparison.InvariantCultureIgnoreCase)) 
                 {
                     siteDay.SiteCode = siteDay.SiteCode.Trim().ToUpperInvariant();
                 }

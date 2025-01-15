@@ -7,6 +7,7 @@
         public const string EstimationType = "EstimationType";
         public const string TransactionCode = "TransCode";
         public const string ServiceOrder = "ServiceOrder";
+        public const string Name = "Name";
 
     }
 

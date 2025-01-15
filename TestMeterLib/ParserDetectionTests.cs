@@ -44,14 +44,12 @@ namespace TestMeterLib
 
         public async Task Any(string resource, string mimeType, bool expectedResult)
         {
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType, null );
-                bool actualResult = result.Success;
-                Assert.Equal(expectedResult, actualResult);
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType, null);
+            bool actualResult = result.Success;
+            Assert.Equal(expectedResult, actualResult);
         }
 
 
@@ -90,15 +88,12 @@ namespace TestMeterLib
 
         public async Task ParseAll(string resource, string mimeType)
         {
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                bool actualResult = result.Success;
-                Assert.True(actualResult);
-
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            bool actualResult = result.Success;
+            Assert.True(actualResult);
         }
 
         [Theory]
@@ -132,22 +127,20 @@ namespace TestMeterLib
         public async Task AnyWithParse(string resource, string mimeType)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+
+            Console.WriteLine("Parsing " + resource);
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            foreach (var log in result.LogMessages)
             {
-                // Use the stream here
-                //test 
-
-                Console.WriteLine("Parsing " + resource);
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                foreach (var log in result.LogMessages)
-                {
-                    Console.WriteLine($"{log.LogLevel} {log.LogMessage}   Line:{log.LineNumber} Col:{log.ColumnNumber}  Filename:{log.FileName}");
-                }
-
-                bool actualResult = result.Success;
-                Assert.True(actualResult);
+                Console.WriteLine($"{log.LogLevel} {log.LogMessage}   Line:{log.LineNumber} Col:{log.ColumnNumber}  Filename:{log.FileName}");
             }
+
+            bool actualResult = result.Success;
+            Assert.True(actualResult);
         }
 
 
@@ -182,13 +175,11 @@ namespace TestMeterLib
         public async Task Nem12(string resource, string mimeType, bool isNem12)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                bool actualResult = result.Success && result.ParserName == "NEM12";
-                Assert.Equal(isNem12, actualResult);
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            bool actualResult = result.Success && result.ParserName == "NEM12";
+            Assert.Equal(isNem12, actualResult);
         }
 
 
@@ -210,15 +201,13 @@ namespace TestMeterLib
         public async Task CsvMulti1(string resource, string mimeType, bool expectedResult)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                bool actualResult = result.Success && result.ParserName == "MultiLineCSV1";
-                Assert.Equal(expectedResult, actualResult);
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            bool actualResult = result.Success && result.ParserName == "MultiLineCSV1";
+            Assert.Equal(expectedResult, actualResult);
         }
 
         [Theory]
@@ -226,15 +215,13 @@ namespace TestMeterLib
         public async Task Detect_CsvSingleLineSimpleEBKvaPF(string resource, string mimeType, bool expectedResult)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                bool actualResult = result.Success && result.ParserName == "SingleLineWith_E_B_KVA_PF";
-                Assert.Equal(expectedResult, actualResult); ;
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            bool actualResult = result.Success && result.ParserName == "SingleLineWith_E_B_KVA_PF";
+            Assert.Equal(expectedResult, actualResult); ;
         }
 
 
@@ -244,15 +231,13 @@ namespace TestMeterLib
         public async Task Detect_CsvSingleLineSimpleEBQK(string resource, string mimeType, bool expectedResult)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                bool actualResult = result.Success && result.ParserName == "SingleLineWith_E_B_K_Q";
-                Assert.Equal(expectedResult, actualResult); ;
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            bool actualResult = result.Success && result.ParserName == "SingleLineWith_E_B_K_Q";
+            Assert.Equal(expectedResult, actualResult); ;
         }
 
         [Theory]
@@ -261,15 +246,13 @@ namespace TestMeterLib
         public async Task Detect_CsvSingleLineMultiColPeriod2(string resource, string mimeType, bool expectedResult)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                bool actualResult = result.Success && result.ParserName == "SingleLineByPeriod2";
-                Assert.Equal(expectedResult, actualResult); ;
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            bool actualResult = result.Success && result.ParserName == "SingleLineByPeriod2";
+            Assert.Equal(expectedResult, actualResult); ;
         }
 
 
@@ -279,15 +262,13 @@ namespace TestMeterLib
         public async Task Detect_CsvSingleLinePeakOffPeakDateNumber(string resource, string mimeType, bool expectedResult)
         {
             Console.SetOut(new RedirectOutput(Output));
-            using (Stream stream = File.OpenRead(Path.Combine("Resources", resource)))
-            {
-                // Use the stream here
-                //test 
-                var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
-                Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
-                bool actualResult = result.Success && result.ParserName == "SingleLineWith_PK_OP_DateNumber";
-                Assert.Equal(expectedResult, actualResult); ;
-            }
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            bool actualResult = result.Success && result.ParserName == "SingleLineWith_PK_OP_DateNumber";
+            Assert.Equal(expectedResult, actualResult); ;
         }
 
 
