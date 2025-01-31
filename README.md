@@ -1,8 +1,8 @@
 # MeterKload
 
-Introducing [MeterKload](https://orange-glacier-058c9a900.1.azurestaticapps.net): Your Ultimate Electricity Data Analysis Tool
+Introducing [MeterKloud](https://MeterKloud.com): Your Ultimate Electricity Data Analysis Tool
 
-In the age of data-driven decisions, [MeterKload](https://orange-glacier-058c9a900.1.azurestaticapps.net) is a software package designed to empower users with the ability to graph and analyze electricity meter data effortlessly. Whether you're an energy consultant, a facilities manager, a market participant, or a curious homeowner, [MeterKload](https://orange-glacier-058c9a900.1.azurestaticapps.net) provides the tools you need to transform raw meter readings into insightful visualizations and comprehensive analyses.
+In the age of data-driven decisions, [MeterKloud](https://orange-glacier-058c9a900.1.azurestaticapps.net) is a software package designed to empower users with the ability to graph and analyze electricity meter data effortlessly. Whether you're an energy consultant, a facilities manager, a market participant, or a curious homeowner, [MeterKloud](https://MeterKloud.com)) provides the tools you need to transform raw meter readings into insightful visualizations and comprehensive analyses.
 
 Key Features:
 
@@ -14,4 +14,4 @@ Key Features:
   
 - Versatile Data Integration: Seamlessly integrate data from various electricity meters and sources for a holistic view of your energy consumption.
   
-[MeterKload](https://orange-glacier-058c9a900.1.azurestaticapps.net) is here to simplify the complexity of electricity data, offering you the insights needed to make informed decisions and promote energy efficiency. Harness the power of your electricity meter data with [MeterKload](https://orange-glacier-058c9a900.1.azurestaticapps.net), and take control of your energy future today.
+[MeterKloud](https://MeterKloud.com)) is here to simplify the complexity of electricity data, offering you the insights needed to make informed decisions and promote energy efficiency. Harness the power of your electricity meter data with [MeterKloud](https://MeterKloud.com)), and take control of your energy future today.
