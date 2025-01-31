@@ -1,4 +1,4 @@
-# MeterKload
+# MeterKloud
 
 Introducing [MeterKloud](https://MeterKloud.com): Your Ultimate Electricity Data Analysis Tool
 
