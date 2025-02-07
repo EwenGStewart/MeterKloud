@@ -33,7 +33,7 @@ namespace TestMeterLib
             var siteDays = parserResult.SitesDays;
             options.Site = new Site() { Code = siteDays.First().SiteCode };
             options.SiteDays = siteDays;
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
             options.Site.Should().NotBeNull();
             options.Site.Code.Should().Be(siteDays.First().SiteCode);
@@ -61,7 +61,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
         }
@@ -87,7 +87,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -113,7 +113,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -140,7 +140,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -167,7 +167,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -193,7 +193,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -220,7 +220,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
 
         }
@@ -247,7 +247,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
 
         }
@@ -311,7 +311,7 @@ namespace TestMeterLib
                 totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
                 totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
             // parse it back 
@@ -400,7 +400,7 @@ namespace TestMeterLib
                 totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
                 totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
             // parse it back 
@@ -485,7 +485,7 @@ namespace TestMeterLib
                 totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
                 totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
             // parse it back 

@@ -337,7 +337,7 @@ namespace MeterKloud
             }
             cancellationToken?.ThrowIfCancellationRequested();
             
-            var result = await  MeterDataLib.Export.ExportData.ExportAsync(options, cancellationToken);
+            var result = await  MeterDataLib.Export.ExportData.ExportSiteDataToTextAsync(options, cancellationToken);
             return result;
         }
 
