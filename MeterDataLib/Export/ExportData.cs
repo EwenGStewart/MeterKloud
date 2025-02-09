@@ -22,12 +22,19 @@ namespace MeterDataLib.Export
         }
 
 
-        public static async Task<string> ExportSiteDataToTextAsync(ExportOptions options , CancellationToken? cancellationToken, MeterDataStorageManager? meterDataStore = null )
+        public static async Task<string> ExportSiteDataToTextAsync(ExportOptions options , CancellationToken? cancellationToken = null, MeterDataStorageManager? meterDataStore = null )
         {
             
             
             options = CreateInternalSiteList(options, cancellationToken);
             options = DefaultInitialDateRange(options, cancellationToken);
+            // Fix the interval minutes
+            if ( options.IntervalInMinutes <= 0 )
+            {
+                options.IntervalInMinutes = null;
+            }
+
+
             foreach (var site in options.Sites)
             {
                 // have site days been provided 
@@ -43,7 +50,7 @@ namespace MeterDataLib.Export
                 }
                 else   // no site days have been provide - we will request them 
                 {
-                    var newDays = meterDataStore==null ? [] :  await meterDataStore.GetSiteDays(site.Code, options.FromDate!.Value, options.ToDate!.Value);
+                    var newDays = meterDataStore==null ? [] :  await meterDataStore.GetSiteDays(site.Id, options.FromDate!.Value, options.ToDate!.Value);
                     cancellationToken?.ThrowIfCancellationRequested();
                     if ( newDays.Count > 0)
                     {
@@ -55,11 +62,11 @@ namespace MeterDataLib.Export
             var exportableDays = options.SiteDays.Count();
             if (exportableDays == 0)
             {
-                throw new ArgumentException("No data in date range for specified sites can be exported");
+                throw new ArgumentException("No data in date range for specified sites can be exported. [Code:P1UJBB]");
             }
             if (exportableDays > MaxDays)
             {
-                throw new ArgumentException("Too many days to export");
+                throw new ArgumentException("Too many days to export, [Code:PXCIXD]");
             }
 
 
@@ -77,6 +84,7 @@ namespace MeterDataLib.Export
 
             var writer = new StringBuilder();
 
+
             switch (options.ExportType)
             {
                 case ExportFormat.NEM12:
@@ -91,7 +99,7 @@ namespace MeterDataLib.Export
                 case ExportFormat.RowCSV:
                     await RowExporter.ExportRowCSV(options, writer, cancellationToken);
                     break;
-                default:
+                default: 
                     throw new NotImplementedException();
             }
             string result = writer.ToString();
@@ -99,7 +107,7 @@ namespace MeterDataLib.Export
         }
 
 
-        public static async Task<(Stream file, bool isZip, string preview)> ExportMultiSitesToMultiFiles(ExportOptions options, CancellationToken? cancellationToken, MeterDataStorageManager? meterDataStore = null)
+        public static async Task<(Stream file, bool isZip, string preview)> ExportMultiSitesToMultiFiles(ExportOptions options, CancellationToken? cancellationToken = null , MeterDataStorageManager? meterDataStore = null)
         {
 
             options = CreateInternalSiteList(options, cancellationToken);
@@ -108,7 +116,7 @@ namespace MeterDataLib.Export
             {
                 // do as a single site 
                 var fileOutput  = await ExportSiteDataToTextAsync(options, cancellationToken, meterDataStore);
-                if ( string.IsNullOrWhiteSpace(fileOutput) ) throw new ArgumentException("No data to export");
+                if ( string.IsNullOrWhiteSpace(fileOutput) ) throw new ArgumentException("No data to export. [Code:ARR5FI]");
                 // convert the text to a stream 
                 var stream = new MemoryStream(Encoding.UTF8.GetBytes(fileOutput));
                 return (stream, false, fileOutput[0..5000]);
@@ -151,9 +159,9 @@ namespace MeterDataLib.Export
                         
                     }
                 }
-                if(archive.Entries.Count == 0)
+                if(entryNumber == 0)
                 {
-                    throw new ArgumentException("No data to export");
+                    throw new ArgumentException("No data to export [Code:HDW1QA]");
                 }
 
             }
@@ -174,11 +182,11 @@ namespace MeterDataLib.Export
             }
             if (options.ToDate == null)
             {
-                options.ToDate = options.SiteDays.Any() ? options.SiteDays.Min(x => x.Date) : DateTime.Today;
+                options.ToDate = options.SiteDays.Any() ? options.SiteDays.Max(x => x.Date) : DateTime.Today;
             }
             if (options.FromDate > options.ToDate)
             {
-                throw new ArgumentException("Invalid date range");
+                throw new ArgumentException("Invalid date range. [Code:PU1CCH]");
             }
 
             return options;
@@ -216,7 +224,7 @@ namespace MeterDataLib.Export
 
             if (options.Sites.Count == 0)
             {
-                throw new ArgumentException("No sites specified or found");
+                throw new ArgumentException("No sites specified or found [Code:BHN43C]");
             }
             return options;
         }

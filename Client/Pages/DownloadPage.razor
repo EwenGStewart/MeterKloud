@@ -196,11 +196,33 @@
     protected override async Task OnInitializedAsync()
     {
         SiteList = await API.GetSites();
+
         if ( SiteList.Any()) 
         {
+            SiteList = SiteList.OrderBy(xxx => xxx.Code).ToList();
             _SelectedSite = SiteList.First().Code;
+            SetDateRangeFromSite();
+            Validate();
         }
     }
+
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        var lastSite =  await API.GetLastSiteAccessed();
+        if ( lastSite!=null)
+        {
+            _SelectedSite = lastSite.Code;
+        }
+
+    }
+
 
 
     void OnMultiSiteChange(bool newValue)
@@ -208,20 +230,46 @@
         _MultiSite = newValue;
         if (!_MultiSite && _SelectedSite.IndexOf(',') >= 0)
         {
-            _SelectedSite = _SelectedSite.Trim();
-            var p = _SelectedSite.IndexOf(',');
-            if (p == 0)
-            {
-                _SelectedSite = string.Empty;
-            }
-            else if (p > 0)
-            {
-                _SelectedSite = _SelectedSite.Substring(0, p - 1);
-            }
+            _SelectedSite = FirstSite();
+            SetDateRangeFromSite();
 
         }
     }
 
+    string[] GetSiteList()
+    {
+        return   _SelectedSite.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    }
+
+
+    string FirstSite()
+    {
+        var firstSite = GetSiteList().FirstOrDefault() ?? string.Empty;
+        return firstSite;
+    }
+
+    void SetDateRangeFromSite() 
+    {
+        var firstSite = FirstSite();
+        var siteDetails = SiteList.FirstOrDefault(site => site.Code.Equals(firstSite, StringComparison.InvariantCultureIgnoreCase));
+        if (siteDetails == null)
+        {
+            return;
+        }
+        DateTime fromdate = (_DateRange.Start ?? DateTime.MinValue).Date;
+        DateTime todate = (_DateRange.End ?? DateTime.MaxValue).Date;
+        if (todate > siteDetails.LastDay)
+        {
+            _DateRange.End = siteDetails.LastDay;
+            fromdate = siteDetails.LastDay.AddDays(-1);
+            if (fromdate < siteDetails.FirstDay)
+            {
+                fromdate = siteDetails.FirstDay;
+            }
+            _DateRange.Start = fromdate;
+        }
+
+    }
 
 
     void DateRangeChanged(DateRange dateRange)
@@ -332,7 +380,12 @@
     {
         //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  SiteValueChanged {site?.Code}");
         _SelectedSite = site;
+        if( ! _MultiSite)
+        {
+            SetDateRangeFromSite();
+        }
         Validate();
+
 
     }
 
@@ -342,7 +395,8 @@
         var result = ValidateInput();
         if (result.isValid)
         {
-            _inputIsValid = true; 
+            _inputIsValid = true;
+            _fileContents = string.Empty;
         }
         else 
         {
@@ -368,7 +422,7 @@
             if (_MultiSite)
             {
                 exportOptions.Sites = new List<Site>();
-                var list = _SelectedSite.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                var list = GetSiteList();
                 foreach (var siteName in list)
                 {
                     var actualSite = SiteList.FirstOrDefault(siteItem => siteItem.Code.Equals(siteName, StringComparison.InvariantCultureIgnoreCase));
@@ -401,7 +455,7 @@
             }
 
             DateTime fromdate = (_DateRange.Start ?? DateTime.MinValue).Date;
-            DateTime todate = (_DateRange.Start ?? DateTime.MaxValue).Date;
+            DateTime todate = (_DateRange.End ?? DateTime.MaxValue).Date;
             int totalDays = (int)(todate - fromdate).TotalDays;
             if (fromdate > todate)
             {
@@ -433,13 +487,15 @@
             {
                 if ((exportOptions.Site!.LastDay.Date < fromdate.Date) || (exportOptions.Site!.FirstDay.Date > todate.Date))
                 {
-                    errors.Add($"Error: Site {exportOptions.Site!.Code} has data from {exportOptions.Site!.FirstDay:yyyy-MMM-dd} to {exportOptions.Site!.LastDay:yyyy-MMM-dd} - which is outside the date range specified. ");
+                    errors.Add($"Error: Site {exportOptions.Site!.Code} has data from {exportOptions.Site!.FirstDay:dd-MMM-yyyy} to {exportOptions.Site!.LastDay:dd-MMM-yyyy} - which is outside the date range specified. ");
                     errorMessage = string.Join(Environment.NewLine, errors);
                     return (exportOptions, false, errorMessage);
 
                 }
             }
-            exportOptions.IntervalInMinutes = _Interval;
+            exportOptions.IntervalInMinutes = _Interval<= 0 ? null : _Interval;
+
+
 
             if (!exportFormatNames.ContainsKey(_exportFormatText))
             {
@@ -456,6 +512,7 @@
             exportOptions.IncludeMeter = _IncludeMeter;
             exportOptions.IncludeSite = _IncludeSite;
             errorMessage = errors.Any() ? string.Join(Environment.NewLine, errors) : string.Empty;
+
             return (exportOptions, true, errorMessage);
         }
         catch (Exception ex)
@@ -645,28 +702,54 @@
             await InvokeAsync(StateHasChanged);
 
         }
-     //   Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} end CreateTheExportFile {_exportOptions.Site?.Code} ");
+        //   Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} end CreateTheExportFile {_exportOptions.Site?.Code} ");
     }
 
-    void DoDownload()
+    async Task DoDownload()
     {
         try 
         {
-            var validation = ValidateInput();
-            if (!validation.isValid || validation.exportOptions == null )
+            _ExportInProgress = true;
+            await InvokeAsync(StateHasChanged);
+            Cancel();
+            _cts = new CancellationTokenSource();
+            var (exportOptions ,  isValid,   errorMessage) = ValidateInput();
+            if (!isValid || exportOptions == null )
             {
                 _inputIsValid = false; 
-                _fileContents = validation.errorMessage;
+                _fileContents = errorMessage;
+
                 return;
             }
+            var options = exportOptions!.Value;
 
 
+            var (fileStream, isZip, preview) = await API.ExportMultiFile(options, _cts.Token);
+            _fileContents = preview;
+            string filename = 
+                isZip ? $"MultiSite_{options.FromDate:yyyyMMdd}_{options.ToDate:yyyyMMdd}_{options.ExportType.ToString().ToLower()}.zip"
+                : $"{options.Site?.Code}_{options.FromDate:yyyyMMdd}_{options.ToDate:yyyyMMdd}_{options.ExportType.ToString().ToLower()}.csv";
+            using var streamRef = new DotNetStreamReference(stream: fileStream);
+            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", filename , streamRef);
 
         }
-        catch (Exception ex)
+        catch (ArgumentException ex)
         {
+            _fileContents = "Input invalid :" + ex.Message;
             Console.WriteLine(ex);
 
+        }
+
+        catch (Exception ex)
+        {
+            _fileContents = "Error processing request"; 
+            Console.WriteLine(ex);
+
+        }
+        finally
+        {
+            _ExportInProgress = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

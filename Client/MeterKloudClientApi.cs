@@ -341,7 +341,14 @@ namespace MeterKloud
             return result;
         }
 
+        public async Task<(Stream file, bool isZip, string preview)> ExportMultiFile(ExportOptions options, CancellationToken? cancellationToken)
+        {
+       
+            cancellationToken?.ThrowIfCancellationRequested();
 
+            var result = await MeterDataLib.Export.ExportData.ExportMultiSitesToMultiFiles(options, cancellationToken, meterDataStorageManager);
+            return result;
+        }
 
 
 

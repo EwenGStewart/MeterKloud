@@ -9,9 +9,9 @@ namespace MeterDataLib.Export
         public static async Task ExportNem12(ExportOptions options, StringBuilder writer, CancellationToken? cancellationToken)
         {
             cancellationToken?.ThrowIfCancellationRequested();
-            if (options.IntervalInMinutes.HasValue)
+            if ( (options.IntervalInMinutes??0) > 0 )
             {
-                if (ValidNem12Intervals.Contains(options.IntervalInMinutes.Value) == false)
+                if (ValidNem12Intervals.Contains(options.IntervalInMinutes!.Value) == false)
                 {
                     throw new ArgumentException("Invalid interval minutes for NEM12 export. Must be 5,15,30");
                 }
@@ -242,6 +242,7 @@ namespace MeterDataLib.Export
             public void FixInterval(int? interval)
             {
                 interval ??= this.Interval;
+                if( interval <= 0 )  { interval = this.Interval; }
 
                 if (interval < 5) interval = 5;
                 if (interval > 30) interval = 30;
