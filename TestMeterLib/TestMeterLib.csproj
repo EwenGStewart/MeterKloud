@@ -62,6 +62,12 @@
     <None Update="Resources\64082253748_20220812_20240812_20240813120626_UNITEDENERGY_DETAILED.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\All_Detailed_as_at_20250211 AlteredDuplicate.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\All_Detailed_as_at_20250211.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\MultiLineCsv1.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
