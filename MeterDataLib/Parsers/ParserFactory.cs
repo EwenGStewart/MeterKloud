@@ -272,7 +272,12 @@ namespace MeterDataLib.Parsers
         private static bool IsExcel(string filename, string mimeType)
         {
 
-            if (!string.IsNullOrWhiteSpace(mimeType))
+            // avoid FireFox issue where csv associated with excel 
+            if ( filename.ToLowerInvariant().EndsWith(".csv"))
+            {
+                return false;
+            }
+            else if (!string.IsNullOrWhiteSpace(mimeType))
             {
                 if (ExcelMimeTypes.Contains(mimeType?.ToLowerInvariant() ?? string.Empty))
                 {
