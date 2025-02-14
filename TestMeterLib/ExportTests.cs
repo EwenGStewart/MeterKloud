@@ -32,12 +32,10 @@ namespace TestMeterLib
                 Assert.True(parserResult.Success);
             }
             var siteDays = parserResult.SitesDays;
-            options.Site = new Site() { Code = siteDays.First().SiteCode };
+         
             options.SiteDays = siteDays;
             var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
-            options.Site.Should().NotBeNull();
-            options.Site.Code.Should().Be(siteDays.First().SiteCode);
         }
 
 
@@ -520,35 +518,33 @@ namespace TestMeterLib
 
 
         [Fact]
-        public async Task MutliSiteExportToZip()
+        public async Task MultiSiteExportToZip()
         {
 
-            string[] filenames = new string[] {
+            string[] filenames = [
                 "4103354306_20160604_20170605_20170605000000_EnergyAustralia_DETAILED (1).csv",
                    "6407276797_20150803_20160517_20160518160200_UNITEDENERGY_DETAILED.csv",
                    "6407274172_20140506_20160506_20160507211600_UNITEDENERGY_DETAILED.csv",
-                   "64082253748_20220812_20240812_20240813120626_UNITEDENERGY_DETAILED.csv" };
+                   "64082253748_20220812_20240812_20240813120626_UNITEDENERGY_DETAILED.csv" ];
             string contentType = "text/csv";
 
 
 
-            List<SiteDay> siteDays = new List<SiteDay>();
+            List<SiteDay> siteDays = [];
             foreach (var filename in filenames)
             {
 
                 ParserResult? parserResult = null;
-                using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
+                using Stream stream = File.OpenRead(Path.Combine("Resources", filename));
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, contentType, null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+                foreach (var siteDay in parserResult.SitesDays)
                 {
-                    // Use the stream here
-                    //test 
-                    parserResult = await ParserFactory.ParseAsync(stream, filename, contentType, null);
-                    bool actualResult = parserResult.Success;
-                    Assert.True(parserResult.Success);
-                    foreach (var siteDay in parserResult.SitesDays)
-                    {
 
-                        siteDays.Add(siteDay);
-                    }
+                    siteDays.Add(siteDay);
                 }
             }
 
@@ -561,10 +557,9 @@ namespace TestMeterLib
             };
             var result = await ExportData.ExportMultiSitesToMultiFiles(options);
 
-            result.isZip.Should().BeTrue();
-            result.preview.Should().NotBeNullOrEmpty();
+            
 
-            var parserResult2 = await ParserFactory.ParseAsync( result.file, "sample.zip", "application/x-zip-compressed", null);
+            var parserResult2 = await ParserFactory.ParseAsync( result, "sample.zip", "application/x-zip-compressed", null);
             parserResult2.Success.Should().BeTrue();
             parserResult2.SitesDays.Count.Should().Be(siteDays.Count);
 

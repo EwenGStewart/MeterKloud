@@ -20,98 +20,120 @@
     </MudStack>
 
     <MudPaper Outlined="false" Height="70vh" Elevation="0" Style="background-color:transparent">
-        <MudGrid>
-            <MudItem sm="12" md="4">
-                <MudPaper Class="pa-3 ma-3" Elevation="25">
-                    <MudForm>
-                        <MudStack Spacing="2" Row="false"> 
-                            <MudCheckBox T="bool" Value="_MultiSite" Label="Multiple Sites" Color="Color.Tertiary" Size="Size.Medium"  ValueChanged="OnMultiSiteChange"></MudCheckBox>
-                            <MudSelect Value=@_SelectedSite T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Site" Placeholder="select a site"
-                            Text="@_SelectedSite" ValueChanged="SiteValueChanged" MultiSelection="@_MultiSite">
-                                @if (SiteList.Count > 0)
-                                {
-                                    foreach (var site in SiteList)
+        <MudForm Model="displayModel" Spacing="0">
+            <MudGrid>
+                <MudItem sm="12" md="4">
+                    <MudPaper Class="pa-3 ma-3" Elevation="25">
+                        <MudForm>
+                            <MudStack Spacing="2" Row="false">
+                                <MudCheckBox T="bool" @bind-Value="displayModel.MultiSite" Label="Multiple Sites" Color="Color.Tertiary" Size="Size.Medium"></MudCheckBox>
+
+                                <MudSelect T="string" @bind-Value="displayModel.SelectedSite" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Site" Placeholder="select a site"
+                                MultiSelection="displayModel.MultiSite">
+                                    @if (displayModel.SiteNames.Any())
                                     {
+                                        foreach (var site in displayModel.SiteNames)
+                                        {
 
-                                        <MudSelectItem T="string" Value="@site.Code">@site.Code</MudSelectItem>
+                                            <MudSelectItem T="string" Value="@site"></MudSelectItem>
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    <MudSelectItem T="string" Value="string.Empty">No Sites Available</MudSelectItem>
-                                }
-                            </MudSelect>
+                                    else
+                                    {
+                                        <MudSelectItem T="string" Value="string.Empty">No Sites Available</MudSelectItem>
+                                    }
+                                </MudSelect>
+
+                                <MudCheckBox T="bool" @bind-Value="displayModel.ZipFile" Label="Zip each site as a separate file" Color="Color.Tertiary" Size="Size.Medium"></MudCheckBox>
+                                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Format" @bind-Value=displayModel.ExportFormatName>
+                                    @foreach (var item in displayModel.ExportFormats)
+                                    {
+                                        <MudSelectItem T="string" Value=@(item)></MudSelectItem>
+                                    }
+                                </MudSelect>
 
 
-                            <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Format" Value=@_exportFormatText  ValueChanged="FormatValueChanged" >
+
+                                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Range" @bind-Value=displayModel.ExportPeriodName>
+                                    @foreach (var item in displayModel.ExportPeriods)
+                                    {
+                                        <MudSelectItem T="string" Value=@(item)></MudSelectItem>
+                                    }
+                                </MudSelect>
 
 
-                                @foreach (var item in exportFormatNames)
-                                {
-                                    <MudSelectItem T="string" Value=@(item.Key)></MudSelectItem>
-                                }
+                                <MudDateRangePicker @ref="_picker" Variant="Variant.Outlined" PickerVariant="@PickerVariant.Inline"
+                                @bind-DateRange="@displayModel.DateRange" DateFormat="dd-MMM-yy" TitleDateFormat="dd-MMM-yy"
+                                Margin="Margin.Dense" Label="Date Range" AutoClose=false ReadOnly=@(!displayModel.DateRangeEnabled)>
+                                    <PickerActions>
 
 
-                            </MudSelect>
-                            <MudDateRangePicker Variant="Variant.Outlined" PickerVariant="@PickerVariant.Dialog" DateRange="_DateRange"
-                            DateRangeChanged="DateRangeChanged"
-                            Margin="Margin.Dense" Label="Date Range" Placeholder="True" />
 
-                            <MudSelect Label="Interval" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="True" T="int"
-                            Value="_Interval" ValueChanged="@SetInterval">
-                                <MudSelectItem T="int" Value="0">Use the value stored by the meter</MudSelectItem>
-                                <MudSelectItem T="int" Value="30">30 minutes</MudSelectItem>
-                                <MudSelectItem T="int" Value="15">15 minutes</MudSelectItem>
-                                <MudSelectItem T="int" Value="5">5 minutes</MudSelectItem>
-                                <MudSelectItem T="int" Value="1">1 Minute</MudSelectItem>
-                            </MudSelect>
+                                        <div Class="mr-auto align-self-start">
 
-                            <MudCheckBox Value="_IncludeHeader" T="bool" ValueChanged="UpdateIncludeHeader" Size="Size.Medium" Color="Color.Tertiary" Disabled="_IncludeHdrReadonly">Add Header</MudCheckBox>
-                            <MudCheckBox Value="_IncludeSite" T="bool" ValueChanged="UpdateIncludeSite" Size="Size.Medium" Color="Color.Tertiary" Disabled="_IncludeSiteReadonly">Include Site Column</MudCheckBox>
-                            <MudCheckBox Value="_IncludeMeter" T="bool" ValueChanged="UpdateIncludeMeter" Size="Size.Medium" Color="Color.Tertiary" Disabled="_IncludeMeterReadonly">Meter Level</MudCheckBox>
-                            <MudCheckBox Value="_IncludeChannel" T="bool" ValueChanged="UpdateIncludeChannel" Size="Size.Medium" Color="Color.Tertiary" Disabled="_IncludeChannelReadonly">Channel Level</MudCheckBox>
+                                            <MudButton Size="Size.Small" OnClick="SetLastYear">Last Year</MudButton>
+                                            <MudButton Size="Size.Small" OnClick="SetLast2Years">Last 2 Years</MudButton>
+                                            <MudButton Size="Size.Small" OnClick="SetLastMonth">Last Month</MudButton>
+                                        </div>
 
+                                        <MudButton OnClick="@(() => _picker.CloseAsync(false))">Cancel</MudButton>
+                                        <MudButton Color="Color.Primary" OnClick="@(() => _picker.CloseAsync())">Ok</MudButton>
+                                    </PickerActions>
+                                </MudDateRangePicker>
+                                <MudSelect Label="Interval" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="True" T="int"
+                                @bind-Value=displayModel.Interval>
+                                    <MudSelectItem T="int" Value="0">Use the value stored by the meter</MudSelectItem>
+                                    <MudSelectItem T="int" Value="30">30 minutes</MudSelectItem>
+                                    <MudSelectItem T="int" Value="15">15 minutes</MudSelectItem>
+                                    <MudSelectItem T="int" Value="5">5 minutes</MudSelectItem>
+                                    <MudSelectItem T="int" Value="1">1 Minute</MudSelectItem>
+                                </MudSelect>
 
-                        </MudStack>
-
-
-                    </MudForm>
-
-                    <MudButton OnClick="DoDownload"
-                    Disabled="@DownloadButtonDisabled()"
-                    Variant="Variant.Filled"
-                    EndIcon="@Icons.Material.Filled.ArrowDownward"
-                    Color="Color.Info">
-                        @if (_ExportInProgress)
-                        {
-                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                        }
-                        <MudText Class="ms-2">@(DownloadButtonText())</MudText>
-                    </MudButton>
-                </MudPaper>
+                                <MudCheckBox @bind-Value=displayModel.IncludeHeader Size="Size.Medium" Color="Color.Tertiary" ReadOnly=@displayModel.IncludeHdrReadonly>Add Header</MudCheckBox>
+                                <MudCheckBox @bind-Value=displayModel.IncludeSite T="bool" Size="Size.Medium" Color="Color.Tertiary" Readonly=@displayModel.IncludeSiteReadonly>Include Site Column</MudCheckBox>
+                                <MudCheckBox @bind-Value=displayModel.IncludeMeter T="bool" Size="Size.Medium" Color="Color.Tertiary" ReadOnly=@displayModel.IncludeMeterReadonly>Meter Level</MudCheckBox>
+                                <MudCheckBox @bind-Value=displayModel.IncludeChannel T="bool" Size="Size.Medium" Color="Color.Tertiary" ReadOnly=@displayModel.IncludeChannelReadonly>Channel Level</MudCheckBox>
 
 
-            </MudItem>
-            <MudItem sm=12 md="8">
-                <MudPaper Class="pa-3 ma-3" Elevation="25">
-                    <MudPaper Style="background-color:black; color:white; height:80vh; overflow:scroll">
-                        <pre>
-                            @((MarkupString)@_fileContents)
-                        </pre>
+                            </MudStack>
+
+
+                        </MudForm>
+
+                        <MudButton Disabled="@DownloadButtonDisabled()"
+                        Variant="Variant.Filled"
+                        EndIcon="@Icons.Material.Filled.ArrowDownward"
+                        Color="Color.Info">
+                            @if (_ExportInProgress)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            }
+                            <MudText Class="ms-2">@(DownloadButtonText())</MudText>
+                        </MudButton>
                     </MudPaper>
 
 
+                </MudItem>
+                <MudItem sm=12 md="8">
+                    <MudPaper Class="pa-3 ma-3" Elevation="25">
+                        <MudPaper Style="background-color:black; color:white; height:80vh; overflow:scroll">
+                            <pre>
+                                @((MarkupString)@_fileContents)
+                            </pre>
+                        </MudPaper>
 
 
-                </MudPaper>
-            </MudItem>
+
+
+                    </MudPaper>
+                </MudItem>
 
 
 
 
-        </MudGrid>
+            </MudGrid>
 
-
+        </MudForm>
 
 
     </MudPaper>
@@ -127,668 +149,440 @@
     const string NoSitesAvailable = "No Sites Available";
     private const int MaxTextToDisplayInBrowser = 100000;
     private const int MillisecondsDelay = 300;
+    private MudDateRangePicker _picker = default!;
+
+    async Task SetLastYear()
+    {
+        _picker.DateRange.End = DateTime.Today.AddDays(-1);
+        _picker.DateRange.Start = _picker.DateRange.End.Value.AddYears(-1);
+        await _picker.CloseAsync();
+
+    }
+    async Task SetLast2Years()
+    {
+        _picker.DateRange.End = DateTime.Today.AddDays(-1);
+        _picker.DateRange.Start = _picker.DateRange.End.Value.AddYears(-2);
+        await _picker.CloseAsync();
+
+    }
+    async Task SetLastMonth()
+    {
+        _picker.DateRange.End = DateTime.Today.AddDays(-1);
+        _picker.DateRange.Start = _picker.DateRange.End.Value.AddMonths(-1);
+        await _picker.CloseAsync();
+
+    }
+
 
 
     /* Display Model - value Fields */
-    public  bool _MultiSite = false;
+    public bool _MultiSite = false;
     public string _SelectedSite = NoSitesAvailable;
     // default format Text
     string _exportFormatText = "NEM12";
 
     public DateRange _DateRange = new DateRange(DateTime.Today.AddYears(-1), DateTime.Today.AddDays(-1));
-    public int _Interval = 0; 
-    public bool _IncludeHeader = true; 
-    public bool _IncludeSite = true; 
+    public int _Interval = 0;
+    public bool _IncludeHeader = true;
+    public bool _IncludeSite = true;
     public bool _IncludeChannel = true;
-    public bool _IncludeMeter = true; 
+    public bool _IncludeMeter = true;
 
 
     /* display model - field that impact the display */
-    bool _IncludeHdrReadonly = true;
-    bool _IncludeSiteReadonly = true;
-    bool _IncludeMeterReadonly = true;
-    bool _IncludeChannelReadonly = true;
-    bool _ShowDataPreview = true; 
+
+    bool _ShowDataPreview = true;
     string _dataDownload = string.Empty;
     string _fileContents = "File contents will appear here";
 
     /* progress */
     CancellationTokenSource? _cts = null;
     bool _ExportInProgress = false;
-    bool _inputIsValid = false; 
+    bool _inputIsValid = false;
 
+    DownloadDisplayModel displayModel = default!;
 
-
-
-
-    // List of available formats 
-
-    // matching list of names for the formats 
-    //{ "NEM12", "Quadrant CSV", "Columnar CSV", "Row CSV" };
-
-    //Dictionary<ExportFormat, string> exportFormatNames = new Dictionary<ExportFormat, string> { { ExportFormat.NEM12, "NEM12" }, { ExportFormat.QuadrantCSV, "Quadrant CSV" }, { ExportFormat.ColumnarCSV, "Columnar CSV" }, { ExportFormat.RowCSV, "Row CSV" } };
-    static readonly Dictionary<string, ExportFormat> exportFormatNames = new Dictionary<string, ExportFormat> { { "NEM12", ExportFormat.NEM12 }, { "Quadrant CSV", ExportFormat.QuadrantCSV }, { "Columnar CSV", ExportFormat.ColumnarCSV }, { "Row CSV", ExportFormat.RowCSV } };
-
-
-
-    // List of all sites 
-    public List<Site> SiteList { get; set; } = new List<Site>();
-
-
-    void FormatValueChanged(string  format)
+    class DownloadDisplayModel
     {
-        _exportFormatText = format;
-        SetOptionsFromFormat();
+        private readonly MeterKloudClientApi _api;
+        private readonly Dictionary<string, Site> _sites;
+        static readonly Dictionary<string, ExportFormat> exportFormatNames = new Dictionary<string, ExportFormat> { { "NEM12", ExportFormat.NEM12 }, { "Quadrant CSV", ExportFormat.QuadrantCSV }, { "Columnar CSV", ExportFormat.ColumnarCSV }, { "Row CSV", ExportFormat.RowCSV } };
+
+
+
+
+        bool _IncludeHdrReadonly = true;
+        bool _IncludeSiteReadonly = true;
+        bool _IncludeMeterReadonly = true;
+        bool _IncludeChannelReadonly = true;
+
+        public enum ExportPeriod
+        {
+            LastYearOfSiteData,
+            Last2YearsOfSiteData,
+            Last6MonthsOfSiteData,
+            Last3MonthsOfSiteData,
+            LastMonthOfSiteData,
+            Last12CalendarMonths,
+            Last6CalendarMonths,
+            Last3CalendarMonths,
+            LastMonth,
+            CustomDateRange
+        }
+        static readonly Dictionary<string, ExportPeriod> exportPeriodNames = new Dictionary<string, ExportPeriod> { { "Last year of Site Data", ExportPeriod.LastYearOfSiteData }, { "Last 2 years of Site Data", ExportPeriod.Last2YearsOfSiteData }, { "Last 6 months of Site Data", ExportPeriod.Last6MonthsOfSiteData }, { "Last 3 months of Site Data", ExportPeriod.Last3MonthsOfSiteData }, { "Last month of Site Data", ExportPeriod.LastMonthOfSiteData }, { "Last 12 calendar months", ExportPeriod.Last12CalendarMonths }, { "Last 6 calendar months", ExportPeriod.Last6CalendarMonths }, { "Last 3 calendar months", ExportPeriod.Last3CalendarMonths }, { "Last month", ExportPeriod.LastMonth }, { "Custom Date Range", ExportPeriod.CustomDateRange } };
+
+
+
+        public DownloadDisplayModel(MeterKloudClientApi api)
+        {
+            _api = api;
+            var list = (_api.GetSites()).GetAwaiter().GetResult();
+            if (list.Any())
+            {
+                //create dictionary of sites
+                _sites = list.ToDictionary(site => site.Code.ToUpperInvariant(), site => site);
+            }
+            else
+            {
+                _sites = new Dictionary<string, Site>();
+            }
+
+            // get the last site accessed
+            var lastSite = (_api.GetLastSiteAccessed()).GetAwaiter().GetResult();
+            if (lastSite != null)
+            {
+                if (_sites.ContainsKey(lastSite.Code))
+                {
+                    SelectedSite = lastSite.Code.ToUpperInvariant();
+                }
+            }
+            this.ExportFormatName = exportFormatNames.First().Key;
+
+
+        }
+
+        public bool MultiSiteEnabled => _sites.Count > 1;
+        public bool MultiSiteDisabled => !MultiSiteEnabled;
+        private bool _multiSite = false;
+
+        public bool MultiSite
+        {
+            get
+            {
+                if (!MultiSiteEnabled)
+                {
+                    return false;
+                }
+                return _multiSite;
+            }
+            set
+            {
+                _multiSite = value;
+                if (!_multiSite && SelectedSite.IndexOf(',') >= 0)
+                {
+                    SelectedSite = FirstSite().Code;
+
+                }
+
+
+
+
+            }
+        }
+
+        public IEnumerable<string> SiteNames => _sites.Keys;
+
+
+
+        public Site FirstSite()
+        {
+            var firstSite = SelectedSiteList().FirstOrDefault() ?? new Site(); ;
+
+            return firstSite;
+        }
+
+
+        private string _selectedSite = string.Empty;
+        public string SelectedSite
+        {
+            get { return _selectedSite; }
+            set
+            {
+                _selectedSite = value;
+                SetDateRange();
+            }
+        }
+
+
+
+
+
+
+        public List<Site> SelectedSiteList()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedSite))
+            {
+                return new List<Site>();
+            }
+            var stringList = _selectedSite.ToUpperInvariant().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return stringList.Where(xxxx => _sites.ContainsKey(xxxx)).Select(siteCode => _sites[siteCode]).ToList();
+        }
+
+
+
+        private bool _zipFile;
+
+        public bool ZipFileEnabled => MultiSite && SelectedSiteList().Count > 1;
+
+        public bool ZipFile
+        {
+            get
+            {
+                if (!ZipFileEnabled)
+                {
+                    return false;
+                }
+                return _zipFile;
+
+            }
+            set { _zipFile = value; }
+        }
+
+
+
+        public List<string> ExportFormats => exportFormatNames.Keys.ToList();
+        private ExportFormat _exportFormat = MeterDataLib.Export.ExportFormat.NEM12;
+        public string ExportFormatName
+        {
+            get
+            {
+                var item = exportFormatNames.FirstOrDefault(xxx => xxx.Value == _exportFormat);
+                if (item.Equals(default(KeyValuePair<string, ExportFormat>)))
+                {
+                    return exportFormatNames.First().Key;
+                }
+                return item.Key;
+
+            }
+            set
+            {
+                // validate the value
+                if (exportFormatNames.ContainsKey(value))
+                {
+                    _exportFormat = exportFormatNames[value];
+                    SetOptionsFromFormat();
+                }
+            }
+        }
+
+
+
+        public List<string> ExportPeriods => exportPeriodNames.Keys.ToList();
+        private ExportPeriod _exportPeriod = ExportPeriod.LastYearOfSiteData;
+        public string ExportPeriodName
+        {
+            get
+            {
+                var item = exportPeriodNames.FirstOrDefault(xxx => xxx.Value == _exportPeriod);
+                if (item.Equals(default(KeyValuePair<string, ExportPeriod>)))
+                {
+                    return exportPeriodNames.First().Key;
+                }
+                return item.Key;
+
+            }
+            set
+            {
+                // validate the value
+                if (exportPeriodNames.ContainsKey(value))
+                {
+                    _exportPeriod = exportPeriodNames[value];
+                    SetDateRange();
+                }
+            }
+        }
+
+        public bool DateRangeEnabled => _exportPeriod == ExportPeriod.CustomDateRange;
+
+        private void SetDateRange()
+        {
+
+            DateTime lastLastDay = SelectedSiteList().Any() ? SelectedSiteList().Max(site => site.LastDay) : DateTime.Today.AddDays(-1);
+            DateTime firstLastDay = SelectedSiteList().Any() ? SelectedSiteList().Min(site => site.LastDay) : DateTime.Today.AddDays(-1);
+            switch (_exportPeriod)
+            {
+                case ExportPeriod.LastYearOfSiteData:
+                    DateRange = new DateRange(firstLastDay.AddYears(-1), lastLastDay);
+                    break;
+                case ExportPeriod.Last2YearsOfSiteData:
+                    DateRange = new DateRange(firstLastDay.AddYears(-2), lastLastDay);
+                    break;
+                case ExportPeriod.Last6MonthsOfSiteData:
+                    DateRange = new DateRange(firstLastDay.AddMonths(-6), lastLastDay);
+                    break;
+                case ExportPeriod.Last3MonthsOfSiteData:
+                    DateRange = new DateRange(firstLastDay.AddMonths(-3), lastLastDay);
+                    break;
+                case ExportPeriod.LastMonthOfSiteData:
+                    DateRange = new DateRange(firstLastDay.AddMonths(-1), lastLastDay);
+                    break;
+                case ExportPeriod.Last12CalendarMonths:
+                    DateRange = new DateRange(DateTime.Today.AddMonths(-12), DateTime.Today.AddDays(-1));
+                    break;
+                case ExportPeriod.Last6CalendarMonths:
+                    DateRange = new DateRange(DateTime.Today.AddMonths(-6), DateTime.Today.AddDays(-1));
+                    break;
+                case ExportPeriod.Last3CalendarMonths:
+                    DateRange = new DateRange(DateTime.Today.AddMonths(-3), DateTime.Today.AddDays(-1));
+                    break;
+                case ExportPeriod.LastMonth:
+                    DateRange = new DateRange(DateTime.Today.AddMonths(-1), DateTime.Today.AddDays(-1));
+                    break;
+                case ExportPeriod.CustomDateRange:
+
+                    break;
+            }
+        }
+
+
+        private DateRange _dateRange = new DateRange(DateTime.Today.AddYears(-1), DateTime.Today.AddDays(-1));
+        public DateRange DateRange
+        {
+            get { return _dateRange; }
+            set { _dateRange = value; }
+        }
+
+        private int _interval = 0;
+        public int Interval
+        {
+            get { return _interval; }
+            set { _interval = value; }
+        }
+
+
+        public bool IncludeHdrReadonly => _IncludeHdrReadonly;
+        public bool IncludeSiteReadonly => _IncludeSiteReadonly;
+        public bool IncludeMeterReadonly => _IncludeMeterReadonly;
+        public bool IncludeChannelReadonly => _IncludeChannelReadonly;
+
+        private bool _includeHeader = true;
+        public bool IncludeHeader
+        {
+            get { return _includeHeader; }
+            set { if (IncludeHdrReadonly) return; _includeHeader = value; }
+        }
+
+        private bool _includeSite = true;
+        public bool IncludeSite
+        {
+            get { return _includeSite; }
+            set { if (IncludeSiteReadonly) return; _includeSite = value; }
+        }
+
+        private bool _includeChannel = true;
+        public bool IncludeChannel
+        {
+            get { return _includeChannel; }
+            set { if (IncludeChannelReadonly) return; _includeChannel = value; }
+        }
+
+        private bool _includeMeter = true;
+        public bool IncludeMeter
+        {
+            get { return _includeMeter; }
+            set { if (IncludeMeterReadonly) return; _includeMeter = value; }
+        }
+
+
+        void SetOptionsFromFormat()
+        {
+
+            Console.WriteLine("set options from format " + _exportFormat);
+            switch (_exportFormat)
+            {
+                case ExportFormat.NEM12:
+                    _includeHeader = true;
+                    _IncludeHdrReadonly = false;
+
+                    _IncludeSiteReadonly = true;
+                    _includeSite = true;
+
+                    _includeChannel = true;
+                    _IncludeChannelReadonly = true;
+
+                    _includeMeter = true;
+                    _IncludeMeterReadonly = true;
+
+                    break;
+                case ExportFormat.QuadrantCSV:
+
+                    _includeHeader = true;
+                    _IncludeHdrReadonly = false;
+
+                    _includeSite = false;
+                    _IncludeSiteReadonly = false;
+
+                    _includeChannel = true;
+                    _IncludeChannelReadonly = true;
+
+                    _includeMeter = false;
+                    _IncludeMeterReadonly = false;
+
+
+                    break;
+                case ExportFormat.ColumnarCSV:
+                    _includeHeader = true;
+                    _IncludeHdrReadonly = false;
+
+                    _includeSite = false;
+                    _IncludeSiteReadonly = false;
+
+                    _includeChannel = true;
+                    _IncludeChannelReadonly = true;
+
+                    _includeMeter = false;
+                    _IncludeMeterReadonly = false;
+
+
+
+                    break;
+                case ExportFormat.RowCSV:
+                    _includeHeader = true;
+                    _IncludeHdrReadonly = false;
+
+                    _includeSite = false;
+                    _IncludeSiteReadonly = false;
+
+                    _includeChannel = true;
+                    _IncludeChannelReadonly = true;
+
+                    _includeMeter = false;
+                    _IncludeMeterReadonly = false;
+                    break;
+
+            }
+        }
+
+
     }
+
+
+
 
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _exportFormatText = exportFormatNames.First().Key;
-
-
-        _DateRange.Start = DateTime.Today.AddYears(-1);
-        _DateRange.End = DateTime.Today.AddDays(-1);
-        SetOptionsFromFormat();
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        SiteList = await API.GetSites();
-
-        if ( SiteList.Any()) 
-        {
-            SiteList = SiteList.OrderBy(xxx => xxx.Code).ToList();
-            _SelectedSite = SiteList.First().Code;
-            SetDateRangeFromSite();
-            Validate();
-        }
-    }
-
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-
-        var lastSite =  await API.GetLastSiteAccessed();
-        if ( lastSite!=null)
-        {
-            _SelectedSite = lastSite.Code;
-        }
-
-    }
-
-
-
-    void OnMultiSiteChange(bool newValue)
-    {
-        _MultiSite = newValue;
-        if (!_MultiSite && _SelectedSite.IndexOf(',') >= 0)
-        {
-            _SelectedSite = FirstSite();
-            SetDateRangeFromSite();
-
-        }
-    }
-
-    string[] GetSiteList()
-    {
-        return   _SelectedSite.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-    }
-
-
-    string FirstSite()
-    {
-        var firstSite = GetSiteList().FirstOrDefault() ?? string.Empty;
-        return firstSite;
-    }
-
-    void SetDateRangeFromSite() 
-    {
-        var firstSite = FirstSite();
-        var siteDetails = SiteList.FirstOrDefault(site => site.Code.Equals(firstSite, StringComparison.InvariantCultureIgnoreCase));
-        if (siteDetails == null)
-        {
-            return;
-        }
-        DateTime fromdate = (_DateRange.Start ?? DateTime.MinValue).Date;
-        DateTime todate = (_DateRange.End ?? DateTime.MaxValue).Date;
-        if (todate > siteDetails.LastDay)
-        {
-            _DateRange.End = siteDetails.LastDay;
-            fromdate = siteDetails.LastDay.AddDays(-1);
-            if (fromdate < siteDetails.FirstDay)
-            {
-                fromdate = siteDetails.FirstDay;
-            }
-            _DateRange.Start = fromdate;
-        }
-
-    }
-
-
-    void DateRangeChanged(DateRange dateRange)
-    {
-        _DateRange = dateRange;
-        Validate();
-    }
-
-
-
-    void SetInterval(int interval)
-    {
-        _Interval = interval; 
-    }
-
-
-
-
-    void SetOptionsFromFormat()
-    {
-        Console.WriteLine($"SetOptionsFromFormat {_exportFormatText}");
-        if (exportFormatNames.ContainsKey(_exportFormatText) == false)
-        {
-            Console.WriteLine($"SetOptionsFromFormat  --> no map");
-            return;
-        }
-        var selectedFormat = exportFormatNames[_exportFormatText];
-        Console.WriteLine($"SetOptionsFromFormat selected  {selectedFormat}");
-        switch (selectedFormat)
-        {
-            case ExportFormat.NEM12:
-                _IncludeHeader = true;
-                _IncludeHdrReadonly = false;
-
-                _IncludeSiteReadonly = true;
-                _IncludeSite = true;
-
-                _IncludeChannel = true;
-                _IncludeChannelReadonly = true;
-
-                _IncludeMeter = true;
-                _IncludeMeterReadonly = true;
-
-                break;
-            case ExportFormat.QuadrantCSV:
-
-                _IncludeHeader = true;
-                _IncludeHdrReadonly = false;
-
-                _IncludeSite = false;
-                _IncludeSiteReadonly = false;
-
-                _IncludeChannel = true;
-                _IncludeChannelReadonly = true;
-
-                _IncludeMeter = false;
-                _IncludeMeterReadonly = false;
-
-
-                break;
-            case ExportFormat.ColumnarCSV:
-                _IncludeHeader = true;
-                _IncludeHdrReadonly = false;
-
-                _IncludeSite = false;
-                _IncludeSiteReadonly = false;
-
-                _IncludeChannel = true;
-                _IncludeChannelReadonly = true;
-
-                _IncludeMeter = false;
-                _IncludeMeterReadonly = false;
-
-
-
-                break;
-            case ExportFormat.RowCSV:
-                _IncludeHeader = true;
-                _IncludeHdrReadonly = false;
-
-                _IncludeSite = false;
-                _IncludeSiteReadonly = false;
-
-                _IncludeChannel = true;
-                _IncludeChannelReadonly = true;
-
-                _IncludeMeter = false;
-                _IncludeMeterReadonly = false;
-                break;
-
-        }
-    }
-
-    void Cancel()
-    {
-        if (_cts != null)
-        {
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = null;
-        }
-
-    }
-
-
-
-    void SiteValueChanged(string site)
-    {
-        //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  SiteValueChanged {site?.Code}");
-        _SelectedSite = site;
-        if( ! _MultiSite)
-        {
-            SetDateRangeFromSite();
-        }
-        Validate();
+        displayModel = new DownloadDisplayModel(API);
 
 
     }
 
-    void Validate() 
-    {
-        _inputIsValid = false; 
-        var result = ValidateInput();
-        if (result.isValid)
-        {
-            _inputIsValid = true;
-            _fileContents = string.Empty;
-        }
-        else 
-        {
-            _fileContents = result.errorMessage;
-        }
-    }
-
-
-    (ExportOptions? exportOptions , bool isValid , string  errorMessage ) ValidateInput()
-    {
-        try
-        {
-            ExportOptions exportOptions = new ExportOptions();
-            List<string> errors = new List<string>();
-            string errorMessage = string.Empty;
-
-
-            if (string.IsNullOrWhiteSpace(_SelectedSite))
-            {
-                return (null, false, "No site selected");
-            }
-
-            if (_MultiSite)
-            {
-                exportOptions.Sites = new List<Site>();
-                var list = GetSiteList();
-                foreach (var siteName in list)
-                {
-                    var actualSite = SiteList.FirstOrDefault(siteItem => siteItem.Code.Equals(siteName, StringComparison.InvariantCultureIgnoreCase));
-                    if (actualSite != null)
-                    {
-                        exportOptions.Sites.Add(actualSite);
-                    }
-                    else
-                    {
-                        errors.Add($"Warning: Site {siteName} is not valid");
-                    }
-                }
-                if (exportOptions.Sites.Count == 0)
-                {
-                    errors.Add("No exportable sites found");
-                    // combine errors into multi line text 
-                    errorMessage = string.Join(Environment.NewLine, errors);
-                    return (exportOptions, false, errorMessage);
-                }
-            }
-            else
-            {
-                var actualSite = SiteList.FirstOrDefault(siteItem => siteItem.Code.Equals(_SelectedSite, StringComparison.InvariantCultureIgnoreCase));
-                if (actualSite == null)
-                {
-                    return (exportOptions, false, $"Invalid site code {_SelectedSite}");
-                }
-
-                exportOptions.Site = actualSite;
-            }
-
-            DateTime fromdate = (_DateRange.Start ?? DateTime.MinValue).Date;
-            DateTime todate = (_DateRange.End ?? DateTime.MaxValue).Date;
-            int totalDays = (int)(todate - fromdate).TotalDays;
-            if (fromdate > todate)
-            {
-                return (exportOptions, false, $"Invalid date range");
-            }
-            if (totalDays > MeterDataLib.Export.ExportData.MaxDays)
-            {
-                return (exportOptions, false, $"Date range exceeds max {totalDays} days");
-            }
-            if (_MultiSite)
-            {
-                foreach (var site in exportOptions.Sites.ToArray())
-                {
-                    if ((site.LastDay.Date < fromdate.Date) || (site.FirstDay.Date > todate.Date))
-                    {
-                        errors.Add($"Warning: Site {site.Code} has data from {site.FirstDay:yyyy-MMM-dd} to {site.LastDay:yyyy-MMM-dd} - which is outside the date range specified. ");
-                        exportOptions.Sites.Remove(site);
-                    }
-                }
-                if (exportOptions.Sites.Count == 0)
-                {
-                    errors.Add("No exportable sites found in the date range");
-                    // combine errors into multi line text
-                    errorMessage = string.Join(Environment.NewLine, errors);
-                    return (exportOptions, false, errorMessage);
-                }
-            }
-            else
-            {
-                if ((exportOptions.Site!.LastDay.Date < fromdate.Date) || (exportOptions.Site!.FirstDay.Date > todate.Date))
-                {
-                    errors.Add($"Error: Site {exportOptions.Site!.Code} has data from {exportOptions.Site!.FirstDay:dd-MMM-yyyy} to {exportOptions.Site!.LastDay:dd-MMM-yyyy} - which is outside the date range specified. ");
-                    errorMessage = string.Join(Environment.NewLine, errors);
-                    return (exportOptions, false, errorMessage);
-
-                }
-            }
-            exportOptions.IntervalInMinutes = _Interval<= 0 ? null : _Interval;
 
 
 
-            if (!exportFormatNames.ContainsKey(_exportFormatText))
-            {
-                errors.Add($"Error: Format {_exportFormatText} is not valid.");
-                errorMessage = string.Join(Environment.NewLine, errors);
-                return (exportOptions, false, errorMessage);
-            }
-
-            exportOptions.ExportType = exportFormatNames[_exportFormatText];
-            exportOptions.FromDate = fromdate;
-            exportOptions.ToDate = todate;
-            exportOptions.IncludeChannel = _IncludeChannel;
-            exportOptions.IncludeHeader = _IncludeHeader;
-            exportOptions.IncludeMeter = _IncludeMeter;
-            exportOptions.IncludeSite = _IncludeSite;
-            errorMessage = errors.Any() ? string.Join(Environment.NewLine, errors) : string.Empty;
-
-            return (exportOptions, true, errorMessage);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return (null, false, "Internal validation error");
-        }
-
-    }
 
 
-
-    // void SetDateRangeFromSite()
-    // {
-    //     var site = _exportOptions.Site;
-    //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite [{site?.Code}]   {site?.FirstDay:dd-MMM-yy}=={site?.LastDay:dd-MMM-yy}");
-    //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite [{_exportOptions.FromDate:dd-MMM-yy}**{_exportOptions.ToDate:dd-MMM-yy}");
-
-    //     if (site == null || site.FirstDay == DateTime.MinValue || site.LastDay == DateTime.MinValue || site.FirstDay > site.LastDay)
-    //     {
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: will not set date range ");
-    //         return;
-    //     }
-    //     if (_exportOptions.FromDate == null || _exportOptions.ToDate == null)
-    //     {
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: will set date range ");
-    //         _exportOptions.FromDate = site.FirstDay;
-    //         _exportOptions.ToDate = site.LastDay;
-    //         return;
-    //     }
-    //     if (_exportOptions.ToDate.Value > site.LastDay)
-    //     {
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: decrease last day  ");
-    //         _exportOptions.ToDate = site.LastDay;
-    //         if (_exportOptions.FromDate.Value > _exportOptions.ToDate)
-    //         {
-    //             Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: decrease First day to be in range  ");
-    //             _exportOptions.FromDate = site.FirstDay;
-    //             if (_exportOptions.FromDate.Value < _exportOptions.ToDate.Value.AddYears(-2))
-    //             {
-    //                 Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: Limit range   ");
-    //                 _exportOptions.FromDate = _exportOptions.ToDate.Value.AddYears(-2);
-    //             }
-
-    //         }
-    //     }
-
-
-
-    //     if (_exportOptions.FromDate.Value < site.FirstDay || _exportOptions.FromDate.Value > site.LastDay)
-    //     {
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: increase First day  ");
-    //         _exportOptions.FromDate = site.FirstDay;
-    //         if (_exportOptions.ToDate.Value < _exportOptions.FromDate.Value)
-    //         {
-    //             Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: increase to date to be in range  ");
-    //             _exportOptions.ToDate = site.LastDay;
-    //             if (_exportOptions.FromDate.Value < _exportOptions.ToDate.Value.AddYears(-2))
-    //             {
-    //                 Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: Limit range #2   ");
-    //                 _exportOptions.FromDate = _exportOptions.ToDate.Value.AddYears(-2);
-    //             }
-
-    //         }
-
-
-
-    //     }
-
-
-
-    //     if (_exportOptions.FromDate.Value < _exportOptions.ToDate.Value.AddYears(-2))
-    //     {
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite: Limit range   ");
-    //         _exportOptions.FromDate = _exportOptions.ToDate.Value.AddYears(-2);
-    //     }
-    //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} SetDateRangeFromSite [{_exportOptions.FromDate:dd-MMM-yy}++{_exportOptions.ToDate:dd-MMM-yy}");
-    // }
-
-    void UpdateIncludeHeader(bool value)
-    {
-
-        _IncludeHeader = value;
-
-    }
-
-    void UpdateIncludeSite(bool value)
-    {
-
-        _IncludeSite = value;
-
-    }
-    void UpdateIncludeMeter(bool value)
-    {
-
-        _IncludeMeter = value;
-
-    }
-    void UpdateIncludeChannel(bool value)
-    {
-
-        _IncludeChannel = value;
-    }
-
-    // async Task UpdateFileContents()
-    // {
-    //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} start UpdateFileContents {_exportOptions.Site?.Code}");
-    //     this._fileContents = $"Process Site {_exportOptions.Site?.Code}";
-    //     await InvokeAsync(StateHasChanged);
-
-    //     if (_exportOptions.Site == null)
-    //     {
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} no sites UpdateFileContents {_exportOptions.Site?.Code} ");
-    //         this._fileContents = "No site selected";
-    //         this._dataDownload = string.Empty;
-    //         return;
-    //     }
-    //     try
-    //     {
-
-    //         Console.WriteLine("call CreateTheExportFile");
-    //         await CreateTheExportFile();
-    //         Console.WriteLine("completed  CreateTheExportFile");
-    //     }
-    //     catch (OperationCanceledException)
-    //     {
-    //         Console.WriteLine("****cancelled****");
-    //         this._dataDownload = string.Empty;
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine(ex);
-    //         this._fileContents = "An error occurred: " + ex.Message;
-    //         this._dataDownload = string.Empty;
-    //     }
-
-
-    //     //_timer1 = new Timer(async (e) => await CreateTheExportFile(), null, 300, Timeout.Infinite);
-
-    //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} call state has changed  UpdateFileContents {_exportOptions.Site?.Code} ");
-    //     await InvokeAsync(StateHasChanged);
-    //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} end UpdateFileContents {_exportOptions.Site?.Code} ");
-    // }
-
-    async Task CreateTheExportFile(ExportOptions exportOptions)
-    {
-
-        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} start CreateTheExportFile {exportOptions.Site?.Code}");
-        try
-        {
-            this.Cancel();
-            _cts = new CancellationTokenSource();
-            var cancellationToken = _cts.Token;
-            await Task.Delay(MillisecondsDelay, cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
-            this._fileContents = "Processing...";
-            this._dataDownload = string.Empty;
-            _ExportInProgress = true;
-            await InvokeAsync(StateHasChanged);
-            await Task.Yield();
-
-            _dataDownload = await API.Export(exportOptions, cancellationToken);
-
-            if (_dataDownload.Length > MaxTextToDisplayInBrowser)
-            {
-                this._fileContents = _dataDownload[..MaxTextToDisplayInBrowser] + Environment.NewLine + "<<<<<<< Contents have been truncated - Use file download to see all data >>>>>>>";
-
-            }
-            else
-            {
-                this._fileContents = _dataDownload;
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            this._dataDownload = string.Empty;
-            this._fileContents = "Cancelled";
-        }
-        catch (Exception ex)
-        {
-            this._fileContents = "An error occurred: " + ex.Message;
-            this._dataDownload = string.Empty;
-        }
-        finally
-        {
-            _ExportInProgress = false;
-            await InvokeAsync(StateHasChanged);
-
-        }
-        //   Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} end CreateTheExportFile {_exportOptions.Site?.Code} ");
-    }
-
-    async Task DoDownload()
-    {
-        try 
-        {
-            _ExportInProgress = true;
-            await InvokeAsync(StateHasChanged);
-            Cancel();
-            _cts = new CancellationTokenSource();
-            var (exportOptions ,  isValid,   errorMessage) = ValidateInput();
-            if (!isValid || exportOptions == null )
-            {
-                _inputIsValid = false; 
-                _fileContents = errorMessage;
-
-                return;
-            }
-            var options = exportOptions!.Value;
-
-
-            var (fileStream, isZip, preview) = await API.ExportMultiFile(options, _cts.Token);
-            _fileContents = preview;
-            string filename = 
-                isZip ? $"MultiSite_{options.FromDate:yyyyMMdd}_{options.ToDate:yyyyMMdd}_{options.ExportType.ToString().ToLower()}.zip"
-                : $"{options.Site?.Code}_{options.FromDate:yyyyMMdd}_{options.ToDate:yyyyMMdd}_{options.ExportType.ToString().ToLower()}.csv";
-            using var streamRef = new DotNetStreamReference(stream: fileStream);
-            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", filename , streamRef);
-
-        }
-        catch (ArgumentException ex)
-        {
-            _fileContents = "Input invalid :" + ex.Message;
-            Console.WriteLine(ex);
-
-        }
-
-        catch (Exception ex)
-        {
-            _fileContents = "Error processing request"; 
-            Console.WriteLine(ex);
-
-        }
-        finally
-        {
-            _ExportInProgress = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-
-    //     try
-    //     {
-    //         if (_dataDownload.Length == 0)
-    //         {
-    //             Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  downloadFile - create export  ");
-    //             await CreateTheExportFile();
-    //         }
-    //         if (_dataDownload.Length == 0)
-    //         {
-    //             Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  downloadFile - empty and return  ");
-    //             return;
-    //         }
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  downloadFile - get bytes  ");
-    //         var bytes = System.Text.Encoding.UTF8.GetBytes(_dataDownload);
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  downloadFile - create mem stream  ");
-    //         var fileStream = new MemoryStream(bytes);
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  downloadFile - create stream ref   ");
-    //         using var streamRef = new DotNetStreamReference(stream: fileStream);
-
-    //         string filename = $"{_exportOptions.Site?.Code}_{_exportOptions.FromDate:yyyyMMdd}_{_exportOptions.ToDate:yyyyMMdd}_{_exportOptions.ExportType.ToString().ToLower()}.csv";
-    //         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff}  downloadFile - call javascript with filename {filename} ");
-
-    //         await JSRuntime.InvokeVoidAsync("downloadFileFromStream", filename , streamRef);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine(ex);
-    //     }
-    //     finally
-    //     {
-    //         _ExportInProgress = false;
-    //         await InvokeAsync(StateHasChanged);
-    //     }
-
-    // }
 
     public bool DownloadButtonDisabled()
     {

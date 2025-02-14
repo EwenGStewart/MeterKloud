@@ -20,7 +20,7 @@ namespace MeterDataLib.Export
                 .ThenBy(x => x.Key.Date)
                 .ThenBy(x => x.Key.ChannelNum)
                 .ThenBy(x => x.Key.Serial)
-                .Where(x => x.Key.Date >= options.FromDate && x.Key.Date <= options.ToDate)
+         
                 .Where(x => x.Any(y => y.cd.Ignore == false && options.ChannelTypes.Contains(y.cd.ChannelType) && y.cd.IntervalMinutes > 0 && y.cd.Readings.Length != 0))
                 .ToList();
 
