@@ -86,14 +86,18 @@
                                 </PickerActions>
                             </MudDateRangePicker>
 
-                            <MudSelect Label="Interval" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="True" T="int?"
-                            value=displayModel.Interval ValueChanged="DoValueChangedInterval">
-                                <MudSelectItem T="int?" Value="0" >Use the value stored by the meter</MudSelectItem>
-                                <MudSelectItem T="int?" Value="30">30 minutes</MudSelectItem>
-                                <MudSelectItem T="int?" Value="15">15 minutes</MudSelectItem>
-                                <MudSelectItem T="int?" Value="5">5 minutes</MudSelectItem>
-                                <MudSelectItem T="int?" Value="1">1 Minute</MudSelectItem>
+                            <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Range" Value=displayModel.ExportIntervalName 
+                                ValueChanged="DoValueChangedInterval">
+                                @foreach (var item in displayModel.ExportIntervals)
+                                {
+                                    <MudSelectItem T="string" Value=@(item)></MudSelectItem>
+                                }
                             </MudSelect>
+
+
+                            
+
+
                             <MudGrid Spacing="0">
                                 <MudItem sm="12" md="6">
                                     <MudCheckBox Value=displayModel.IncludeHeader ValueChanged=DoValueChangedIncludeHeader T="bool" Size="Size.Medium" Color="Color.Tertiary" ReadOnly=@displayModel.IncludeHdrReadonly>Add Header</MudCheckBox>
@@ -299,10 +303,10 @@
         await ProcessFormChanges();
     }
 
-    async Task DoValueChangedInterval(int? value)
+    async Task DoValueChangedInterval(string value)
     {
 
-        displayModel.Interval = value??0;
+        displayModel.ExportIntervalName = value;
         await ProcessFormChanges();
     }
 
@@ -546,8 +550,14 @@
         private Dictionary<string, Site> _sites = [];
         static readonly Dictionary<string, ExportFormat> exportFormatNames = new Dictionary<string, ExportFormat> { { "NEM12", ExportFormat.NEM12 }, { "Quadrant CSV", ExportFormat.QuadrantCSV }, { "Columnar CSV", ExportFormat.ColumnarCSV }, { "Row CSV", ExportFormat.RowCSV } };
 
-
-
+        static readonly Dictionary<string, int> exportIntervalNames = new Dictionary<string, int> 
+        { 
+            { "Use the value stored by the meter", 0 }, 
+            { "30 minutes", 30 },
+            { "15 minutes", 15},
+            { "5 minutes", 5 },
+            { "1 minute (Not NEM12)", 1 }
+        };
 
         bool _IncludeHdrReadonly = true;
         bool _IncludeSiteReadonly = true;
@@ -723,6 +733,31 @@
         }
 
 
+        public List<string> ExportIntervals => exportIntervalNames.Keys.ToList();
+        private int _exportInterval = 0;
+        public int Interval => _exportInterval;
+        public string ExportIntervalName
+        {
+            get
+            {
+                var item = exportIntervalNames.FirstOrDefault(xxx => xxx.Value == _exportInterval);
+                if (item.Equals(default(KeyValuePair<string, int>)))
+                {
+                    return exportIntervalNames.First().Key;
+                }
+                return item.Key;
+            }
+            set
+            {
+                // validate the value
+                if (exportIntervalNames.ContainsKey(value))
+                {
+                    _exportInterval = exportIntervalNames[value];
+                }
+            }
+        }
+
+
 
         public List<string> ExportPeriods => exportPeriodNames.Keys.ToList();
         private ExportPeriod _exportPeriod = ExportPeriod.LastYearOfSiteData;
@@ -808,12 +843,7 @@
 
 
 
-        private int _interval = 0;
-        public int Interval
-        {
-            get { return _interval; }
-            set { _interval = value; }
-        }
+ 
 
 
         public bool IncludeHdrReadonly => _IncludeHdrReadonly;
