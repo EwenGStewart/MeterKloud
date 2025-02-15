@@ -33,7 +33,7 @@
 
 
                             <MudSelect T="string" Value="displayModel.SelectedSite" ValueChanged=DoValueChangedSelectedSites Variant="Variant.Outlined" Margin="Margin.Dense" Label="Site" Placeholder="select a site"
-                                       MultiSelection="displayModel.MultiSite" Required>
+                            MultiSelection="displayModel.MultiSite" Required>
                                 @if (displayModel.SiteNames.Any())
                                 {
                                     foreach (var site in displayModel.SiteNames)
@@ -68,8 +68,8 @@
 
 
                             <MudDateRangePicker @ref="_picker" Variant="Variant.Outlined" PickerVariant="@PickerVariant.Inline"
-                                                DateRange="@displayModel.DateRange" DateRangeChanged=DoValueChangedDateRange DateFormat="dd-MMM-yy" TitleDateFormat="dd-MMM-yy"
-                                                Margin="Margin.Dense" Label="Date Range" AutoClose=false ReadOnly=@(!displayModel.DateRangeEnabled)>
+                            DateRange="@displayModel.DateRange" DateRangeChanged=DoValueChangedDateRange DateFormat="dd-MMM-yy" TitleDateFormat="dd-MMM-yy"
+                            Margin="Margin.Dense" Label="Date Range" AutoClose=false ReadOnly=@(!displayModel.DateRangeEnabled)>
                                 <PickerActions>
 
 
@@ -87,7 +87,7 @@
                             </MudDateRangePicker>
 
                             <MudSelect Label="Interval" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="True" T="int"
-                                       value=displayModel.Interval ValueChanged="DoValueChangedInterval">
+                            value=displayModel.Interval ValueChanged="DoValueChangedInterval">
                                 <MudSelectItem T="int" Value="0">Use the value stored by the meter</MudSelectItem>
                                 <MudSelectItem T="int" Value="30">30 minutes</MudSelectItem>
                                 <MudSelectItem T="int" Value="15">15 minutes</MudSelectItem>
@@ -116,9 +116,9 @@
 
                     <MudStack Row=true>
                         <MudButton Disabled="@DownloadButtonDisabled()" OnClick="@(async () => await DownloadFileAsync())"
-                                   Variant="Variant.Filled"
-                                   EndIcon="@Icons.Material.Filled.ArrowDownward"
-                                   Color="Color.Info">
+                        Variant="Variant.Filled"
+                        EndIcon="@Icons.Material.Filled.ArrowDownward"
+                        Color="Color.Info">
                             <MudStack Row=true>
                                 <MudText>@(DownloadButtonText())</MudText>
                             </MudStack>
@@ -191,7 +191,7 @@
                             <MudPaper Style="background-color:black; color:white; height:80vh; overflow:scroll">
                                 <pre>
                                     @((MarkupString)_FileContents)
-                                    </pre>
+                                </pre>
                             </MudPaper>
 
                         }
@@ -349,7 +349,7 @@
 
         _timer = new Timer();
         _timer.AutoReset = false;
-        _timer.Interval = 100;
+        _timer.Interval = 250;
         _timer.Elapsed += async (sender, e) => await ProcessFormChangesWorkload(cancellationToken);
         _timer.Start();
         await Task.Yield();
@@ -378,20 +378,24 @@
             _inputIsValid = true;
             _ErrorText = string.Empty;
             _FileContents = displayModel.PreviewText;
+            _ValidationInProgress = false ;
+        }
+        catch (OperationCanceledException)
+        {
+             
+
 
         }
-        catch (TaskCanceledException)
-        { }
 
         catch (ArgumentException ex)
         {
 
             Console.WriteLine(ex);
-
             _ErrorText = ex.Message;
             _inputIsValid = false;
             _FileContents = _ErrorText;
             _SiteDaysToExport = 0;
+            _ValidationInProgress = false;
 
         }
         catch (Exception ex)
@@ -401,10 +405,11 @@
             _inputIsValid = false;
             _FileContents = _ErrorText;
             _SiteDaysToExport = 0;
+            _ValidationInProgress = false;
         }
         finally
         {
-            _ValidationInProgress = false;
+
             await InvokeAsync(StateHasChanged);
             await Task.Yield();
         }
@@ -419,6 +424,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        await displayModel.InitSiteList();
+
         await ProcessFormChanges();
     }
 
@@ -496,15 +503,21 @@
             #endif
             token.ThrowIfCancellationRequested();
             await JSRuntime.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            
+            
+
 
 
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
             Console.WriteLine("DEBUG: DownloadFileAsync Cancelled");
             _ErrorText = "Download Cancelled";
             _inputIsValid = false;
+            
+
         }
+        
         catch (Exception ex)
         {
             Console.WriteLine("DEBUG: DownloadFileAsync Exception");
@@ -512,6 +525,7 @@
             _ErrorText = "Error creating file";
             _inputIsValid = false;
             _FileContents = string.Empty;
+            
         }
         finally
         {
@@ -528,7 +542,7 @@
     class DownloadDisplayModel
     {
         private readonly MeterKloudClientApi _api;
-        private readonly Dictionary<string, Site> _sites;
+        private Dictionary<string, Site> _sites = [];
         static readonly Dictionary<string, ExportFormat> exportFormatNames = new Dictionary<string, ExportFormat> { { "NEM12", ExportFormat.NEM12 }, { "Quadrant CSV", ExportFormat.QuadrantCSV }, { "Columnar CSV", ExportFormat.ColumnarCSV }, { "Row CSV", ExportFormat.RowCSV } };
 
 
@@ -555,11 +569,16 @@
         static readonly Dictionary<string, ExportPeriod> exportPeriodNames = new Dictionary<string, ExportPeriod> { { "Last year of Site Data", ExportPeriod.LastYearOfSiteData }, { "Last 2 years of Site Data", ExportPeriod.Last2YearsOfSiteData }, { "Last 6 months of Site Data", ExportPeriod.Last6MonthsOfSiteData }, { "Last 3 months of Site Data", ExportPeriod.Last3MonthsOfSiteData }, { "Last month of Site Data", ExportPeriod.LastMonthOfSiteData }, { "Last 12 calendar months", ExportPeriod.Last12CalendarMonths }, { "Last 6 calendar months", ExportPeriod.Last6CalendarMonths }, { "Last 3 calendar months", ExportPeriod.Last3CalendarMonths }, { "Last month", ExportPeriod.LastMonth }, { "Custom Date Range", ExportPeriod.CustomDateRange } };
 
 
-
         public DownloadDisplayModel(MeterKloudClientApi api)
         {
             _api = api;
-            var list = (_api.GetSites()).GetAwaiter().GetResult();
+            this.ExportFormatName = exportFormatNames.First().Key;
+        }
+
+        public async Task InitSiteList()
+        {
+
+            var list = await _api.GetSites();
             if (list.Any())
             {
                 //create dictionary of sites
@@ -571,7 +590,7 @@
             }
 
             // get the last site accessed
-            var lastSite = (_api.GetLastSiteAccessed()).GetAwaiter().GetResult();
+            var lastSite = await _api.GetLastSiteAccessed(); 
             if (lastSite != null)
             {
                 if (_sites.ContainsKey(lastSite.Code))
@@ -579,10 +598,13 @@
                     SelectedSite = lastSite.Code.ToUpperInvariant();
                 }
             }
-            this.ExportFormatName = exportFormatNames.First().Key;
-
-
+           
         }
+
+
+
+
+
 
         public bool MultiSiteEnabled => _sites.Count > 1;
         public bool MultiSiteDisabled => !MultiSiteEnabled;
