@@ -6,7 +6,7 @@ namespace MeterDataLib.Export
 {
     public static class ExportData
     {
-        public const int MaxDays = 366 * 4;
+        public const int MaxDays = 365 * 10;
         private static readonly ChanelType[] StandardChannelTypes = [ChanelType.ActiveEnergyConsumption, ChanelType.ActiveEnergyGeneration, ChanelType.ReactiveEnergyConsumption, ChanelType.ReactiveEnergyGeneration];
 
         
@@ -104,8 +104,8 @@ namespace MeterDataLib.Export
                         var bytes = Encoding.UTF8.GetBytes(siteOutput);
                         await entryStream.WriteAsync(bytes, cancellationToken ?? CancellationToken.None);
                         ++entryNumber;
-                      
-                  
+                        await Task.Yield();
+
                 }
                 if(entryNumber == 0)
                 {
