@@ -86,13 +86,13 @@
                                 </PickerActions>
                             </MudDateRangePicker>
 
-                            <MudSelect Label="Interval" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="True" T="int"
+                            <MudSelect Label="Interval" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="True" T="int?"
                             value=displayModel.Interval ValueChanged="DoValueChangedInterval">
-                                <MudSelectItem T="int" Value="0">Use the value stored by the meter</MudSelectItem>
-                                <MudSelectItem T="int" Value="30">30 minutes</MudSelectItem>
-                                <MudSelectItem T="int" Value="15">15 minutes</MudSelectItem>
-                                <MudSelectItem T="int" Value="5">5 minutes</MudSelectItem>
-                                <MudSelectItem T="int" Value="1">1 Minute</MudSelectItem>
+                                <MudSelectItem T="int?" Value="0" >Use the value stored by the meter</MudSelectItem>
+                                <MudSelectItem T="int?" Value="30">30 minutes</MudSelectItem>
+                                <MudSelectItem T="int?" Value="15">15 minutes</MudSelectItem>
+                                <MudSelectItem T="int?" Value="5">5 minutes</MudSelectItem>
+                                <MudSelectItem T="int?" Value="1">1 Minute</MudSelectItem>
                             </MudSelect>
                             <MudGrid Spacing="0">
                                 <MudItem sm="12" md="6">
@@ -299,9 +299,10 @@
         await ProcessFormChanges();
     }
 
-    async Task DoValueChangedInterval(int value)
+    async Task DoValueChangedInterval(int? value)
     {
-        displayModel.Interval = value;
+
+        displayModel.Interval = value??0;
         await ProcessFormChanges();
     }
 
