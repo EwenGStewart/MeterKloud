@@ -317,31 +317,15 @@ namespace MeterKloud
 
         public async Task<string> Export(ExportOptions options, CancellationToken? cancellationToken)
         {
-            if (!options.SiteDays.Any() && options.Site != null )
-            {
-                // get the site data 
-                if (meterDataStorageManager == null)
-                {
-                    throw new Exception("Storage Manager not initialized");
-                }
-                if ( options.FromDate != null || options.ToDate != null)
-                {
-                    cancellationToken?.ThrowIfCancellationRequested();
-                    options.SiteDays = await GetSiteDays(options.Site.Id, options.FromDate!.Value, options.ToDate!.Value);
-                    cancellationToken?.ThrowIfCancellationRequested();
-                }
-                else
-                {
-                    options.SiteDays = await GetSiteDays(options.Site.Id);
-                }
-            }
-            cancellationToken?.ThrowIfCancellationRequested();
-            
-            var result = await  MeterDataLib.Export.ExportData.ExportAsync(options, cancellationToken);
+            var result = await MeterDataLib.Export.ExportData.ExportSiteDataToTextAsync(options, cancellationToken);
             return result;
         }
 
-
+        public async Task<Stream> ExportMultiFile(ExportOptions options, CancellationToken? cancellationToken)
+        {
+            var result = await MeterDataLib.Export.ExportData.ExportMultiSitesToMultiFiles(options, cancellationToken);
+            return result;
+        }
 
 
 

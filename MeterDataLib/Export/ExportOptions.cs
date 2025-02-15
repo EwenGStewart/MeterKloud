@@ -30,13 +30,12 @@ namespace MeterDataLib.Export
         {
         }
 
-        public Site? Site { get; set; }
-        public List<Site> Sites { get; set; } = [];
 
+
+ 
         public IEnumerable<SiteDay> SiteDays { get; set; } = [];
 
-        public DateTime? FromDate { get; set; }
-        public DateTime? ToDate { get; set; }
+ 
 
 
 

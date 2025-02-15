@@ -16,7 +16,7 @@ namespace MeterDataLib.Export
                 .ThenBy(x => x.Key.Date)
                 .ThenBy(x => x.Key.ChannelNumber)
                 .ThenBy(x => x.Key.Channel)
-                .Where(x => x.Key.Date >= options.FromDate && x.Key.Date <= options.ToDate)
+    
                 .ToList();
 
             await Task.Yield(); cancellationToken?.ThrowIfCancellationRequested();

@@ -76,7 +76,7 @@
         try
         {
             Console.WriteLine("PUT");
-            await Task.Delay(1);
+            await Task.Yield();
             storageSite.DbTimeStampUtc = DateTime.UtcNow;
             await Db.SetValueAsync<MeterDataLib.Site>("sites", storageSite);
             Console.WriteLine("Site saved");
@@ -119,7 +119,7 @@
         try
         {
             Console.WriteLine("PUT");
-            await Task.Delay(1);
+            await Task.Yield();
             storageSite.DbTimeStampUtc = DateTime.UtcNow;
             await Db.SetValueAsync<MeterDataLib.Site>("sites", storageSite);
             Console.WriteLine("Site saved");

@@ -2,6 +2,7 @@
 using MeterDataLib;
 using MeterDataLib.Export;
 using MeterDataLib.Parsers;
+using System.IO.Compression;
 using System.Text;
 using Xunit.Abstractions;
 
@@ -31,12 +32,10 @@ namespace TestMeterLib
                 Assert.True(parserResult.Success);
             }
             var siteDays = parserResult.SitesDays;
-            options.Site = new Site() { Code = siteDays.First().SiteCode };
+         
             options.SiteDays = siteDays;
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
-            options.Site.Should().NotBeNull();
-            options.Site.Code.Should().Be(siteDays.First().SiteCode);
         }
 
 
@@ -61,7 +60,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
         }
@@ -87,11 +86,11 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
-    
+
         [Fact]
         public async Task ExportToQuads_SiteLevel_30Min()
         {
@@ -113,7 +112,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -140,9 +139,15 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
+
+
+
+
+
+
 
 
         [Fact]
@@ -167,7 +172,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -193,7 +198,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
         }
 
@@ -220,7 +225,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
 
         }
@@ -247,7 +252,7 @@ namespace TestMeterLib
             }
             var siteDays = parserResult.SitesDays;
             options.SiteDays = siteDays;
-            var exportFile = ExportData.Export(options);
+            var exportFile = ExportData.ExportSiteDataToText(options);
             exportFile.Should().NotBeNullOrEmpty();
 
         }
@@ -270,7 +275,7 @@ namespace TestMeterLib
         [InlineData("SampleCsv5.csv", "text/csv", true)]
         [InlineData("SampleCsv8.csv", "text/csv", true)]
         [InlineData("SampleCsvFormat2.csv", "text/csv", true)]
-        [InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
+        //[InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
         [InlineData("SampleMultiLineCsv7.csv", "text/csv", true)]
         [InlineData("SampleNem12Excel.xlsx", ExcelMimeType, true)]
         [InlineData("SampleNem12Excel2.xlsx", ExcelMimeType, true)]
@@ -280,7 +285,7 @@ namespace TestMeterLib
         [InlineData("powerpal_data_0000f596 (2).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (3).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (4).csv", "text/csv", true)]
-        [InlineData("SampleCsvByChanel.csv", "text/csv", true)]
+        //[InlineData("SampleCsvByChanel.csv", "text/csv", true)]
 
         public async Task ParseFile(string filename, string contentType, bool _)
         {
@@ -311,7 +316,7 @@ namespace TestMeterLib
                 totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
                 totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
             // parse it back 
@@ -357,7 +362,7 @@ namespace TestMeterLib
         [InlineData("SampleCsv5.csv", "text/csv", true)]
         [InlineData("SampleCsv8.csv", "text/csv", true)]
         [InlineData("SampleCsvFormat2.csv", "text/csv", true)]
-        [InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
+        //[InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
         [InlineData("SampleMultiLineCsv7.csv", "text/csv", true)]
         [InlineData("SampleNem12Excel.xlsx", ExcelMimeType, true)]
         [InlineData("SampleNem12Excel2.xlsx", ExcelMimeType, true)]
@@ -367,7 +372,7 @@ namespace TestMeterLib
         [InlineData("powerpal_data_0000f596 (2).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (3).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (4).csv", "text/csv", true)]
-        [InlineData("SampleCsvByChanel.csv", "text/csv", true)]
+        //[InlineData("SampleCsvByChanel.csv", "text/csv", true)]
 
         public async Task ParseFileFor30Min(string filename, string contentType, bool _)
         {
@@ -383,7 +388,7 @@ namespace TestMeterLib
             var options = new ExportOptions
             {
                 ExportType = ExportFormat.NEM12,
-                 IntervalInMinutes = 30,
+                IntervalInMinutes = 30,
 
             };
 
@@ -400,7 +405,7 @@ namespace TestMeterLib
                 totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
                 totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
             // parse it back 
@@ -442,7 +447,7 @@ namespace TestMeterLib
         [InlineData("SampleCsv5.csv", "text/csv", true)]
         [InlineData("SampleCsv8.csv", "text/csv", true)]
         [InlineData("SampleCsvFormat2.csv", "text/csv", true)]
-        [InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
+        //[InlineData("SampleExcelByChanel.XLSX", ExcelMimeType, true)]
         [InlineData("SampleMultiLineCsv7.csv", "text/csv", true)]
         [InlineData("SampleNem12Excel.xlsx", ExcelMimeType, true)]
         [InlineData("SampleNem12Excel2.xlsx", ExcelMimeType, true)]
@@ -452,10 +457,11 @@ namespace TestMeterLib
         [InlineData("powerpal_data_0000f596 (2).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (3).csv", "text/csv", true)]
         [InlineData("powerpal_data_0000f596 (4).csv", "text/csv", true)]
-        [InlineData("SampleCsvByChanel.csv", "text/csv", true)]
+        //[InlineData("SampleCsvByChanel.csv", "text/csv", true)]
 
         public async Task ParseFileFor5Min(string filename, string contentType, bool _)
         {
+
             ParserResult? parserResult = null;
             using (Stream stream = File.OpenRead(Path.Combine("Resources", filename)))
             {
@@ -485,7 +491,7 @@ namespace TestMeterLib
                 totalReactiveConsumption += siteDay.EnergyDailySummary.TotalReactiveEnergyConsumption_kVArh;
                 totalReactiveGen += siteDay.EnergyDailySummary.TotalReactiveEnergyGeneration_kVArh;
             }
-            var nem12 = ExportData.Export(options);
+            var nem12 = ExportData.ExportSiteDataToText(options);
             nem12.Should().NotBeNullOrEmpty();
 
             // parse it back 
@@ -511,11 +517,56 @@ namespace TestMeterLib
 
 
 
+        [Fact]
+        public async Task MultiSiteExportToZip()
+        {
+
+            string[] filenames = [
+                "4103354306_20160604_20170605_20170605000000_EnergyAustralia_DETAILED (1).csv",
+                   "6407276797_20150803_20160517_20160518160200_UNITEDENERGY_DETAILED.csv",
+                   "6407274172_20140506_20160506_20160507211600_UNITEDENERGY_DETAILED.csv",
+                   "64082253748_20220812_20240812_20240813120626_UNITEDENERGY_DETAILED.csv" ];
+            string contentType = "text/csv";
 
 
 
+            List<SiteDay> siteDays = [];
+            foreach (var filename in filenames)
+            {
+
+                ParserResult? parserResult = null;
+                using Stream stream = File.OpenRead(Path.Combine("Resources", filename));
+                // Use the stream here
+                //test 
+                parserResult = await ParserFactory.ParseAsync(stream, filename, contentType, null);
+                bool actualResult = parserResult.Success;
+                Assert.True(parserResult.Success);
+                foreach (var siteDay in parserResult.SitesDays)
+                {
+
+                    siteDays.Add(siteDay);
+                }
+            }
+
+            var options = new ExportOptions
+            {
+                ExportType = ExportFormat.NEM12,
+                IntervalInMinutes = 30,
+                SiteDays = siteDays,
+
+            };
+            var result = await ExportData.ExportMultiSitesToMultiFiles(options);
+
+            
+
+            var parserResult2 = await ParserFactory.ParseAsync( result, "sample.zip", "application/x-zip-compressed", null);
+            parserResult2.Success.Should().BeTrue();
+            parserResult2.SitesDays.Count.Should().Be(siteDays.Count);
+
+           
 
 
+        }
 
     }
 

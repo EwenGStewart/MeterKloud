@@ -1,98 +1,49 @@
-﻿using System.Text;
+﻿using MeterDataLib.Storage;
+using System.IO.Compression;
+using System.Text;
 
 namespace MeterDataLib.Export
 {
     public static class ExportData
     {
-        const int MaxDays = 366 * 4;
+        public const int MaxDays = 365 * 10;
         private static readonly ChanelType[] StandardChannelTypes = [ChanelType.ActiveEnergyConsumption, ChanelType.ActiveEnergyGeneration, ChanelType.ReactiveEnergyConsumption, ChanelType.ReactiveEnergyGeneration];
 
-        public static string Export(ExportOptions options)
+        
+        
+        
+        
+        
+        public static string ExportSiteDataToText(ExportOptions options )
         {
-                var result = ExportAsync(options, null).GetAwaiter().GetResult();
+                var result = ExportSiteDataToTextAsync(options, null ).GetAwaiter().GetResult();
                 return result;  
 
         }
 
 
-        public static async Task<string> ExportAsync(ExportOptions options , CancellationToken? cancellationToken)
+        public static async Task<string> ExportSiteDataToTextAsync(ExportOptions options , CancellationToken? cancellationToken = null  )
         {
-
-            cancellationToken?.ThrowIfCancellationRequested();
-
-            if (options.Site != null)
+            
+            
+           
+ 
+            var exportableDays = options.SiteDays.Count();
+            if (exportableDays == 0)
             {
-
-                options.Sites.Add(options.Site);
-                options.Site = null;
+                throw new ArgumentException("No days has been requested to export. [Code:P1UJBB]");
+            }
+            if (exportableDays > MaxDays)
+            {
+                throw new ArgumentException("Too many days to export, [Code:PXCIXD]");
             }
 
-            if (options.Sites.Count == 0)
-            {
-                var codes = options.SiteDays.Where(x => !string.IsNullOrWhiteSpace(x.SiteCode)).Select(x => x.SiteCode.ToUpperInvariant().Trim()).Distinct().ToList();
-                if (codes.Count > 0)
-                {
-                    foreach (var code in codes)
-                    {
-                        var site = new Site() { Code = code };
-                        if (site != null)
-                        {
-                            options.Sites.Add(site);
-                        }
-                    }
-                }
-            }
-
-
-            if (options.Sites.Count == 0)
-            {
-                throw new ArgumentException("No sites specified or found");
-            }
-
-
-
-            DateTime minDate = options.SiteDays.Min(x => x.Date);
-            DateTime maxDate = options.SiteDays.Max(x => x.Date);
-            if (options.FromDate == null)
-            {
-                options.FromDate = minDate;
-            }
-            if (options.ToDate == null)
-            {
-                options.ToDate = maxDate;
-            }
-            if (options.FromDate > maxDate || options.ToDate < minDate)
-            {
-                throw new ArgumentException("No data in date range");
-            }
-
-
-            if (options.FromDate > options.ToDate)
-            {
-                throw new ArgumentException("Invalid date range");
-            }
-
-
-            if (options.ToDate.Value.Subtract(options.FromDate.Value).TotalDays > MaxDays)
-            {
-                throw new ArgumentException($"Date range exceeds max of {MaxDays} days");
-            }
-
-
-            var siteCodes = options.Sites.Select(x => x.Code.Trim().ToUpper()).Distinct().ToList();
-            var exportableDays = options.SiteDays.Where(x => x.Date >= options.FromDate.Value && x.Date <= options.ToDate.Value && siteCodes.Contains(x.SiteCode.Trim().ToUpperInvariant())).ToList();
-            if (exportableDays.Count == 0)
-            {
-                throw new ArgumentException("No data in date range for specified sites can be exported");
-            }
-
-            options.SiteDays = exportableDays;
 
             if (options.ChannelTypes.Count == 0)
             {
                 if (options.ExportType == ExportFormat.ColumnarCSV || options.ExportType == ExportFormat.RowCSV)
                 {
-                    options.ChannelTypes =  options.SiteDays.SelectMany(x => x.Channels.Values).Select(x => x.ChannelType).Distinct().ToList();
+                    options.ChannelTypes = [.. options.SiteDays.SelectMany(x => x.Channels.Values).Select(x => x.ChannelType).Distinct()];
                 }
                 else
                 {
@@ -101,6 +52,7 @@ namespace MeterDataLib.Export
             }
 
             var writer = new StringBuilder();
+
 
             switch (options.ExportType)
             {
@@ -111,21 +63,76 @@ namespace MeterDataLib.Export
                     await QuadrantExporter.ExportQuadrantCSV(options, writer, cancellationToken);
                     break;
                 case ExportFormat.ColumnarCSV:
-                     await ColumnExporter.ExportColumnCSV(options, writer, cancellationToken);
+                    await ColumnExporter.ExportColumnCSV(options, writer, cancellationToken);
                     break;
                 case ExportFormat.RowCSV:
                     await RowExporter.ExportRowCSV(options, writer, cancellationToken);
                     break;
-                default:
+                default: 
                     throw new NotImplementedException();
             }
-
-
             string result = writer.ToString();
             return result;
         }
 
-        public static string Site(SiteDay siteDay, ExportOptions options)
+
+        public static async Task<Stream> ExportMultiSitesToMultiFiles(ExportOptions options, CancellationToken? cancellationToken = null  )
+        {
+
+        
+            // multiple sites - create a zip file
+
+             
+            int entryNumber = 0;
+            var zipStream = new MemoryStream();
+            using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var site in options.SiteDays.GroupBy(x=>x.SiteCode))
+                {
+                     
+                        string siteName = site.Key;
+                        DateTime fromDate = site.Min(x => x.Date);
+                        DateTime toDate = site.Max(x => x.Date);
+                        
+                        var siteOptions = options with { SiteDays = site };
+                        cancellationToken?.ThrowIfCancellationRequested();
+                        var siteOutput = await ExportSiteDataToTextAsync(siteOptions, cancellationToken);
+                        if (string.IsNullOrWhiteSpace(siteOutput)) continue;
+                        cancellationToken?.ThrowIfCancellationRequested();
+                        var entry = archive.CreateEntry($"{siteName}_{fromDate:yyyyMMdd}_{toDate:yyyyMMdd}_{siteOptions.ExportType}.csv");
+                        using var entryStream = entry.Open();
+                        var bytes = Encoding.UTF8.GetBytes(siteOutput);
+                        await entryStream.WriteAsync(bytes, cancellationToken ?? CancellationToken.None);
+                        ++entryNumber;
+                        await Task.Yield();
+
+                }
+                if(entryNumber == 0)
+                {
+                    throw new ArgumentException("No data to export [Code:HDW1QA]");
+                }
+
+            }
+            zipStream.Seek(0, SeekOrigin.Begin);
+            return zipStream;
+
+        }
+
+
+
+
+
+
+
+
+
+         
+
+
+
+
+
+        internal static string Site(SiteDay siteDay, ExportOptions options)
         {
             if (options.IncludeSite)
 
@@ -143,7 +150,7 @@ namespace MeterDataLib.Export
             }
         }
 
-        public static string Serial(ChannelDay channelDay, ExportOptions options)
+        internal static string Serial(ChannelDay channelDay, ExportOptions options)
         {
             if (options.IncludeMeter)
 

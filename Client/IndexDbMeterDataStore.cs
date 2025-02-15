@@ -84,12 +84,12 @@ namespace MeterKloud
             return site;
         }
 
+        const int DAY_CHUNK_SIZE = 30;
         public async Task<List<SiteDay>> GetSiteDays(string siteId, DateTime? fromDate = null, DateTime? toDate = null)
         {
             fromDate ??= DateTime.Today.AddYears(-10);
             toDate ??= DateTime.Today.AddDays(10);
-            string fromKey1 = GetSiteDayId(siteId, fromDate.Value);
-            string toKey1 = GetSiteDayId(siteId, toDate.Value);
+ 
                 
             var last = this.GetSiteDaysFromCache(siteId);
             if (last != null && last.siteId == siteId && last.fromdate <= fromDate && last.todate >= toDate && last.siteDays.Any())
@@ -97,13 +97,30 @@ namespace MeterKloud
                 return last.siteDays.Where( x=>x.Date >= fromDate && x.Date <= toDate ).ToList();
             }
 
-            var result = await _indexedDbAccessor.GetRangeAsync<SiteDay>(SITEDAY_COLLECTION, fromKey1, toKey1);
-            if ( result != null && result.Count != 0)
+            var result = new List<SiteDay>();
+            // 
+            var startDate = fromDate.Value;
+            while ( startDate <= toDate.Value)
+            {
+                await Task.Yield();
+                var endDate = startDate.AddDays(DAY_CHUNK_SIZE);
+                if (endDate > toDate.Value) { endDate = toDate.Value; }
+                var fromKey = GetSiteDayId(siteId,startDate);
+                var toKey = GetSiteDayId(siteId, endDate);
+                var chunk = await _indexedDbAccessor.GetRangeAsync<SiteDay>(SITEDAY_COLLECTION, fromKey, toKey);
+                if (chunk != null && chunk.Count != 0)
+                {
+                    result.AddRange(chunk);
+                }
+                startDate = endDate.AddDays(1);
+            }
+            //var result = await _indexedDbAccessor.GetRangeAsync<SiteDay>(SITEDAY_COLLECTION, fromKey1, toKey1);
+            if ( result.Count != 0)
             {
                 SetSiteDaysToCache(siteId, fromDate.Value, toDate.Value, result);
             }
             
-            return result!;
+            return result;
 
         }
 
@@ -182,7 +199,7 @@ namespace MeterKloud
                     sites.Remove(existing);
                 }
                 sites.Add(site);
-                Console.WriteLine($"Update {site.Id} in site cache list ");
+               // Console.WriteLine($"Update {site.Id} in site cache list ");
                 SetSiteListToCache(sites);
             }
         }
@@ -218,7 +235,7 @@ namespace MeterKloud
             try
             {
                 var result = _cache.Get<List<Site>>(GetCacheKeySites);
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteListFromCache {result?.Count}");
+                //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteListFromCache {result?.Count}");
                 return result;
             }
             catch (Exception x)
@@ -235,7 +252,7 @@ namespace MeterKloud
         {
             try
             {
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteListToCache {sites.Count}");
+                //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteListToCache {sites.Count}");
                 _cache.Set(GetCacheKeySites, sites, new TimeSpan(1, 0, 0));
                 
             }
@@ -250,7 +267,7 @@ namespace MeterKloud
         {
             try
             {
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetLastSiteId {siteId}");
+                //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetLastSiteId {siteId}");
                 _cache.Set(GetCacheKeyLast, siteId);
 
             }
@@ -269,7 +286,7 @@ namespace MeterKloud
             {
                 var result = _cache.Get<CacheSiteDayLookUp>(GetCacheKeySiteDays(id));
                 
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteDaysFromCache {result?.siteId ?? "null"}");
+                //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> GetSiteDaysFromCache {result?.siteId ?? "null"}");
                 return result;
             }
             catch (Exception x)
@@ -287,7 +304,7 @@ namespace MeterKloud
             try
             {
      
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> ClearSiteDaysFromCache");
+                //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> ClearSiteDaysFromCache");
                 _cache.Remove(GetCacheKeySiteDays(id));
       
             }
@@ -304,7 +321,7 @@ namespace MeterKloud
             try
 
             {
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteDaysToCache {siteId}");
+                //Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} -> SetSiteDaysToCache {siteId}");
                 var site = await GetSiteAsync(siteId);
                 if ( site != null)
                 {
