@@ -958,10 +958,17 @@ namespace MeterDataLib.Query
                 foreach (var quad in quads)
                 {
                     var timeOffset = interval.Index(quad.ReadingDateTime.Date, quad.ReadingDateTime);
-                    if (timeOffset < 0 || timeOffset >= numberOfPeriods)
+                    if (timeOffset < 0 || timeOffset >= numberOfPeriods )
                     {
+                        Console.WriteLine("Warning - invalid timeOffset {timeOffset} - NumberofPeriods = {numberOfPeriods}");
                         continue;
                     }
+                    if (dayOffset < 0 || dayOffset > result.Profile.GetUpperBound(1))
+                    {
+                        Console.WriteLine("Warning - invalid dayOffset {dayOffset} - Max = {result.Profile.GetUpperBound(1)} Dr.Fromdate={dr.FromDate} siteDay.Date={siteDay.Date}");      
+                        continue;
+                    }
+
                     result.Profile[timeOffset, dayOffset] += quad.NetActiveEnergy_kWh;
                 }
             }
