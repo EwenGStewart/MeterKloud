@@ -1,6 +1,7 @@
 ﻿using MeterDataLib.Parsers;
 using System.ComponentModel.DataAnnotations;
 using System.Dynamic;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
@@ -65,153 +66,175 @@ namespace MeterDataLib
 
         public EnergyQuadrant[] GetEnergyQuadrants(QuadrantOptions? quadrantOptions)
         {
-
-            quadrantOptions ??= new QuadrantOptions();
-            var keyChannels = Channels.Values.Where(x => !x.Ignore && QuadrantTypes.Contains(x.ChannelType) && x.IntervalMinutes > 0);
-            if (quadrantOptions.OnlyIncludeMeterFilter.Length > 0)
-            {
-                keyChannels = keyChannels.Where(x => quadrantOptions.OnlyIncludeMeterFilter.Contains(x.MeterId));
-            }
-            if (quadrantOptions.OnlyIncludeChannelFilter.Length > 0)
-            {
-                keyChannels = keyChannels.Where(x => quadrantOptions.OnlyIncludeChannelFilter.Contains(x.Channel));
-            }
-            if (quadrantOptions.OnlyIncludeChanelNumberFilter.Length > 0)
-            {
-                keyChannels = keyChannels.Where(x => quadrantOptions.OnlyIncludeChanelNumberFilter.Contains(x.ChannelNumber));
-            }
-            if (quadrantOptions.AlwaysExcludeMeterFilter.Length > 0)
-            {
-                keyChannels = keyChannels.Where(x => !quadrantOptions.AlwaysExcludeMeterFilter.Contains(x.MeterId));
-            }
-            if (quadrantOptions.AlwaysExcludeChannelFilter.Length > 0)
-            {
-                keyChannels = keyChannels.Where(x => !quadrantOptions.AlwaysExcludeChannelFilter.Contains(x.Channel));
-            }
-            if (quadrantOptions.AlwaysExcludeChanelNumberFilter.Length > 0)
-            {
-                keyChannels = keyChannels.Where(x => !quadrantOptions.AlwaysExcludeChanelNumberFilter.Contains(x.ChannelNumber));
-            }
-            if (quadrantOptions.ControlledLoad == FlagFilter.Include)
-            {
-                keyChannels = keyChannels.Where(x => x.Controlled);
-            }
-            else if (quadrantOptions.ControlledLoad == FlagFilter.Exclude)
-            {
-                keyChannels = keyChannels.Where(x => !x.Controlled);
-            }
-
-
-            if (!keyChannels.Any())
-            {
-                return EmptyQuadrant(quadrantOptions.Interval);
-            }
-            var intervals = keyChannels.Select(x => x.IntervalMinutes).Distinct();
-            if (!intervals.Any())
-            {
-                return EmptyQuadrant(quadrantOptions.Interval);
-            }
-
-            int targetInterval = quadrantOptions.Interval ?? intervals.Min();
-            if (targetInterval <= 0)
-            {
-                targetInterval = intervals.Min();
-            }
-            // interval must be a factor of 24 * 60 = 1440
-            if (MinutesPerDay % targetInterval != 0)
-            {
-                throw new ArgumentException("Interval must be a factor of 1440 - 1min, 5min, 15min, 30min , 60min  ");
-            }
-
-            int expectedReads = MinutesPerDay / targetInterval;
-            if (expectedReads == 0)
-            {
-                return EmptyQuadrant(quadrantOptions.Interval);
-            }
-
-            List<EnergyQuadrant> quadrants = [];
-            foreach (var channelDay in keyChannels)
+            try
             {
 
-
-                string? meter = channelDay.MeterId;
-                string? channelNumber = channelDay.ChannelNumberOrMeterName;
-                string? channelList = channelDay.Channel;
-                var readings = channelDay.Readings;
-                if (readings.Length != expectedReads)
+                quadrantOptions ??= new QuadrantOptions();
+                var keyChannels = Channels.Values.Where(x => !x.Ignore && QuadrantTypes.Contains(x.ChannelType) && x.IntervalMinutes > 0);
+                if (quadrantOptions.OnlyIncludeMeterFilter.Length > 0)
                 {
-                    readings = ProfileHelpers.UnifyLength(readings, expectedReads, quadrantOptions.UseSimpleIntervalCorrection);
+                    keyChannels = keyChannels.Where(x => quadrantOptions.OnlyIncludeMeterFilter.Contains(x.MeterId));
                 }
-                for (int i = 0; i < expectedReads; i++)
+                if (quadrantOptions.OnlyIncludeChannelFilter.Length > 0)
                 {
-
-                    var quality = channelDay.ReadQualities?[i] ?? channelDay.OverallQuality;
-                    decimal activeEnergyConsumption = channelDay.ChannelType == ChanelType.ActiveEnergyConsumption ? readings[i] : 0;
-                    decimal activeEnergyGeneration = channelDay.ChannelType == ChanelType.ActiveEnergyGeneration ? readings[i] : 0;
-                    decimal reactiveEnergyConsumption = channelDay.ChannelType == ChanelType.ReactiveEnergyConsumption ? readings[i] : 0;
-                    decimal reactivePowerGeneration = channelDay.ChannelType == ChanelType.ReactiveEnergyGeneration ? readings[i] : 0;
-
-                    if (activeEnergyConsumption < 0)
-                    {
-                        activeEnergyGeneration -= activeEnergyConsumption;
-                        activeEnergyConsumption = 0;
-                    }
-                    if (activeEnergyGeneration < 0)
-                    {
-                        activeEnergyConsumption -= activeEnergyGeneration;
-                        activeEnergyGeneration = 0;
-                    }
-                    if (reactiveEnergyConsumption < 0)
-                    {
-                        reactivePowerGeneration -= reactiveEnergyConsumption;
-                        reactiveEnergyConsumption = 0;
-                    }
-                    if (reactivePowerGeneration < 0)
-                    {
-                        reactiveEnergyConsumption -= reactivePowerGeneration;
-                        reactivePowerGeneration = 0;
-                    }
-
-
-                    EnergyQuadrant energyQuadrant = new(Date.AddMinutes(i * targetInterval), meter, channelNumber, channelList, targetInterval, quality,
-                        activeEnergyConsumption, activeEnergyGeneration, reactiveEnergyConsumption, reactivePowerGeneration);
-                    quadrants.Add(energyQuadrant);
+                    keyChannels = keyChannels.Where(x => quadrantOptions.OnlyIncludeChannelFilter.Contains(x.Channel));
+                }
+                if (quadrantOptions.OnlyIncludeChanelNumberFilter.Length > 0)
+                {
+                    keyChannels = keyChannels.Where(x => quadrantOptions.OnlyIncludeChanelNumberFilter.Contains(x.ChannelNumber));
+                }
+                if (quadrantOptions.AlwaysExcludeMeterFilter.Length > 0)
+                {
+                    keyChannels = keyChannels.Where(x => !quadrantOptions.AlwaysExcludeMeterFilter.Contains(x.MeterId));
+                }
+                if (quadrantOptions.AlwaysExcludeChannelFilter.Length > 0)
+                {
+                    keyChannels = keyChannels.Where(x => !quadrantOptions.AlwaysExcludeChannelFilter.Contains(x.Channel));
+                }
+                if (quadrantOptions.AlwaysExcludeChanelNumberFilter.Length > 0)
+                {
+                    keyChannels = keyChannels.Where(x => !quadrantOptions.AlwaysExcludeChanelNumberFilter.Contains(x.ChannelNumber));
+                }
+                if (quadrantOptions.ControlledLoad == FlagFilter.Include)
+                {
+                    keyChannels = keyChannels.Where(x => x.Controlled);
+                }
+                else if (quadrantOptions.ControlledLoad == FlagFilter.Exclude)
+                {
+                    keyChannels = keyChannels.Where(x => !x.Controlled);
                 }
 
+
+                if (!keyChannels.Any())
+                {
+                    return EmptyQuadrant(quadrantOptions.Interval);
+                }
+                var intervals = keyChannels.Select(x => x.IntervalMinutes).Distinct();
+                if (!intervals.Any())
+                {
+                    return EmptyQuadrant(quadrantOptions.Interval);
+                }
+
+                int targetInterval = quadrantOptions.Interval ?? intervals.Min();
+                if (targetInterval <= 0)
+                {
+                    targetInterval = intervals.Min();
+                }
+                // interval must be a factor of 24 * 60 = 1440
+                if (MinutesPerDay % targetInterval != 0)
+                {
+                    throw new ArgumentException("Interval must be a factor of 1440 - 1min, 5min, 15min, 30min , 60min  ");
+                }
+
+                int expectedReads = MinutesPerDay / targetInterval;
+                if (expectedReads == 0)
+                {
+                    return EmptyQuadrant(quadrantOptions.Interval);
+                }
+
+                List<EnergyQuadrant> quadrants = [];
+                foreach (var channelDay in keyChannels)
+                {
+
+
+                    string? meter = channelDay.MeterId;
+                    string? channelNumber = channelDay.ChannelNumberOrMeterName;
+                    string? channelList = channelDay.Channel;
+                    var readings = channelDay.Readings;
+                    var qualities = channelDay.ReadQualities;
+
+                    if (readings.Length != expectedReads)
+                    {
+                        readings = ProfileHelpers.UnifyLength(readings, expectedReads, quadrantOptions.UseSimpleIntervalCorrection);
+                    }
+                    if (qualities != null && qualities.Length != expectedReads)
+                    {
+                        qualities = ProfileHelpers.UnifyQuality(qualities, expectedReads);
+                    }
+                     
+
+                    for (int i = 0; i < expectedReads; i++)
+                    {
+
+
+
+
+                        var quality = qualities?[i] ?? channelDay.OverallQuality;
+                        decimal activeEnergyConsumption = channelDay.ChannelType == ChanelType.ActiveEnergyConsumption ? readings[i] : 0;
+                        decimal activeEnergyGeneration = channelDay.ChannelType == ChanelType.ActiveEnergyGeneration ? readings[i] : 0;
+                        decimal reactiveEnergyConsumption = channelDay.ChannelType == ChanelType.ReactiveEnergyConsumption ? readings[i] : 0;
+                        decimal reactivePowerGeneration = channelDay.ChannelType == ChanelType.ReactiveEnergyGeneration ? readings[i] : 0;
+
+                        if (activeEnergyConsumption < 0)
+                        {
+                            activeEnergyGeneration -= activeEnergyConsumption;
+                            activeEnergyConsumption = 0;
+                        }
+                        if (activeEnergyGeneration < 0)
+                        {
+                            activeEnergyConsumption -= activeEnergyGeneration;
+                            activeEnergyGeneration = 0;
+                        }
+                        if (reactiveEnergyConsumption < 0)
+                        {
+                            reactivePowerGeneration -= reactiveEnergyConsumption;
+                            reactiveEnergyConsumption = 0;
+                        }
+                        if (reactivePowerGeneration < 0)
+                        {
+                            reactiveEnergyConsumption -= reactivePowerGeneration;
+                            reactivePowerGeneration = 0;
+                        }
+
+
+                        EnergyQuadrant energyQuadrant = new(Date.AddMinutes(i * targetInterval), meter, channelNumber, channelList, targetInterval, quality,
+                            activeEnergyConsumption, activeEnergyGeneration, reactiveEnergyConsumption, reactivePowerGeneration);
+                        quadrants.Add(energyQuadrant);
+                    }
+
+
+
+                }
+
+
+                EnergyQuadrant[] result;
+
+                if (quadrantOptions.ByMeter) // group by meter
+                {
+                    result = quadrants.GroupBy(x => new { x.ReadingDateTime, x.Meter })
+                        .Select(x => new EnergyQuadrant(x.Key.ReadingDateTime, x.Key.Meter, x.Max(y => y.ChannelNumber), string.Join('|', x.Select(y => y.ChannelList).Distinct().Order()), x.First().IntervalMinutes,
+                            x.Max(y => y.Quality),
+                            x.Sum(y => y.ActiveEnergyConsumption_kWh),
+                            x.Sum(y => y.ActiveEnergyGeneration_kWh),
+                            x.Sum(y => y.ReactiveEnergyConsumption_kVArh),
+                            x.Sum(y => y.ReactiveEnergyGeneration_kVArh)
+                            )).OrderBy(x => x.ReadingDateTime).ThenBy(x => x.Meter).ToArray();
+                }
+                else
+                {
+
+                    result = quadrants.GroupBy(x => x.ReadingDateTime)
+                        .Select(x => new EnergyQuadrant(x.Key, null, null, null, x.First().IntervalMinutes,
+                            x.Max(y => y.Quality),
+                            x.Sum(y => y.ActiveEnergyConsumption_kWh),
+                            x.Sum(y => y.ActiveEnergyGeneration_kWh),
+                            x.Sum(y => y.ReactiveEnergyConsumption_kVArh),
+                            x.Sum(y => y.ReactiveEnergyGeneration_kVArh)
+                            )).OrderBy(x => x.ReadingDateTime).ToArray();
+                }
+
+                ProcessRealPowerGenerationOptions(quadrantOptions, result);
+
+                ProcessReactivePowerGenerationOptions(quadrantOptions, result);
+
+                return result;
             }
-
-
-            EnergyQuadrant[] result;
-
-            if (quadrantOptions.ByMeter) // group by meter
+            catch (Exception ex)
             {
-                result = quadrants.GroupBy(x => new { x.ReadingDateTime, x.Meter })
-                    .Select(x => new EnergyQuadrant(x.Key.ReadingDateTime, x.Key.Meter, x.Max(y => y.ChannelNumber), string.Join('|', x.Select(y => y.ChannelList).Distinct().Order()), x.First().IntervalMinutes,
-                        x.Max(y => y.Quality),
-                        x.Sum(y => y.ActiveEnergyConsumption_kWh),
-                        x.Sum(y => y.ActiveEnergyGeneration_kWh),
-                        x.Sum(y => y.ReactiveEnergyConsumption_kVArh),
-                        x.Sum(y => y.ReactiveEnergyGeneration_kVArh)
-                        )).OrderBy(x => x.ReadingDateTime).ThenBy(x => x.Meter).ToArray();
+                Console.WriteLine($"Exception in GetEnergyQuadrants for Date {this.Date:dd-MMM-yyyy} Site:{this.siteCode} [{this.Id}] ");
+                Console.WriteLine(ex);
+                throw; 
             }
-            else
-            {
-
-                result = quadrants.GroupBy(x => x.ReadingDateTime)
-                    .Select(x => new EnergyQuadrant(x.Key, null, null, null, x.First().IntervalMinutes,
-                        x.Max(y => y.Quality),
-                        x.Sum(y => y.ActiveEnergyConsumption_kWh),
-                        x.Sum(y => y.ActiveEnergyGeneration_kWh),
-                        x.Sum(y => y.ReactiveEnergyConsumption_kVArh),
-                        x.Sum(y => y.ReactiveEnergyGeneration_kVArh)
-                        )).OrderBy(x => x.ReadingDateTime).ToArray();
-            }
-
-            ProcessRealPowerGenerationOptions(quadrantOptions, result);
-
-            ProcessReactivePowerGenerationOptions(quadrantOptions, result);
-
-            return result;
 
         }
 
