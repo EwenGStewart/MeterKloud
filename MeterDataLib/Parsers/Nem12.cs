@@ -213,6 +213,26 @@ namespace MeterDataLib.Parsers
                             channel ??= string.Empty;
       
                             int expectedReadings = 60 * 24 / intervalLength;
+                            // determien the actual reads 
+                            int actualIntervalLength = line.ColCount > 60 * 24 /5 ? 5 : line.ColCount > 60 * 24/15 ? 15 : line.ColCount > 60 * 24 / 30 ? 30 : line.ColCount >   24 ? 60 : 0;
+                            if (actualIntervalLength == 0)
+                            {
+                                result.LogMessages.Add(new FileLogMessage($"Invalid number of readings {line.ColCount} - line is ignored", LogLevel.Error, csvReader.Filename, csvReader.LineNumber, 2));
+                                break;
+                            }
+                            bool invalidIntervalWarningIssued = false;
+                            if (actualIntervalLength != intervalLength )
+                            {
+                                if (!invalidIntervalWarningIssued)
+                                {
+                                    invalidIntervalWarningIssued = true;
+                                    result.LogMessages.Add(new FileLogMessage($"Interval does not match actual number of readings. Actual={actualIntervalLength} Expected={intervalLength}  - Interval will be adjusted", LogLevel.Warning, csvReader.Filename, csvReader.LineNumber, 2));
+                                }
+                                intervalLength = actualIntervalLength;
+                                expectedReadings = 60 * 24 / intervalLength;
+                            }
+
+
 
                             lastChannelDay = new ChannelDay()
                             {
