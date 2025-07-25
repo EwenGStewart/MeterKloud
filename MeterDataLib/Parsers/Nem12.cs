@@ -44,6 +44,10 @@ namespace MeterDataLib.Parsers
             decimal uomConversionFactor = 1;
             bool skip300 = false;
             int[] validIntervalLengths = [5, 15, 30, 60];
+
+            bool negativeReadsDetected = false;
+
+
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
             while (true)
@@ -202,7 +206,7 @@ namespace MeterDataLib.Parsers
                                 result.LogMessages.Add(new FileLogMessage($"Invalid Date {line.Columns[1]} - line is ignored", LogLevel.Warning, csvReader.Filename, csvReader.LineNumber, 1));
                                 break;
                             }
-
+                            
                             lastSiteDay = result.SitesDays.Where(zz => zz.SiteCode == nmi && zz.Date == dateOfRead).FirstOrDefault();
                             nmi ??= string.Empty;
                             if (lastSiteDay == null)
@@ -213,7 +217,7 @@ namespace MeterDataLib.Parsers
                             channel ??= string.Empty;
       
                             int expectedReadings = 60 * 24 / intervalLength;
-                            // determien the actual reads 
+                            // determine the actual reads 
                             int actualIntervalLength = line.ColCount > 60 * 24 /5 ? 5 : line.ColCount > 60 * 24/15 ? 15 : line.ColCount > 60 * 24 / 30 ? 30 : line.ColCount >   24 ? 60 : 0;
                             if (actualIntervalLength == 0)
                             {
@@ -256,12 +260,25 @@ namespace MeterDataLib.Parsers
                             for (int i = 0; i < expectedReadings; i++)
                             {
                                 var reading = line.GetDecimalCol(2 + i);
-                                if (reading == null || reading < 0)
+                                if (reading == null  )
                                 {
                                     result.LogMessages.Add(new FileLogMessage($"Invalid read value {line.GetStringUpper(2 + i)} for site {nmi} date {dateOfRead:yyyy-MM-dd}  day will be skipped", LogLevel.Error, csvReader.Filename, csvReader.LineNumber, 2 + i));
                                     errorInReads = true;
                                     break;
                                 }
+
+                                if (reading < 0 && negativeReadsDetected==false)
+                                {
+                                    result.LogMessages.Add(new FileLogMessage($"Negative read value {reading} - for site {nmi} date {dateOfRead:yyyy-MM-dd}.  Negative will be accepted but is not valid NEM12. Future negatives will not be displayed in this log.", LogLevel.Warning, csvReader.Filename, csvReader.LineNumber, 2 + i));
+                                    negativeReadsDetected = true;
+                                    break;
+
+                                }
+
+
+
+
+
                                 lastChannelDay.Readings[i] = reading.Value * uomConversionFactor;
                             }
                             if (errorInReads)
