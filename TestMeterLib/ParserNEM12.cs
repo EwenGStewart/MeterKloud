@@ -72,6 +72,54 @@ namespace TestMeterLib
             Assert.True(result.TotalSiteDays > 0);
         }
 
+
+        [Fact]
+        public async Task Nem12_Neg_BChannel()
+        {
+            string resource = "Nem12WithBChannel.csv";
+            string mimeType = "text/csv";
+            Console.SetOut(new RedirectOutput(Output));
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            Assert.True(result.Success);
+            Assert.True(result.ParserName == "NEM12");
+            Assert.True(result.Sites > 0);
+            Assert.True(result.Errors == 0);
+            Assert.True(result.Warnings == 1);
+            Assert.True(result.TotalSiteDays > 0);
+            Assert.DoesNotContain(result.SitesDays.SelectMany(x => x.Channels.Values), x => x.Readings.Any(r => r < 0));
+            Assert.Contains(result.SitesDays.SelectMany(x => x.Channels.Values), x => x.Readings.Any(r => r > 0));
+
+        }
+
+
+        [Fact]
+        public async Task Nem12_Neg_EChannel()
+        {
+            string resource = "Nem12_Neg_readings.csv";
+            string mimeType = "text/csv";
+            Console.SetOut(new RedirectOutput(Output));
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            Assert.True(result.Success);
+            Assert.True(result.ParserName == "NEM12");
+            Assert.True(result.Sites > 0);
+            Assert.Contains(result.SitesDays.SelectMany(x => x.Channels.Values), x => x.Readings.Any(r => r < 0));
+            Assert.Contains(result.SitesDays.SelectMany(x => x.Channels.Values), x => x.Readings.Any(r => r > 0));
+            Assert.True(result.Errors == 0);
+            Assert.True(result.Warnings == 1);
+            Assert.True(result.TotalSiteDays > 0);
+        }
+
+
     }
 
 }
