@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Security.Authentication.ExtendedProtection;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -44,6 +45,10 @@ namespace MeterDataLib.Parsers
             decimal uomConversionFactor = 1;
             bool skip300 = false;
             int[] validIntervalLengths = [5, 15, 30, 60];
+
+            bool negativeReadsDetected = false;
+
+
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
             while (true)
@@ -211,17 +216,17 @@ namespace MeterDataLib.Parsers
                                 result.SitesDays.Add(lastSiteDay);
                             }
                             channel ??= string.Empty;
-      
+
                             int expectedReadings = 60 * 24 / intervalLength;
-                            // determien the actual reads 
-                            int actualIntervalLength = line.ColCount > 60 * 24 /5 ? 5 : line.ColCount > 60 * 24/15 ? 15 : line.ColCount > 60 * 24 / 30 ? 30 : line.ColCount >   24 ? 60 : 0;
+                            // determine the actual reads 
+                            int actualIntervalLength = line.ColCount > 60 * 24 / 5 ? 5 : line.ColCount > 60 * 24 / 15 ? 15 : line.ColCount > 60 * 24 / 30 ? 30 : line.ColCount > 24 ? 60 : 0;
                             if (actualIntervalLength == 0)
                             {
                                 result.LogMessages.Add(new FileLogMessage($"Invalid number of readings {line.ColCount} - line is ignored", LogLevel.Error, csvReader.Filename, csvReader.LineNumber, 2));
                                 break;
                             }
                             bool invalidIntervalWarningIssued = false;
-                            if (actualIntervalLength != intervalLength )
+                            if (actualIntervalLength != intervalLength)
                             {
                                 if (!invalidIntervalWarningIssued)
                                 {
@@ -253,10 +258,14 @@ namespace MeterDataLib.Parsers
 
                             // load the data 
                             bool errorInReads = false;
+
+
+
+
                             for (int i = 0; i < expectedReadings; i++)
                             {
                                 var reading = line.GetDecimalCol(2 + i);
-                                if (reading == null || reading < 0)
+                                if (reading == null)
                                 {
                                     result.LogMessages.Add(new FileLogMessage($"Invalid read value {line.GetStringUpper(2 + i)} for site {nmi} date {dateOfRead:yyyy-MM-dd}  day will be skipped", LogLevel.Error, csvReader.Filename, csvReader.LineNumber, 2 + i));
                                     errorInReads = true;
@@ -268,6 +277,9 @@ namespace MeterDataLib.Parsers
                             {
                                 break;
                             }
+
+                            CheckForNegativeReads(csvReader, result, lastChannelDay, nmi, channel, ref negativeReadsDetected, dateOfRead);
+
                             var qualityMethod = line.GetStringUpper(1 + expectedReadings + 1);
                             string quality = qualityMethod.Length > 0 ? qualityMethod.Substring(0, 1) : string.Empty;
                             var reasonCode = line.GetIntCol(1 + expectedReadings + 2);
@@ -320,7 +332,7 @@ namespace MeterDataLib.Parsers
                             if (lastSiteDay.Channels.ContainsKey(channel))
                             {
                                 var prevChannel = lastSiteDay.Channels[channel];
-                                if ( prevChannel.Total != lastChannelDay.Total  )
+                                if (prevChannel.Total != lastChannelDay.Total)
                                 {
                                     result.LogMessages.Add(new FileLogMessage($"Duplicate Channel {channel} for site {nmi} date {dateOfRead:yyyy-MM-dd} " +
                                         $" Original Total Was {prevChannel.Total} , New Total was {lastChannelDay.Total} " +
@@ -463,6 +475,44 @@ namespace MeterDataLib.Parsers
             }
         }
 
+        private static void CheckForNegativeReads(SimpleCsvReader csvReader, ParserResult result, ChannelDay lastChannelDay, string? nmi, string channel, ref bool negativeReadsDetected, DateTime? dateOfRead)
+        {
+            // check for negative reads
+            if (lastChannelDay.Readings.Any(r => r < 0))
+            {
+                // check if all the reads are negative or ZERO 
+                if (lastChannelDay.Readings.All(r => r <= 0))
+                {
+                    // for certain channels we can ignore this 
+                    // test if the channel prefix is one of the known negative channels : B K 
+                    if (channel.Length > 0 && (channel[0] == 'B' || channel[0] == 'K'))
+                    {
+                        if (!negativeReadsDetected)
+                        {
+                            result.LogMessages.Add(new FileLogMessage($"Negative read values detected for site {nmi} date {dateOfRead:yyyy-MM-dd} on line {csvReader.LineNumber}- negative reads will be accepted but are not valid NEM12. For this channel [{channel}] they will be converted to positive as this a 'import' channel.", LogLevel.Warning, csvReader.Filename, csvReader.LineNumber, 2));
+                            negativeReadsDetected = true;
+                        }
+                        lastChannelDay.Readings = lastChannelDay.Readings.Select(r => r < 0 ? -r : r).ToArray();
+                    }
+                    else
+                    {
+                        if (!negativeReadsDetected)
+                        {
+                            result.LogMessages.Add(new FileLogMessage($"Negative read values detected for site {nmi} date {dateOfRead:yyyy-MM-dd} on line {csvReader.LineNumber} - negative reads will be accepted but are not valid NEM12. Future negatives will not be displayed in this log.", LogLevel.Warning, csvReader.Filename, csvReader.LineNumber, 2));
+                            negativeReadsDetected = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!negativeReadsDetected)
+                    {
+                        result.LogMessages.Add(new FileLogMessage($"Negative read values detected for site {nmi} date {dateOfRead:yyyy-MM-dd} on line {csvReader.LineNumber} - negative reads will be accepted but are not valid NEM12. There is a mix of negative and positive reads. Future negatives will not be displayed in this log.", LogLevel.Warning, csvReader.Filename, csvReader.LineNumber, 2));
+                        negativeReadsDetected = true;
+                    }
+                }
+            }
+}
         bool IParser.CanParse( List<CsvLine> lines )
         {
             if (lines.Count < 2)

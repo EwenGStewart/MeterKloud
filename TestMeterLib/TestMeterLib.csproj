@@ -53,6 +53,12 @@
     <None Update="Resources\61029293722_meter_usage_data_cipc1_05_2015.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Nem12WithBChannel.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Nem12_Neg_readings.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\6407274172_20140506_20160506_20160507211600_UNITEDENERGY_DETAILED.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
