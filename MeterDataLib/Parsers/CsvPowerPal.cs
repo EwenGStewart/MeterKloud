@@ -66,8 +66,9 @@ namespace MeterDataLib.Parsers
                             }
 
 
-                            var readDateTimeUtc = line.GetDate(0, ["yyyy-MM-dd HH:mm:ss", "yyyy-M-d h:mm:ss", "yyyy-MM-dd HH:mm" , "dd/MM/yyyy HH:mm:ss", "d/M/yyyy h:mm:ss", "dd/MM/yyyy HH:mm"]);
-                            var readDateTimeLocal = line.GetDate(1, ["yyyy-MM-dd HH:mm:ss", "yyyy-M-d h:mm:ss", "yyyy-MM-dd HH:mm", "dd/MM/yyyy HH:mm:ss", "d/M/yyyy h:mm:ss", "dd/MM/yyyy HH:mm"]);
+
+                            var readDateTimeUtc = line.GetDate(0, ["yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd hh:mm:ss tt", "yyyy-M-d H:mm:ss", "yyyy-M-d h:mm:ss tt", "yyyy-MM-dd HH:mm" , "yyyy-MM-dd hh:mm tt",  "dd/MM/yyyy HH:mm:ss", "d/M/yyyy H:mm:ss", "dd/MM/yyyy HH:mm", "d/M/yyyy hh:mm:ss tt", "dd/MM/yyyy hh:mm:ss tt", "d/M/yyyy h:mm:ss tt", "dd/MM/yyyy h:mm:ss tt"]);
+                            var readDateTimeLocal = line.GetDate(1, ["yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd hh:mm:ss tt", "yyyy-M-d H:mm:ss", "yyyy-M-d h:mm:ss tt", "yyyy-MM-dd HH:mm", "yyyy-MM-dd hh:mm tt", "dd/MM/yyyy HH:mm:ss", "d/M/yyyy H:mm:ss", "dd/MM/yyyy HH:mm", "d/M/yyyy hh:mm:ss tt", "dd/MM/yyyy hh:mm:ss tt", "d/M/yyyy h:mm:ss tt", "dd/MM/yyyy h:mm:ss tt"]);
                             var readValue = line.GetDecimalCol(2);
                             var costDollars = line.GetDecimalCol(3);
                             var isPeak = line.GetStringUpper(4);
