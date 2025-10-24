@@ -137,6 +137,14 @@ namespace MeterDataLib.Parsers
                         {
                             continue;
                         }
+
+                        // remove the trailing ',' or ' ' characters
+                        while (CurrentLine.Length > 0 && ( CurrentLine.EndsWith(',') || CurrentLine.EndsWith(' ') ))
+                        {
+                            CurrentLine = CurrentLine.Substring(0, CurrentLine.Length - 1);
+                        }
+
+
                         CurrentCols = CurrentLine.Split(',', StringSplitOptions.TrimEntries);
                         ColNumber = CurrentCols.Length;
                         return new CsvLine(CurrentCols, LineNumber, false); ;
