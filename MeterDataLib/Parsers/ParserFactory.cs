@@ -32,6 +32,7 @@ namespace MeterDataLib.Parsers
             , new CsvSingleLineSimpleEBQK()
             , new CsvRedEnergyFormat()
             , new CsvEnosiFormat()
+            , new JeminaCsv()
         ];
 
 
