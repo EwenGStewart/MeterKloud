@@ -16,9 +16,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
-    <PackageReference Include="MudBlazor" Version="8.14.0" />
+    <PackageReference Include="MudBlazor" Version="8.15.0" />
     <PackageReference Include="Plotly.Blazor" Version="6.0.2" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MeterDataLib\MeterDataLib.csproj" />
