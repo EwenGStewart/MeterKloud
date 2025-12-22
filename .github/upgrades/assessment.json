@@ -1,0 +1,716 @@
+{
+  "settings": {
+    "components": {
+      "code": false,
+      "binaries": false
+    },
+    "targetId": "net10.0",
+    "targetDisplayName": ".NETCoreApp,Version=v10.0"
+  },
+  "analysisStartTime": "2025-12-22T05:18:40.2249374Z",
+  "analysisEndTime": "2025-12-22T05:18:45.506977Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 4,
+      "issues": 4,
+      "incidents": 22,
+      "effort": 24
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 5,
+        "Optional": 0,
+        "Potential": 17,
+        "Information": 0
+      },
+      "category": {
+        "AzureFunctionsUpgrade": 1,
+        "NuGet": 13,
+        "Project": 4,
+        "Api": 4
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "Api\\Api.csproj",
+      "startingProject": true,
+      "issues": 4,
+      "storyPoints": 11,
+      "properties": {
+        "appName": "Api",
+        "projectKind": "AzureFunctions",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 2,
+        "numberOfCodeFiles": 2,
+        "linesTotal": 38,
+        "linesOfCode": 38,
+        "totalApiScanned": 146,
+        "minLinesOfCodeToChange": 1,
+        "maxLinesOfCodeToChange": 1
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "495f5119-25f9-4c88-933d-59519c8bb0aa",
+          "ruleId": "AzureFunctionsUpgrade.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "kind": "File",
+            "path": "Api\\Api.csproj"
+          }
+        },
+        {
+          "incidentId": "185fd2b3-9b23-4294-8685-49004226729e",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Azure.Functions.Worker, 2.2.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker, and replace with new package Microsoft.Azure.Functions.Worker 2.51.0",
+              "protected": "Microsoft.Azure.Functions.Worker, 2.2.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker, and replace with new package Microsoft.Azure.Functions.Worker 2.51.0"
+            },
+            "kind": "File",
+            "path": "Api\\Api.csproj",
+            "snippet": "Microsoft.Azure.Functions.Worker, 2.2.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker, and replace with new package Microsoft.Azure.Functions.Worker 2.51.0",
+            "protectedSnippet": "Microsoft.Azure.Functions.Worker, 2.2.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker, and replace with new package Microsoft.Azure.Functions.Worker 2.51.0",
+            "label": "Microsoft.Azure.Functions.Worker 2.2.0",
+            "properties": {
+              "PackageId": "Microsoft.Azure.Functions.Worker",
+              "PackageVersion": "2.2.0",
+              "PackageNewVersion": "2.51.0",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "a2b01390-5199-4df7-a77c-848ffbfe0a5b",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Azure.Functions.Worker.Sdk, 2.0.6\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.Sdk, and replace with new package Microsoft.Azure.Functions.Worker.Sdk 2.0.7",
+              "protected": "Microsoft.Azure.Functions.Worker.Sdk, 2.0.6\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.Sdk, and replace with new package Microsoft.Azure.Functions.Worker.Sdk 2.0.7"
+            },
+            "kind": "File",
+            "path": "Api\\Api.csproj",
+            "snippet": "Microsoft.Azure.Functions.Worker.Sdk, 2.0.6\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.Sdk, and replace with new package Microsoft.Azure.Functions.Worker.Sdk 2.0.7",
+            "protectedSnippet": "Microsoft.Azure.Functions.Worker.Sdk, 2.0.6\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.Sdk, and replace with new package Microsoft.Azure.Functions.Worker.Sdk 2.0.7",
+            "label": "Microsoft.Azure.Functions.Worker.Sdk 2.0.6",
+            "properties": {
+              "PackageId": "Microsoft.Azure.Functions.Worker.Sdk",
+              "PackageVersion": "2.0.6",
+              "PackageNewVersion": "2.0.7",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "23508bd6-5e06-4315-bd13-a0feef34fc4b",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Azure.Functions.Worker.ApplicationInsights, 2.0.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.ApplicationInsights, and replace with new package Microsoft.Azure.Functions.Worker.ApplicationInsights 2.50.0",
+              "protected": "Microsoft.Azure.Functions.Worker.ApplicationInsights, 2.0.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.ApplicationInsights, and replace with new package Microsoft.Azure.Functions.Worker.ApplicationInsights 2.50.0"
+            },
+            "kind": "File",
+            "path": "Api\\Api.csproj",
+            "snippet": "Microsoft.Azure.Functions.Worker.ApplicationInsights, 2.0.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.ApplicationInsights, and replace with new package Microsoft.Azure.Functions.Worker.ApplicationInsights 2.50.0",
+            "protectedSnippet": "Microsoft.Azure.Functions.Worker.ApplicationInsights, 2.0.0\n\nRecommendation:\n\nRemove Microsoft.Azure.Functions.Worker.ApplicationInsights, and replace with new package Microsoft.Azure.Functions.Worker.ApplicationInsights 2.50.0",
+            "label": "Microsoft.Azure.Functions.Worker.ApplicationInsights 2.0.0",
+            "properties": {
+              "PackageId": "Microsoft.Azure.Functions.Worker.ApplicationInsights",
+              "PackageVersion": "2.0.0",
+              "PackageNewVersion": "2.50.0",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "737067fa-ff92-4ec4-a07e-8111a2a195d0",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1",
+              "protected": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1"
+            },
+            "kind": "File",
+            "path": "Api\\Api.csproj",
+            "snippet": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1",
+            "protectedSnippet": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1",
+            "label": "Microsoft.Extensions.Caching.Memory 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Caching.Memory",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "8e812285-f584-4060-954d-38d3b8d9c462",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1",
+              "protected": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1"
+            },
+            "kind": "File",
+            "path": "Api\\Api.csproj",
+            "snippet": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1",
+            "protectedSnippet": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1",
+            "label": "Microsoft.Extensions.Http 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Http",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "682564fd-095c-474b-9b52-6d578a8ac89b",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1",
+              "protected": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1"
+            },
+            "kind": "File",
+            "path": "Api\\Api.csproj",
+            "snippet": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1",
+            "protectedSnippet": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1",
+            "label": "System.Text.Encodings.Web 9.0.10",
+            "properties": {
+              "PackageId": "System.Text.Encodings.Web",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "9d3a0413-16df-4663-985b-f57332b05f95",
+          "ruleId": "Project.0002",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "Api\\Api.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        },
+        {
+          "incidentId": "80fd45b2-3b1c-41ec-8063-306a23db9366",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: HostBuilder enables ValidateOnBuild/ValidateScopes in development environment ",
+          "projectPath": "Api\\Api.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var host = new HostBuilder()\r\n    .ConfigureFunctionsWebApplication()\r\n    .ConfigureServices(services =\u003E\r\n    {\r\n        services.AddApplicationInsightsTelemetryWorkerService();\r\n        services.ConfigureFunctionsApplicationInsights();\r\n    })\r\n    .Build();",
+              "protected": "T:Microsoft.Extensions.Hosting.HostBuilder"
+            },
+            "kind": "File",
+            "path": "Api\\Program.cs",
+            "snippet": "var host = new HostBuilder()\r\n    .ConfigureFunctionsWebApplication()\r\n    .ConfigureServices(services =\u003E\r\n    {\r\n        services.AddApplicationInsightsTelemetryWorkerService();\r\n        services.ConfigureFunctionsApplicationInsights();\r\n    })\r\n    .Build();",
+            "protectedSnippet": "T:Microsoft.Extensions.Hosting.HostBuilder",
+            "label": "T:Microsoft.Extensions.Hosting.HostBuilder",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/aspnet-core/9.0/hostbuilder-validation.md",
+                "isCustom": false
+              }
+            ],
+            "line": 4,
+            "column": 0
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "MeterDataLib\\MeterDataLib.csproj",
+      "startingProject": true,
+      "issues": 2,
+      "storyPoints": 2,
+      "properties": {
+        "appName": "MeterDataLib",
+        "projectKind": "ClassLibrary",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 64,
+        "numberOfCodeFiles": 64,
+        "linesTotal": 10204,
+        "linesOfCode": 10204,
+        "totalApiScanned": 8343,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "382f4d66-a95b-4539-bd48-8338d39225a8",
+          "ruleId": "NuGet.0002",
+          "projectPath": "MeterDataLib\\MeterDataLib.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Logging.Abstractions, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.1",
+              "protected": "Microsoft.Extensions.Logging.Abstractions, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.1"
+            },
+            "kind": "File",
+            "path": "MeterDataLib\\MeterDataLib.csproj",
+            "snippet": "Microsoft.Extensions.Logging.Abstractions, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.1",
+            "protectedSnippet": "Microsoft.Extensions.Logging.Abstractions, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.1",
+            "label": "Microsoft.Extensions.Logging.Abstractions 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Logging.Abstractions",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "6966f3bf-9728-4f70-b624-d3f8dd105cfe",
+          "ruleId": "Project.0002",
+          "projectPath": "MeterDataLib\\MeterDataLib.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "MeterDataLib\\MeterDataLib.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "Client\\MeterKloud.csproj",
+      "startingProject": true,
+      "issues": 3,
+      "storyPoints": 10,
+      "properties": {
+        "appName": "MeterKloud",
+        "projectKind": "AspNetCore",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 69,
+        "numberOfCodeFiles": 6,
+        "linesTotal": 12658,
+        "linesOfCode": 1117,
+        "totalApiScanned": 12011,
+        "minLinesOfCodeToChange": 3,
+        "maxLinesOfCodeToChange": 3
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "6126572e-5b2f-46c0-a59e-a25a021f87e6",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.1",
+              "protected": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.1"
+            },
+            "kind": "File",
+            "path": "Client\\MeterKloud.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.1",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.1",
+            "label": "Microsoft.AspNetCore.Components.WebAssembly 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.WebAssembly",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "05861f1e-b42d-4b95-bdef-9208cf016d3a",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.WebAssembly.Authentication, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Authentication, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Authentication 10.0.1",
+              "protected": "Microsoft.AspNetCore.Components.WebAssembly.Authentication, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Authentication, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Authentication 10.0.1"
+            },
+            "kind": "File",
+            "path": "Client\\MeterKloud.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.WebAssembly.Authentication, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Authentication, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Authentication 10.0.1",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.WebAssembly.Authentication, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Authentication, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Authentication 10.0.1",
+            "label": "Microsoft.AspNetCore.Components.WebAssembly.Authentication 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.WebAssembly.Authentication",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "8173cd74-2e46-49f6-9f7f-d7602d723223",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.1",
+              "protected": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.1"
+            },
+            "kind": "File",
+            "path": "Client\\MeterKloud.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.1",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.1",
+            "label": "Microsoft.AspNetCore.Components.WebAssembly.DevServer 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.WebAssembly.DevServer",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "03047240-5671-49da-a546-ebb904fd3e5f",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1",
+              "protected": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1"
+            },
+            "kind": "File",
+            "path": "Client\\MeterKloud.csproj",
+            "snippet": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1",
+            "protectedSnippet": "Microsoft.Extensions.Caching.Memory, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Caching.Memory, and replace with new package Microsoft.Extensions.Caching.Memory 10.0.1",
+            "label": "Microsoft.Extensions.Caching.Memory 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Caching.Memory",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "387e889d-92e5-40c3-9a93-e9427d8605d3",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1",
+              "protected": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1"
+            },
+            "kind": "File",
+            "path": "Client\\MeterKloud.csproj",
+            "snippet": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1",
+            "protectedSnippet": "Microsoft.Extensions.Http, 9.0.10\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.1",
+            "label": "Microsoft.Extensions.Http 9.0.10",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Http",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "73682149-02a9-4c27-97e4-91e3efffba13",
+          "ruleId": "NuGet.0002",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1",
+              "protected": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1"
+            },
+            "kind": "File",
+            "path": "Client\\MeterKloud.csproj",
+            "snippet": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1",
+            "protectedSnippet": "System.Text.Encodings.Web, 9.0.10\n\nRecommendation:\n\nRemove System.Text.Encodings.Web, and replace with new package System.Text.Encodings.Web 10.0.1",
+            "label": "System.Text.Encodings.Web 9.0.10",
+            "properties": {
+              "PackageId": "System.Text.Encodings.Web",
+              "PackageVersion": "9.0.10",
+              "PackageNewVersion": "10.0.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "1a316087-ec73-444e-8cff-e3889f5b6293",
+          "ruleId": "Project.0002",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "Client\\MeterKloud.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        },
+        {
+          "incidentId": "4603ec12-695d-42cc-9b6b-32df4c219698",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Client\\Program.cs",
+            "snippet": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 20,
+            "column": 0
+          }
+        },
+        {
+          "incidentId": "329da291-d61f-4c19-8fd1-1051670e23dc",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });",
+              "protected": "M:System.Uri.#ctor(System.String)"
+            },
+            "kind": "File",
+            "path": "Client\\Program.cs",
+            "snippet": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });",
+            "protectedSnippet": "M:System.Uri.#ctor(System.String)",
+            "label": "M:System.Uri.#ctor(System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 20,
+            "column": 0
+          }
+        },
+        {
+          "incidentId": "ecefe176-fb99-46bb-a225-4007267ae9a2",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "Client\\MeterKloud.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "Client\\Program.cs",
+            "snippet": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 20,
+            "column": 0
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "TestMeterLib\\TestMeterLib.csproj",
+      "startingProject": true,
+      "issues": 1,
+      "storyPoints": 1,
+      "properties": {
+        "appName": "TestMeterLib",
+        "projectKind": "DotNetCoreApp",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 23,
+        "numberOfCodeFiles": 20,
+        "linesTotal": 5254,
+        "linesOfCode": 2524,
+        "totalApiScanned": 4769,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "d7e65259-30db-418f-95a7-1a8f4c12b48f",
+          "ruleId": "Project.0002",
+          "projectPath": "TestMeterLib\\TestMeterLib.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "TestMeterLib\\TestMeterLib.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    }
+  ],
+  "rules": {
+    "AzureFunctionsUpgrade.0002": {
+      "id": "AzureFunctionsUpgrade.0002",
+      "isFeature": true,
+      "description": "When migrating from in-proc to isolated, enable the use of the V2 model for Azure Functions projects and enable Application Insights.",
+      "label": "Enable the use of the V2 model for Azure Functions projects and enable Application Insights.",
+      "severity": "Mandatory",
+      "effort": 3,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2342114",
+          "isCustom": false
+        },
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2341915",
+          "isCustom": false
+        }
+      ]
+    },
+    "NuGet.0002": {
+      "id": "NuGet.0002",
+      "isFeature": false,
+      "description": "NuGet package upgrade is recommended for selected target framework.\n\nStandard .NET packages are recommended to have versions matching version of .NET that project targets.\n\nSome other packages also are known to work better for selected target frameworks.",
+      "label": "NuGet package upgrade is recommended",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262530",
+          "isCustom": false
+        }
+      ]
+    },
+    "Project.0002": {
+      "id": "Project.0002",
+      "isFeature": false,
+      "description": "Project\u0027s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.\n\nDuring upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).",
+      "label": "Project\u0027s target framework(s) needs to be changed",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Overview of porting from .NET Framework to .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": ".NET project SDKs",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0003": {
+      "id": "Api.0003",
+      "isFeature": false,
+      "description": "API has a behavioral change in selected .NET version: code and binaries may behave differently at runtime without needing recompilation, but the new behavior might be undesirable and require updates.",
+      "label": "Behavioral change in selected .NET version",
+      "severity": "Potential",
+      "effort": 1
+    }
+  }
+}
