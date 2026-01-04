@@ -47,7 +47,7 @@ namespace MeterDataLib.Parsers
             int[] validIntervalLengths = [5, 15, 30, 60];
 
             bool negativeReadsDetected = false;
-
+            char[] keyChannelPrefix = ['E', 'K', 'Q', 'B', 'N'];
 
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
@@ -112,6 +112,23 @@ namespace MeterDataLib.Parsers
                             skip300 = true;
                             break;
                         }
+
+                        // swap channel and register if they are incorrect 
+                        if ( registerId.Length ==2 &&    // register is only 2 characters
+                             keyChannelPrefix.Contains(registerId[0]) &&  // and starts with known channel prefix
+                             (  channel.Length != 2  // and channel is not the correct length
+                             || ! char.IsAsciiLetterUpper(channel[0]) // or channel does not start with a letter
+                             )
+                            )
+                        {
+                            //swap
+                            result.LogMessages.Add(new FileLogMessage($"Swapping Channel and Register ID values as they appear to be incorrect ", LogLevel.Warning, csvReader.Filename, csvReader.LineNumber, 4));
+                            var tmp = channel;
+                            channel = registerId;
+                            registerId = tmp;
+                        }
+
+
                         if (string.IsNullOrWhiteSpace(channel))
                         {
                             result.LogMessages.Add(new FileLogMessage($"Missing channel - 200 Block will be ignored", LogLevel.Error, csvReader.Filename, csvReader.LineNumber, 4));

@@ -1,4 +1,5 @@
-﻿using MeterDataLib.Parsers;
+﻿using FluentAssertions;
+using MeterDataLib.Parsers;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit.Abstractions;
 
@@ -14,6 +15,7 @@ namespace TestMeterLib
         [InlineData("SampleNem12-2.csv", "text/csv")]
         [InlineData("SampleNem12-3.csv", "text/csv")]
         [InlineData("SampleNem12-4.CSV", "text/csv")]
+        [InlineData("EndevourSampleNem12SwappedSuffix.CSV", "text/csv")]
 
         public async Task Nem12(string resource, string mimeType)
         {
@@ -29,7 +31,80 @@ namespace TestMeterLib
             Assert.True(result.Sites > 0);
             Assert.True(result.Errors == 0);
             Assert.True(result.TotalSiteDays > 0);
+            decimal totalKwhExport = 0;
+            decimal totalKwhExport2 = 0;
+            foreach ( var sd in result.SitesDays)
+            {
+                var ds = sd.GetDailySummary();
+                totalKwhExport += ds.TotalNetActivePower_kWh;
+                var q = sd.GetEnergyQuadrants(null);
+                totalKwhExport2 += q.Sum(x => x.NetActiveEnergy_kWh);
+            }
+            totalKwhExport.Should().NotBe(0);
+            totalKwhExport.Should().Be(totalKwhExport2);
+
+
         }
+
+
+        [Fact]
+        public async Task ReversedChannel()
+        {
+            string resource = "EndevourSampleNem12SwappedSuffix.CSV";
+            string mimeType = "text/csv";
+            Console.SetOut(new RedirectOutput(Output));
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            Assert.True(result.Success);
+            Assert.True(result.ParserName == "NEM12");
+            Assert.True(result.Sites > 0);
+            Assert.True(result.Errors == 0);
+            Assert.True(result.TotalSiteDays > 0);
+
+            foreach (var sd in result.SitesDays)
+            {
+                var ds = sd.GetDailySummary();
+                var q = sd.GetEnergyQuadrants(null);
+            }
+
+        }
+
+
+
+        [Fact]
+        public async Task TransposeChannelAndReg()
+        {
+            string resource = "EndevourSampleNem12SwappedSuffix.CSV";
+            string mimeType = "text/csv";
+            Console.SetOut(new RedirectOutput(Output));
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            // Use the stream here
+            //test 
+
+            var result = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            Console.WriteLine($"Parsed {result.ParserName} Errors:{result.Errors} Days:{result.TotalSiteDays} Sites:{result.Sites}");
+            Assert.True(result.Success);
+            Assert.True(result.ParserName == "NEM12");
+            Assert.True(result.Sites > 0);
+            Assert.True(result.Errors == 0);
+            Assert.True(result.TotalSiteDays > 0);
+            decimal totalKwhExport = 0;
+            foreach (var sd in result.SitesDays)
+            {
+                var ds = sd.GetDailySummary();
+                totalKwhExport += ds.TotalNetActivePower_kWh;
+                var q = sd.GetEnergyQuadrants(null);
+            }
+            totalKwhExport.Should().NotBe(0);
+
+
+        }
+
+
 
 
         [Fact]
