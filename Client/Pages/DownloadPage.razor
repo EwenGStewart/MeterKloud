@@ -233,27 +233,24 @@
 
     async Task SetLastYear()
     {
-        _picker.DateRange.End = DateTime.Today.AddDays(-1);
-        _picker.DateRange.Start = _picker.DateRange.End.Value.AddYears(-1);
-        await _picker.CloseAsync();
-        displayModel.DateRange = _picker.DateRange;
+        var end = DateTime.Today.AddDays(-1);
+        var start = end.AddYears(-1);
+        displayModel.DateRange = new DateRange(start, end);
         await ProcessFormChanges();
 
     }
     async Task SetLast2Years()
     {
-        _picker.DateRange.End = DateTime.Today.AddDays(-1);
-        _picker.DateRange.Start = _picker.DateRange.End.Value.AddYears(-2);
-        await _picker.CloseAsync();
-        displayModel.DateRange = _picker.DateRange;
+         var end = DateTime.Today.AddDays(-1);
+         var start = end.AddYears(-2);
+        displayModel.DateRange = new DateRange(start, end);
         await ProcessFormChanges();
     }
     async Task SetLastMonth()
     {
-        _picker.DateRange.End = DateTime.Today.AddDays(-1);
-        _picker.DateRange.Start = _picker.DateRange.End.Value.AddMonths(-1);
-        await _picker.CloseAsync();
-        displayModel.DateRange = _picker.DateRange;
+         var end = DateTime.Today.AddDays(-1);
+         var start = end.AddMonths(-1);
+        displayModel.DateRange = new DateRange(start, end);
         await ProcessFormChanges();
     }
 
@@ -593,7 +590,10 @@
             if (list.Any())
             {
                 //create dictionary of sites
-                _sites = list.ToDictionary(site => site.Code.ToUpperInvariant(), site => site);
+
+                _sites = list
+                 .DistinctBy(site => site.Code.ToUpperInvariant())
+                 .ToDictionary(site => site.Code.ToUpperInvariant(), site => site);
             }
             else
             {
