@@ -3,7 +3,6 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
-using Xunit.Abstractions;
 
 namespace TestMeterLib
 {

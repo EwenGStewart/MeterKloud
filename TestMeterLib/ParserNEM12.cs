@@ -1,7 +1,6 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using MeterDataLib.Parsers;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
-using Xunit.Abstractions;
 
 namespace TestMeterLib
 {

@@ -1,10 +1,9 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using MeterDataLib;
 using MeterDataLib.Export;
 using MeterDataLib.Parsers;
 using System.IO.Compression;
 using System.Text;
-using Xunit.Abstractions;
 
 namespace TestMeterLib
 {
