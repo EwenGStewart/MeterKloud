@@ -1,6 +1,5 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using MeterDataLib.Query;
-using Xunit.Abstractions;
 
 namespace TestMeterLib
 {

@@ -1,5 +1,4 @@
-﻿using MeterDataLib.Parsers;
-using Xunit.Abstractions;
+using MeterDataLib.Parsers;
 
 namespace TestMeterLib
 {
