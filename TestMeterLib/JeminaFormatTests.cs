@@ -6,6 +6,7 @@ namespace TestMeterLib
     {
         [Theory]
         [InlineData("Jemina.csv", "text/csv")]
+        [InlineData("Jemina_test2.csv", "text/csv")]
 
         public async Task Parse1(string resource, string mimeType)
         {
