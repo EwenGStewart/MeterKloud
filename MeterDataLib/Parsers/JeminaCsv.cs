@@ -137,7 +137,7 @@ namespace MeterDataLib.Parsers
               
                 var list = records
                                             .GroupBy(x => new { Nmi = x.Nmi, ReadDate = x.ReadDate.Date })
-                                            .Where(x => x.Count() > 1)
+                                            
                                             .OrderBy(x => x.Key.Nmi)
                                             .ThenBy(x => x.Key.ReadDate)
                                             .ToList()
