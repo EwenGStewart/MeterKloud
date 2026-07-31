@@ -110,6 +110,7 @@ namespace MeterDataLib.Query
                         _z = [];
                         decimal[][] zValues = new decimal[Dates.Length][];
 
+                        int zRow = 0;
                         for (int dayIndex = Dates.Length - 1; dayIndex >= 0; dayIndex--)
                         {
                             decimal[] values = new decimal[Times.Length];
@@ -117,7 +118,8 @@ namespace MeterDataLib.Query
                             {
                                 values[timeIndex] = Profile[timeIndex, dayIndex];
                             }
-                            zValues[dayIndex] = values;
+                            zValues[zRow] = values;
+                            zRow++;
                         }
                         _z = zValues.Cast<object>().ToList();
                     }

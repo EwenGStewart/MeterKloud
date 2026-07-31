@@ -110,7 +110,59 @@ namespace MeterDataLib.Parsers
             return await InternalReadFromStreamAsync();
         }
 
-        
+
+
+        private static string[] ParseCsvLine(string line)
+        {
+            List<string> columns = new();
+            bool inQuotes = false;
+            int startIndex = 0;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+
+                if (c == '"')
+                {
+                    inQuotes = !inQuotes;
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    // Found a delimiter - extract the column
+                    string col = line.Substring(startIndex, i - startIndex);
+                    columns.Add(CleanColumn(col));
+                    startIndex = i + 1;
+                }
+            }
+
+            // Add the last column
+            if (startIndex < line.Length)
+            {
+                string col = line.Substring(startIndex);
+                columns.Add(CleanColumn(col));
+            }
+            else if (line.EndsWith(','))
+            {
+                // Empty column at the end
+                columns.Add(string.Empty);
+            }
+
+            return columns.ToArray();
+        }
+
+        private static string CleanColumn(string column)
+        {
+            // Remove leading/trailing whitespace
+            column = column.Trim();
+
+            // Remove surrounding quotes if present
+            if (column.StartsWith('"') && column.EndsWith('"') && column.Length >= 2)
+            {
+                column = column.Substring(1, column.Length - 2);
+            }
+
+            return column;
+        }
 
         private async Task<CsvLine> InternalReadFromStreamAsync()
         {
@@ -145,7 +197,7 @@ namespace MeterDataLib.Parsers
                         }
 
 
-                        CurrentCols = CurrentLine.Split(',', StringSplitOptions.TrimEntries);
+                        CurrentCols = ParseCsvLine(CurrentLine);
                         ColNumber = CurrentCols.Length;
                         return new CsvLine(CurrentCols, LineNumber, false); ;
                     }
