@@ -24,6 +24,7 @@ namespace MeterDataLib.Parsers
             , new CsvSingleLine7() 
             , new CsvPowerPal() 
             , new CsvEspHome()
+            , new CsvMultiLine2()
             , new CsvMultiLine1()
             , new CsvSingleLineMultiColPeriod() 
             , new CsvSingleLineMultiColPeriod2()

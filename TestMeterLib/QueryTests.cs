@@ -2,6 +2,7 @@ using FluentAssertions;
 using MeterDataLib;
 using MeterDataLib.Parsers;
 using MeterDataLib.Query;
+using System.Collections;
 
 namespace TestMeterLib
 {
@@ -241,6 +242,43 @@ namespace TestMeterLib
 
             detailed.Profile.Sum().Should().BeApproximately(41.7809375000M, 0.1m);
             Console.WriteLine($"Elapsed:{timer.ElapsedMilliseconds}ms");
+        }
+
+        [Theory]
+        [InlineData("MeterDataReport.csv", "text/csv")]
+        public async Task HeatMapRowsAlignWithReversedDateLabels(string resource, string mimeType)
+        {
+            Console.SetOut(new RedirectOutput(Output));
+            using Stream stream = File.OpenRead(Path.Combine("Resources", resource));
+            var parsed = await ParserFactory.ParseAsync(stream, resource, mimeType);
+            parsed.Success.Should().BeTrue();
+
+            var fromDate = parsed.SitesDays.Min(x => x.Date);
+            var toDate = parsed.SitesDays.Max(x => x.Date);
+            var heat = MeterDataQuery.GetHeatMapConsumption(fromDate, toDate, parsed.SitesDays, new TimeInterval(TimeIntervalSize.Minute, 5));
+
+            // Find the row index for 2025-11-01 in reversed Y labels
+            string targetY = new DateOnly(2025, 11, 1).ToString("ddd dd-MMM-yy");
+            int yIndex = heat.Y.IndexOf(targetY);
+            yIndex.Should().BeGreaterThanOrEqualTo(0);
+
+            // Find column index for 12:30
+            int timeIndex = Array.FindIndex(heat.Times, t => t.Hour == 12 && t.Minute == 30);
+            timeIndex.Should().BeGreaterThanOrEqualTo(0);
+
+            // Expected net from detailed calculation (three 5-min periods): -1.241
+            var targetDay = parsed.SitesDays.Single(sd => sd.Date.Date == new DateTime(2025, 11, 1));
+            int p1230 = (12 * 60 + 30) / 5;
+            decimal expected5m = targetDay.Channels["E1"].Readings[p1230] + targetDay.Channels["E2"].Readings[p1230] - targetDay.Channels["B1"].Readings[p1230];
+
+            var zRows = heat.Z.Cast<object>().ToList();
+            var row = ((IEnumerable)zRows[yIndex]).Cast<decimal>().ToArray();
+            var actual5m = row[timeIndex];
+
+            Console.WriteLine($"HeatMap 2025-11-01 12:30 expected5m={expected5m:F3} actual5m={actual5m:F3}");
+
+            actual5m.Should().BeApproximately(expected5m, 0.001m);
+            actual5m.Should().BeLessThan(0);
         }
 
         [Theory]
