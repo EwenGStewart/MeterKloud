@@ -41,8 +41,7 @@ namespace MeterDataLib.Parsers
 
 
                     DateTime previousDateTime = DateTime.MinValue;
-                    int previousTotalWattsIn = 0;
-                    int previousTotalWattsOut = 0;
+        
                     DataLine? previousRecord = null;
 
                     while ((line = await reader.ReadAsync()).Eof == false)
@@ -226,8 +225,8 @@ namespace MeterDataLib.Parsers
                                 result.LogMessages.Add(new FileLogMessage($"Invalid index period found  {index} ", LogLevel.Error, filename, record.LineNumber));
                                 continue;
                             }
-                            channelDayIn.Readings[index] += record.kWhIn;
-                            channelDayOut.Readings[index] -= record.kWhOut;
+                            channelDayIn.Readings[index] += record.KWhIn;
+                            channelDayOut.Readings[index] -= record.KWhOut;
                         }
                         channelDayIn.Total = channelDayIn.Readings.Sum();
                         channelDayOut.Total = channelDayOut.Readings.Sum();
@@ -316,7 +315,7 @@ namespace MeterDataLib.Parsers
 
             public bool Valid => !InitialRead && !IsRollOverOrReset;
 
-            public decimal kWhOut
+            public decimal KWhOut
             {
                 get
                 {
@@ -329,7 +328,7 @@ namespace MeterDataLib.Parsers
                 }
             }
 
-            public decimal kWhIn
+            public decimal KWhIn
             {
                 get
                 {
