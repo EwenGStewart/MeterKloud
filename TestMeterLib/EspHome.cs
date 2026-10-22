@@ -82,8 +82,8 @@ namespace TestMeterLib
 
             Assert.Equal(new DateTime(2024, 1, 2, 3, 3, 0), record.PeriodStartUtc);
             Assert.Equal(new DateTime(2024, 1, 2, 13, 3, 0), record.PeriodStartLocal);
-            Assert.Equal((decimal)deltaIn/1000m  , record.kWhIn );
-            Assert.Equal((decimal)deltaOut / 1000m, record.kWhOut);
+            Assert.Equal((decimal)deltaIn/1000m  , record.KWhIn );
+            Assert.Equal((decimal)deltaOut / 1000m, record.KWhOut);
             var intervals = record.CreateOneMinuteIntervals();
             Assert.Single(intervals);
             var first = intervals[0];
@@ -103,8 +103,8 @@ namespace TestMeterLib
             Assert.Equal(first.PeriodEndLocalExclusive, record.PeriodEndLocalExclusive);
             Assert.Equal(first.PeriodStartUtc, record.PeriodStartUtc);
             Assert.Equal(first.PeriodStartLocal, record.PeriodStartLocal);
-            Assert.Equal(first.kWhIn, record.kWhIn);
-            Assert.Equal(first.kWhOut, record.kWhOut);
+            Assert.Equal(first.KWhIn, record.KWhIn);
+            Assert.Equal(first.KWhOut, record.KWhOut);
         }
 
 
@@ -149,13 +149,13 @@ namespace TestMeterLib
 
             Assert.Equal(new DateTime(2024, 1, 2, 3, 0, 0), record.PeriodStartUtc);
             Assert.Equal(new DateTime(2024, 1, 2, 13, 0, 0), record.PeriodStartLocal);
-            Assert.Equal((decimal)deltaIn / 1000m, record.kWhIn);
-            Assert.Equal((decimal)deltaOut / 1000m, record.kWhOut);
+            Assert.Equal((decimal)deltaIn / 1000m, record.KWhIn);
+            Assert.Equal((decimal)deltaOut / 1000m, record.KWhOut);
             var intervals = record.CreateOneMinuteIntervals();
             Assert.Equal(4, intervals.Count);
 
-            Assert.Equal(record.kWhIn , intervals.Sum(r=> r.kWhIn));
-            Assert.Equal(record.kWhOut, intervals.Sum(r => r.kWhOut));
+            Assert.Equal(record.KWhIn , intervals.Sum(r=> r.KWhIn));
+            Assert.Equal(record.KWhOut, intervals.Sum(r => r.KWhOut));
 
 
             for ( int i = 0; i < intervals.Count; i++)
